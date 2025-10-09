@@ -1,0 +1,200 @@
+[
+  {
+    "id": "f3fc0477-a353-44b4-a2fe-085ca729c0b0",
+    "first_name": "John",
+    "last_name": "Smith",
+    "gender": "M",
+    "birth_date": "1920-01-15",
+    "birth_place": null,
+    "death_date": null,
+    "death_place": null,
+    "occupation": null,
+    "notes": null,
+    "parents": [],
+    "children": [],
+    "spouses": [
+      "1b43f934-67e2-4e5b-af71-3420f55d2553"
+    ],
+    "created_at": "2025-09-11T22:42:53.908806",
+    "updated_at": "2025-09-11T22:42:53.911117"
+  },
+  {
+    "id": "1b43f934-67e2-4e5b-af71-3420f55d2553",
+    "first_name": "Mary",
+    "last_name": "Smith",
+    "gender": "F",
+    "birth_date": "1925-03-20",
+    "birth_place": null,
+    "death_date": null,
+    "death_place": null,
+    "occupation": null,
+    "notes": null,
+    "parents": [],
+    "children": [],
+    "spouses": [
+      "f3fc0477-a353-44b4-a2fe-085ca729c0b0"
+    ],
+    "created_at": "2025-09-11T22:42:53.909206",
+    "updated_at": "2025-09-11T22:42:53.911647"
+  },
+  {
+    "id": "7b8224da-c17b-4977-9ec9-80c5f808317d",
+    "first_name": "Robert",
+    "last_name": "Smith",
+    "gender": "M",
+    "birth_date": "1950-06-10",
+    "birth_place": null,
+    "death_date": null,
+    "death_place": null,
+    "occupation": null,
+    "notes": null,
+    "parents": [
+      "f3fc0477-a353-44b4-a2fe-085ca729c0b0",
+      "1b43f934-67e2-4e5b-af71-3420f55d2553"
+    ],
+    "children": [],
+    "spouses": [
+      "fb0511d5-e84f-42d8-bf4d-ab309980ab5e"
+    ],
+    "created_at": "2025-09-11T22:42:53.909539",
+    "updated_at": "2025-09-11T22:42:53.914522"
+  },
+  {
+    "id": "fb0511d5-e84f-42d8-bf4d-ab309980ab5e",
+    "first_name": "Susan",
+    "last_name": "Johnson",
+    "gender": "F",
+    "birth_date": "1955-09-25",
+    "birth_place": null,
+    "death_date": null,
+    "death_place": null,
+    "occupation": null,
+    "notes": null,
+    "parents": [],
+    "children": [],
+    "spouses": [
+      "7b8224da-c17b-4977-9ec9-80c5f808317d"
+    ],
+    "created_at": "2025-09-11T22:42:53.909913",
+    "updated_at": "2025-09-11T22:42:53.912866"
+  },
+  {
+    "id": "c96b9f30-71d8-4612-8915-ed58bc7c621b",
+    "first_name": "Michael",
+    "last_name": "Smith",
+    "gender": "M",
+    "birth_date": "1980-12-05",
+    "birth_place": null,
+    "death_date": null,
+    "death_place": null,
+    "occupation": null,
+    "notes": null,
+    "parents": [
+      "7b8224da-c17b-4977-9ec9-80c5f808317d",
+      "fb0511d5-e84f-42d8-bf4d-ab309980ab5e"
+    ],
+    "children": [],
+    "spouses": [],
+    "created_at": "2025-09-11T22:42:53.910214",
+    "updated_at": "2025-09-11T22:42:53.913991"
+  },
+  {
+    "id": "1e7ad3f1-df7f-4936-8e49-69557e8b00b8",
+    "first_name": "John",
+    "last_name": "Smith",
+    "gender": "M",
+    "birth_date": "1920-01-15",
+    "birth_place": null,
+    "death_date": null,
+    "death_place": null,
+    "occupation": null,
+    "notes": null,
+    "parents": [],
+    "children": [],
+    "spouses": [
+      "89554dd0-6b93-473c-82e1-33e5c76adebd"
+    ],
+    "created_at": "2025-09-11T22:43:27.479046",
+    "updated_at": "2025-09-11T22:43:27.482521"
+  },
+  {
+    "id": "89554dd0-6b93-473c-82e1-33e5c76adebd",
+    "first_name": "Mary",
+    "last_name": "Smith",
+    "gender": "F",
+    "birth_date": "1925-03-20",
+    "birth_place": null,
+    "death_date": null,
+    "death_place": null,
+    "occupation": null,
+    "notes": null,
+    "parents": [],
+    "children": [],
+    "spouses": [
+      "1e7ad3f1-df7f-4936-8e49-69557e8b00b8"
+    ],
+    "created_at": "2025-09-11T22:43:27.479691",
+    "updated_at": "2025-09-11T22:43:27.483287"
+  },
+  {
+    "id": "14e4730f-8f99-4a32-8e71-57965023c2d7",
+    "first_name": "Robert",
+    "last_name": "Smith",
+    "gender": "M",
+    "birth_date": "1950-06-10",
+    "birth_place": null,
+    "death_date": null,
+    "death_place": null,
+    "occupation": null,
+    "notes": null,
+    "parents": [
+      "1e7ad3f1-df7f-4936-8e49-69557e8b00b8",
+      "89554dd0-6b93-473c-82e1-33e5c76adebd"
+    ],
+    "children": [],
+    "spouses": [
+      "ac25595d-6216-40d1-abc3-4d79d7dca240"
+    ],
+    "created_at": "2025-09-11T22:43:27.480085",
+    "updated_at": "2025-09-11T22:43:27.487331"
+  },
+  {
+    "id": "ac25595d-6216-40d1-abc3-4d79d7dca240",
+    "first_name": "Susan",
+    "last_name": "Johnson",
+    "gender": "F",
+    "birth_date": "1955-09-25",
+    "birth_place": null,
+    "death_date": null,
+    "death_place": null,
+    "occupation": null,
+    "notes": null,
+    "parents": [],
+    "children": [],
+    "spouses": [
+      "14e4730f-8f99-4a32-8e71-57965023c2d7"
+    ],
+    "created_at": "2025-09-11T22:43:27.480582",
+    "updated_at": "2025-09-11T22:43:27.485196"
+  },
+  {
+    "id": "44c1c006-a8dd-4e7e-9c2d-b0cd0f203762",
+    "first_name": "Michael",
+    "last_name": "Smith",
+    "gender": "M",
+    "birth_date": "1980-12-05",
+    "birth_place": null,
+    "death_date": null,
+    "death_place": null,
+    "occupation": null,
+    "notes": null,
+    "parents": [
+      "14e4730f-8f99-4a32-8e71-57965023c2d7",
+      "ac25595d-6216-40d1-abc3-4d79d7dca240"
+    ],
+    "children": [],
+    "spouses": [],
+    "created_at": "2025-09-11T22:43:27.481007",
+    "updated_at": "2025-09-11T22:43:27.486828"
+  }
+]
