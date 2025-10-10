@@ -221,23 +221,208 @@ def with_database(bname: str, k: Callable[[DskBase], T], read_only: bool = False
         descends = make_record_access(im_descends, patches.h_descend, pending.h_descend, families_len)
         strings = make_record_access(im_strings, patches.h_string, pending.h_string, strings_len)
 
+        base_data = BaseData(
+            persons=persons,
+            ascends=ascends,
+            unions=unions,
+            visible=None,
+            families=families,
+            couples=couples,
+            descends=descends,
+            strings=strings,
+            particles_txt=particles_txt,
+            particles=None,
+            bnotes=bnotes,
+            bdir=bname,
+            perm=perm
+        )
+
+        persons_of_name_fn = persons_of_name(bname, patches.h_name)
+        persons_of_surname_fn = persons_of_surname(version, base_data, patches.h_person[1], bname)
+        persons_of_first_name_fn = persons_of_first_name(version, base_data, patches.h_person[1], bname)
+
+        def patch_person_fn(i: int, p: DskPerson) -> None:
+            if i == -1:
+                raise ValueError("Invalid person index -1")
+            persons.len = max(persons.len, i + 1)
+            pending.h_person[0][0] = persons.len
+            pending.h_person[1][i] = p
+
+        def patch_ascend_fn(i: int, a: DskAscend) -> None:
+            if i == -1:
+                raise ValueError("Invalid ascend index -1")
+            ascends.len = max(ascends.len, i + 1)
+            pending.h_ascend[0][0] = ascends.len
+            pending.h_ascend[1][i] = a
+
+        def patch_union_fn(i: int, u: DskUnion) -> None:
+            if i == -1:
+                raise ValueError("Invalid union index -1")
+            unions.len = max(unions.len, i + 1)
+            pending.h_union[0][0] = unions.len
+            pending.h_union[1][i] = u
+
+        def patch_family_fn(i: int, f: DskFamily) -> None:
+            if i == -1:
+                raise ValueError("Invalid family index -1")
+            families.len = max(families.len, i + 1)
+            pending.h_family[0][0] = families.len
+            pending.h_family[1][i] = f
+
+        def patch_couple_fn(i: int, c: DskCouple) -> None:
+            if i == -1:
+                raise ValueError("Invalid couple index -1")
+            couples.len = max(couples.len, i + 1)
+            pending.h_couple[0][0] = couples.len
+            pending.h_couple[1][i] = c
+
+        def patch_descend_fn(i: int, d: DskDescend) -> None:
+            if i == -1:
+                raise ValueError("Invalid descend index -1")
+            descends.len = max(descends.len, i + 1)
+            pending.h_descend[0][0] = descends.len
+            pending.h_descend[1][i] = d
+
+        def insert_string_fn(s: str) -> int:
+            for i, existing in pending.h_string[1].items():
+                if existing == s:
+                    return i
+            for i, existing in patches.h_string[1].items():
+                if existing == s:
+                    return i
+            for i in range(strings.len):
+                try:
+                    if strings.get_nopending(i) == s:
+                        return i
+                except:
+                    pass
+            i = strings.len
+            strings.len = strings.len + 1
+            pending.h_string[0][0] = strings.len
+            pending.h_string[1][i] = s
+            return i
+
+        def patch_name_fn(s: str, ip: int) -> None:
+            i = name_index(s)
+            if i in patches.h_name:
+                ipl = patches.h_name[i]
+                if ip not in ipl:
+                    patches.h_name[i] = ipl + [ip]
+            else:
+                patches.h_name[i] = [ip]
+
+        def commit_patches_fn() -> None:
+            if perm == Perm.RDONLY:
+                raise RuntimeError("Cannot commit patches: database is read-only")
+
+            patches.h_person[0][:] = pending.h_person[0][:]
+            for k, v in pending.h_person[1].items():
+                patches.h_person[1][k] = v
+            pending.h_person[1].clear()
+
+            patches.h_ascend[0][:] = pending.h_ascend[0][:]
+            for k, v in pending.h_ascend[1].items():
+                patches.h_ascend[1][k] = v
+            pending.h_ascend[1].clear()
+
+            patches.h_union[0][:] = pending.h_union[0][:]
+            for k, v in pending.h_union[1].items():
+                patches.h_union[1][k] = v
+            pending.h_union[1].clear()
+
+            patches.h_family[0][:] = pending.h_family[0][:]
+            for k, v in pending.h_family[1].items():
+                patches.h_family[1][k] = v
+            pending.h_family[1].clear()
+
+            patches.h_couple[0][:] = pending.h_couple[0][:]
+            for k, v in pending.h_couple[1].items():
+                patches.h_couple[1][k] = v
+            pending.h_couple[1].clear()
+
+            patches.h_descend[0][:] = pending.h_descend[0][:]
+            for k, v in pending.h_descend[1].items():
+                patches.h_descend[1][k] = v
+            pending.h_descend[1].clear()
+
+            patches.h_string[0][:] = pending.h_string[0][:]
+            for k, v in pending.h_string[1].items():
+                patches.h_string[1][k] = v
+            pending.h_string[1].clear()
+
+            tmp_fname = os.path.join(bname, "1patches")
+            fname = os.path.join(bname, "patches")
+            with secure.open_out_bin(tmp_fname) as oc:
+                oc.write(MAGIC_PATCH)
+                iovalue.output(oc, patches)
+            move_with_backup(tmp_fname, fname)
+
+        def commit_notes_fn(fnotes: str, s: str) -> None:
+            if perm == Perm.RDONLY:
+                raise RuntimeError("Cannot commit notes: database is read-only")
+            raise NotImplementedError("commit_notes not yet implemented")
+
+        def commit_wiznotes_fn(fnotes: str, s: str) -> None:
+            if perm == Perm.RDONLY:
+                raise RuntimeError("Cannot commit wiznotes: database is read-only")
+            raise NotImplementedError("commit_wiznotes not yet implemented")
+
+        def nb_of_real_persons_fn() -> int:
+            nbp_fname = os.path.join(bname, "nb_persons")
+            if os.path.exists(nbp_fname):
+                with secure.open_in_bin(nbp_fname) as ic:
+                    return iovalue.input_value(ic)
+            count = 0
+            for i in range(persons.len):
+                try:
+                    p = persons.get(i)
+                    if not ((p.surname == 0 or p.surname == 1) and (p.first_name == 0 or p.first_name == 1)):
+                        count += 1
+                except:
+                    pass
+            return count
+
+        def iper_exists_fn(i: int) -> bool:
+            return iper_exists(patches.h_person[1], pending.h_person[1], persons_len, i)
+
+        def ifam_exists_fn(i: int) -> bool:
+            return ifam_exists(patches.h_family[1], pending.h_family[1], families_len, i)
+
+        def person_of_key_fn(first_name: str, surname: str, occ: int) -> Optional[int]:
+            return person_of_key(persons, strings, persons_of_name_fn, first_name, surname, occ)
+
+        def strings_of_sname_fn(s: str) -> List[int]:
+            return []
+
+        def strings_of_fname_fn(s: str) -> List[int]:
+            return []
+
+        base_func = BaseFunc(
+            person_of_key=person_of_key_fn,
+            persons_of_name=persons_of_name_fn,
+            strings_of_sname=strings_of_sname_fn,
+            strings_of_fname=strings_of_fname_fn,
+            persons_of_surname=persons_of_surname_fn,
+            persons_of_first_name=persons_of_first_name_fn,
+            patch_person=patch_person_fn,
+            patch_ascend=patch_ascend_fn,
+            patch_union=patch_union_fn,
+            patch_family=patch_family_fn,
+            patch_couple=patch_couple_fn,
+            patch_descend=patch_descend_fn,
+            patch_name=patch_name_fn,
+            insert_string=insert_string_fn,
+            commit_patches=commit_patches_fn,
+            commit_notes=commit_notes_fn,
+            commit_wiznotes=commit_wiznotes_fn,
+            nb_of_real_persons=nb_of_real_persons_fn,
+            iper_exists=iper_exists_fn,
+            ifam_exists=ifam_exists_fn
+        )
+
         base = DskBase(
-            data=BaseData(
-                persons=persons,
-                ascends=ascends,
-                unions=unions,
-                visible=None,
-                families=families,
-                couples=couples,
-                descends=descends,
-                strings=strings,
-                particles_txt=particles_txt,
-                particles=None,
-                bnotes=bnotes,
-                bdir=bname,
-                perm=perm
-            ),
-            func=None,
+            data=base_data,
+            func=base_func,
             version=version
         )
 
@@ -646,6 +831,29 @@ def persons_of_first_name(version: BaseVersion, base_data: BaseData, person_patc
         )
     else:
         raise NotImplementedError("GnWb0020 firstname index not implemented")
+
+def person_of_key(persons: RecordAccess, strings: RecordAccess,
+                  persons_of_name_fn: Callable[[str], List[int]],
+                  first_name: str, surname: str, occ: int) -> Optional[int]:
+    first_name_lower = name.lower(first_name)
+    surname_lower = name.lower(surname)
+    ipl = persons_of_name_fn(first_name + " " + surname)
+
+    for ip in ipl:
+        p = persons.get(ip)
+        p_first = name.lower(strings.get(p.first_name))
+        p_surname = name.lower(strings.get(p.surname))
+        if occ == p.occ and first_name_lower == p_first and surname_lower == p_surname:
+            return ip
+    return None
+
+def iper_exists(patches: Dict[int, DskPerson], pending: Dict[int, DskPerson],
+                len_val: int, i: int) -> bool:
+    return i in pending or i in patches or (0 <= i < len_val)
+
+def ifam_exists(patches: Dict[int, DskFamily], pending: Dict[int, DskFamily],
+                len_val: int, i: int) -> bool:
+    return i in pending or i in patches or (0 <= i < len_val)
 
 def make(bname: str, particles: List[str], arrays: Tuple[Any, Any, Any, BaseNotes],
          k: Callable[[DskBase], T]) -> T:
