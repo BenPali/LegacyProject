@@ -12,7 +12,7 @@ from lib.gwdef import (
     GenRelation, RelationType, GenPerson, Sex, Access,
     GenAscend, GenUnion, GenDescend, GenFamily, RelationKind,
     NotDead, DeathWithReason, DeathReason, UnknownBurial, Buried, Cremated,
-    NotDivorced, DivorceWithDate, WitnessKind
+    NotDivorced, DivorceWithDate, Separated, SeparatedOld, WitnessKind
 )
 from lib.adef import CdateNone, CdateGregorian, Dmy, Precision, Fix, Couple
 from lib.date import compress
@@ -541,3 +541,423 @@ def test_gen_person_misc_names_with_aliases():
     assert "JD" in names
     assert "Jack Doe" in names
     assert "John Dough" in names
+
+
+def test_map_cdate_with_date():
+    from lib.date import cdate_of_date, date_of_cdate
+    from lib.adef import DateGreg, Calendar
+    from lib.futil import map_cdate
+
+    date = DateGreg(dmy=Dmy(day=15, month=6, year=1990, prec=Precision.SURE, delta=0), calendar=Calendar.GREGORIAN)
+    cdate = cdate_of_date(date)
+
+    def add_year(d):
+        new_dmy = Dmy(day=d.dmy.day, month=d.dmy.month, year=d.dmy.year + 1, prec=d.dmy.prec, delta=d.dmy.delta)
+        return DateGreg(dmy=new_dmy, calendar=d.calendar)
+
+    mapped = map_cdate(add_year, cdate)
+
+    result_date = date_of_cdate(mapped)
+    assert result_date.dmy.year == 1991
+
+
+def test_map_death_with_reason():
+    from lib.futil import map_death
+    from lib.date import cdate_of_date
+    from lib.adef import DateGreg, Calendar
+
+    date = DateGreg(dmy=Dmy(day=1, month=1, year=2000, prec=Precision.SURE, delta=0), calendar=Calendar.GREGORIAN)
+    cdate = cdate_of_date(date)
+    death = DeathWithReason(reason=DeathReason.KILLED, date=cdate)
+
+    def add_year(d):
+        new_dmy = Dmy(day=d.dmy.day, month=d.dmy.month, year=d.dmy.year + 1, prec=d.dmy.prec, delta=d.dmy.delta)
+        return DateGreg(dmy=new_dmy, calendar=d.calendar)
+
+    mapped = map_death(add_year, death)
+
+    assert isinstance(mapped, DeathWithReason)
+    assert mapped.reason == DeathReason.KILLED
+
+
+def test_map_burial_buried():
+    from lib.futil import map_burial
+    from lib.date import cdate_of_date
+    from lib.adef import DateGreg, Calendar
+
+    date = DateGreg(dmy=Dmy(day=1, month=1, year=2000, prec=Precision.SURE, delta=0), calendar=Calendar.GREGORIAN)
+    cdate = cdate_of_date(date)
+    burial = Buried(date=cdate)
+
+    def identity(d):
+        return d
+
+    mapped = map_burial(identity, burial)
+
+    assert isinstance(mapped, Buried)
+
+
+def test_map_burial_cremated():
+    from lib.futil import map_burial
+    from lib.date import cdate_of_date
+    from lib.adef import DateGreg, Calendar
+
+    date = DateGreg(dmy=Dmy(day=1, month=1, year=2000, prec=Precision.SURE, delta=0), calendar=Calendar.GREGORIAN)
+    cdate = cdate_of_date(date)
+    burial = Cremated(date=cdate)
+
+    def identity(d):
+        return d
+
+    mapped = map_burial(identity, burial)
+
+    assert isinstance(mapped, Cremated)
+
+
+def test_map_divorce_separated():
+    from lib.futil import map_divorce
+    from lib.date import cdate_of_date
+    from lib.adef import DateGreg, Calendar
+
+    date = DateGreg(dmy=Dmy(day=1, month=1, year=2000, prec=Precision.SURE, delta=0), calendar=Calendar.GREGORIAN)
+    cdate = cdate_of_date(date)
+    divorce = Separated(date=cdate)
+
+    def identity(d):
+        return d
+
+    mapped = map_divorce(identity, divorce)
+
+    assert isinstance(mapped, Separated)
+
+
+def test_map_divorce_separated_old():
+    from lib.futil import map_divorce
+
+    divorce = SeparatedOld()
+    mapped = map_divorce(lambda d: d, divorce)
+
+    assert isinstance(mapped, SeparatedOld)
+
+
+def test_map_title_strings_with_fd():
+    from lib.date import cdate_of_date
+    from lib.adef import DateGreg, Calendar
+
+    date = DateGreg(dmy=Dmy(day=1, month=1, year=2000, prec=Precision.SURE, delta=0), calendar=Calendar.GREGORIAN)
+    cdate = cdate_of_date(date)
+
+    title = GenTitle[str](
+        t_name=Tmain[str](),
+        t_ident="id1",
+        t_place="Paris",
+        t_date_start=cdate,
+        t_date_end=cdate,
+        t_nth=1
+    )
+
+    def add_year(d):
+        new_dmy = Dmy(day=d.dmy.day, month=d.dmy.month, year=d.dmy.year + 1, prec=d.dmy.prec, delta=d.dmy.delta)
+        return DateGreg(dmy=new_dmy, calendar=d.calendar)
+
+    mapped = map_title_strings(str.upper, title, fd=add_year)
+
+    assert mapped.t_ident == "ID1"
+
+
+def test_map_pers_event_with_fd():
+    from lib.date import cdate_of_date, date_of_cdate
+    from lib.adef import DateGreg, Calendar
+
+    date = DateGreg(dmy=Dmy(day=1, month=1, year=1990, prec=Precision.SURE, delta=0), calendar=Calendar.GREGORIAN)
+    cdate = cdate_of_date(date)
+
+    event = GenPersEvent[int, str](
+        epers_name=GenPersEventName.EPERS_BIRTH,
+        epers_date=cdate,
+        epers_place="Paris",
+        epers_reason="",
+        epers_note="",
+        epers_src="",
+        epers_witnesses=[]
+    )
+
+    def add_year(d):
+        new_dmy = Dmy(day=d.dmy.day, month=d.dmy.month, year=d.dmy.year + 1, prec=d.dmy.prec, delta=d.dmy.delta)
+        return DateGreg(dmy=new_dmy, calendar=d.calendar)
+
+    mapped = map_pers_event(lambda x: x, lambda x: x, event, fd=add_year)
+
+    result_date = date_of_cdate(mapped.epers_date)
+    assert result_date.dmy.year == 1991
+
+
+def test_map_fam_event_with_fd():
+    from lib.date import cdate_of_date, date_of_cdate
+    from lib.adef import DateGreg, Calendar
+
+    date = DateGreg(dmy=Dmy(day=1, month=1, year=2000, prec=Precision.SURE, delta=0), calendar=Calendar.GREGORIAN)
+    cdate = cdate_of_date(date)
+
+    event = GenFamEvent[int, str](
+        efam_name=GenFamEventName.EFAM_MARRIAGE,
+        efam_date=cdate,
+        efam_place="Church",
+        efam_reason="",
+        efam_note="",
+        efam_src="",
+        efam_witnesses=[]
+    )
+
+    def add_year(d):
+        new_dmy = Dmy(day=d.dmy.day, month=d.dmy.month, year=d.dmy.year + 1, prec=d.dmy.prec, delta=d.dmy.delta)
+        return DateGreg(dmy=new_dmy, calendar=d.calendar)
+
+    mapped = map_fam_event(lambda x: x, lambda x: x, event, fd=add_year)
+
+    result_date = date_of_cdate(mapped.efam_date)
+    assert result_date.dmy.year == 2001
+
+
+def test_map_person_ps_with_death_and_burial():
+    from lib.date import cdate_of_date
+    from lib.adef import DateGreg, Calendar
+
+    date = DateGreg(dmy=Dmy(day=1, month=1, year=2000, prec=Precision.SURE, delta=0), calendar=Calendar.GREGORIAN)
+    cdate = cdate_of_date(date)
+
+    person = GenPerson[int, int, str](
+        first_name="Jane",
+        surname="Doe",
+        occ=0,
+        image="",
+        public_name="",
+        qualifiers=[],
+        aliases=[],
+        first_names_aliases=[],
+        surnames_aliases=[],
+        titles=[],
+        rparents=[],
+        related=[],
+        occupation="",
+        sex=Sex.FEMALE,
+        access=Access.PUBLIC,
+        birth=CdateNone(),
+        birth_place="",
+        birth_note="",
+        birth_src="",
+        baptism=CdateNone(),
+        baptism_place="",
+        baptism_note="",
+        baptism_src="",
+        death=DeathWithReason(reason=DeathReason.UNSPECIFIED, date=cdate),
+        death_place="Hospital",
+        death_note="",
+        death_src="",
+        burial=Buried(date=cdate),
+        burial_place="Cemetery",
+        burial_note="",
+        burial_src="",
+        pevents=[],
+        notes="",
+        psources="",
+        key_index=1
+    )
+
+    def identity(d):
+        return d
+
+    mapped = map_person_ps(lambda x: x, str.upper, person, fd=identity)
+
+    assert isinstance(mapped.death, DeathWithReason)
+    assert isinstance(mapped.burial, Buried)
+    assert mapped.death_place == "HOSPITAL"
+    assert mapped.burial_place == "CEMETERY"
+
+
+def test_map_family_ps_with_fd():
+    from lib.date import cdate_of_date
+    from lib.adef import DateGreg, Calendar
+
+    date = DateGreg(dmy=Dmy(day=1, month=1, year=1995, prec=Precision.SURE, delta=0), calendar=Calendar.GREGORIAN)
+    cdate = cdate_of_date(date)
+
+    family = GenFamily[int, int, str](
+        marriage=cdate,
+        marriage_place="Church",
+        marriage_note="",
+        marriage_src="",
+        witnesses=[],
+        relation=RelationKind.MARRIED,
+        divorce=NotDivorced(),
+        fevents=[],
+        comment="",
+        origin_file="",
+        fsources="",
+        fam_index=1
+    )
+
+    def add_year(d):
+        new_dmy = Dmy(day=d.dmy.day, month=d.dmy.month, year=d.dmy.year + 1, prec=d.dmy.prec, delta=d.dmy.delta)
+        return DateGreg(dmy=new_dmy, calendar=d.calendar)
+
+    mapped = map_family_ps(lambda x: x, lambda x: x, lambda x: x, family, fd=add_year)
+
+    from lib.date import date_of_cdate
+    result_date = date_of_cdate(mapped.marriage)
+    assert result_date.dmy.year == 1996
+
+
+def test_gen_person_misc_names_with_titles_and_places():
+    def sou(x):
+        return x
+
+    title_with_place = GenTitle[str](
+        t_name=Tname[str](name="Duke"),
+        t_ident="",
+        t_place="Cornwall",
+        t_date_start=CdateNone(),
+        t_date_end=CdateNone(),
+        t_nth=1
+    )
+
+    names = gen_person_misc_names(
+        sou=sou,
+        empty_string="",
+        quest_string="?",
+        first_name="Arthur",
+        surname="Pendragon",
+        public_name="King",
+        qualifiers=[],
+        aliases=[],
+        first_names_aliases=[],
+        surnames_aliases=[],
+        titles=[title_with_place],
+        husbands=[],
+        father_titles_places=[]
+    )
+
+    assert "Duke" in names
+    assert "Arthur Cornwall" in names
+    assert "Duke Cornwall" in names
+
+
+def test_gen_person_misc_names_with_husbands():
+    def sou(x):
+        return x
+
+    names = gen_person_misc_names(
+        sou=sou,
+        empty_string="",
+        quest_string="?",
+        first_name="Jane",
+        surname="Smith",
+        public_name="",
+        qualifiers=[],
+        aliases=[],
+        first_names_aliases=[],
+        surnames_aliases=[],
+        titles=[],
+        husbands=[("Jones", ["Johnson"])],
+        father_titles_places=[]
+    )
+
+    assert "Jane Jones" in names
+    assert "Jane Johnson" in names
+
+
+def test_gen_person_misc_names_with_husband_question():
+    def sou(x):
+        return x
+
+    names = gen_person_misc_names(
+        sou=sou,
+        empty_string="",
+        quest_string="?",
+        first_name="Jane",
+        surname="Smith",
+        public_name="",
+        qualifiers=[],
+        aliases=[],
+        first_names_aliases=[],
+        surnames_aliases=[],
+        titles=[],
+        husbands=[("?", ["Unknown"])],
+        father_titles_places=[]
+    )
+
+    assert "Jane Unknown" in names
+
+
+def test_gen_person_misc_names_with_father_titles():
+    def sou(x):
+        return x
+
+    father_title = GenTitle[str](
+        t_name=Tmain[str](),
+        t_ident="",
+        t_place="York",
+        t_date_start=CdateNone(),
+        t_date_end=CdateNone(),
+        t_nth=1
+    )
+
+    names = gen_person_misc_names(
+        sou=sou,
+        empty_string="",
+        quest_string="?",
+        first_name="Edward",
+        surname="Plantagenet",
+        public_name="",
+        qualifiers=[],
+        aliases=[],
+        first_names_aliases=[],
+        surnames_aliases=[],
+        titles=[],
+        husbands=[],
+        father_titles_places=[father_title]
+    )
+
+    assert "Edward York" in names
+
+
+def test_gen_person_misc_names_with_empty_title_place():
+    def sou(x):
+        return x
+
+    title_no_place = GenTitle[str](
+        t_name=Tname[str](name="Sir"),
+        t_ident="",
+        t_place="",
+        t_date_start=CdateNone(),
+        t_date_end=CdateNone(),
+        t_nth=1
+    )
+
+    names = gen_person_misc_names(
+        sou=sou,
+        empty_string="",
+        quest_string="?",
+        first_name="William",
+        surname="Wallace",
+        public_name="",
+        qualifiers=[],
+        aliases=[],
+        first_names_aliases=[],
+        surnames_aliases=[],
+        titles=[title_no_place],
+        husbands=[],
+        father_titles_places=[]
+    )
+
+    assert "Sir" in names
+    assert "William Wallace" in names
+
+
+def test_map_couple_p_multi_parent():
+    couple = Couple(father=10, mother=20)
+
+    mapped = map_couple_p(True, lambda x: x * 2, couple)
+
+    assert mapped.father == 20
+    assert mapped.mother == 40
