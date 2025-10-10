@@ -1,5 +1,4 @@
 from typing import Callable, Optional, TypeVar, List, Tuple
-from dataclasses import replace
 from lib.adef import Cdate, Date, Couple
 from lib.gwdef import (
     GenTitle, GenTitleName, Tmain, Tname, Tnone,
