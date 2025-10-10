@@ -392,10 +392,10 @@ def with_database(bname: str, k: Callable[[DskBase], T], read_only: bool = False
             return person_of_key(persons, strings, persons_of_name_fn, first_name, surname, occ)
 
         def strings_of_sname_fn(s: str) -> List[int]:
-            return []
+            return strings_of_fsname(version, bname, strings, patches.h_person, 1, 0, name.split_sname, lambda p: p.surname)(s)
 
         def strings_of_fname_fn(s: str) -> List[int]:
-            return []
+            return strings_of_fsname(version, bname, strings, patches.h_person, 2, 1, name.split_fname, lambda p: p.first_name)(s)
 
         base_func = BaseFunc(
             person_of_key=person_of_key_fn,
@@ -854,6 +854,100 @@ def iper_exists(patches: Dict[int, DskPerson], pending: Dict[int, DskPerson],
 def ifam_exists(patches: Dict[int, DskFamily], pending: Dict[int, DskFamily],
                 len_val: int, i: int) -> bool:
     return i in pending or i in patches or (0 <= i < len_val)
+
+def strings_of_fsname(version: BaseVersion, bname: str, strings: RecordAccess,
+                      patches_h_person: Tuple[List[int], Dict[int, DskPerson]],
+                      offset_acc: int, offset_inx: int,
+                      split_fn: Callable[[str], List[str]],
+                      get_fn: Callable[[DskPerson], int]) -> Callable[[str], List[int]]:
+    if version == BaseVersion.GNWB0024 or version == BaseVersion.GNWB0023:
+        cached_table = [None]
+
+        def lookup(s: str) -> List[int]:
+            i = name_index(s)
+            names_inx_file = os.path.join(bname, "names.inx")
+            names_acc_file = os.path.join(bname, "names.acc")
+
+            with secure.open_in_bin(names_inx_file) as ic_inx:
+                if os.path.exists(names_acc_file):
+                    with secure.open_in_bin(names_acc_file) as ic_inx_acc:
+                        ic_inx_acc.seek(iovalue.SIZEOF_LONG * ((offset_acc * TABLE_SIZE) + i))
+                        pos = input_binary_int(ic_inx_acc)
+                    ic_inx.seek(pos)
+                    ai = iovalue.input_value(ic_inx)
+                else:
+                    if cached_table[0] is None:
+                        ic_inx.seek(offset_inx)
+                        pos = input_binary_int(ic_inx)
+                        ic_inx.seek(pos)
+                        cached_table[0] = iovalue.input_value(ic_inx)
+                    ai = cached_table[0][i]
+
+            result = list(ai) if isinstance(ai, (list, tuple)) else []
+
+            _, person_patches = patches_h_person
+            for ip, p in person_patches.items():
+                istr = get_fn(p)
+                str_val = strings.get(istr)
+                if istr not in result:
+                    parts = split_fn(str_val)
+                    if len(parts) == 1:
+                        if i == name_index(parts[0]):
+                            result.append(istr)
+                    else:
+                        for part in parts:
+                            if i == name_index(part):
+                                result.append(istr)
+                                break
+                        if str_val not in [strings.get(r) for r in result]:
+                            if i == name_index(str_val):
+                                result.append(istr)
+
+            return result
+
+        return lookup
+    else:
+        cached_table = [None]
+
+        def lookup_old(s: str) -> List[int]:
+            i = name_index(s)
+            names_inx_file = os.path.join(bname, "names.inx")
+            names_acc_file = os.path.join(bname, "names.acc")
+
+            with secure.open_in_bin(names_inx_file) as ic_inx:
+                if os.path.exists(names_acc_file):
+                    with secure.open_in_bin(names_acc_file) as ic_inx_acc:
+                        ic_inx_acc.seek(iovalue.SIZEOF_LONG * (TABLE_SIZE + i))
+                        pos = input_binary_int(ic_inx_acc)
+                    ic_inx.seek(pos)
+                    ai = iovalue.input_value(ic_inx)
+                else:
+                    if cached_table[0] is None:
+                        pos = input_binary_int(ic_inx)
+                        ic_inx.seek(pos)
+                        cached_table[0] = iovalue.input_value(ic_inx)
+                    ai = cached_table[0][i]
+
+            result = list(ai) if isinstance(ai, (list, tuple)) else []
+
+            _, person_patches = patches_h_person
+            for ip, p in person_patches.items():
+                istr = get_fn(p)
+                str_val = strings.get(istr)
+                if istr not in result:
+                    parts = split_fn(str_val)
+                    if len(parts) == 1:
+                        if i == name_index(parts[0]):
+                            result.append(istr)
+                    else:
+                        for part in parts:
+                            if i == name_index(part):
+                                result.append(istr)
+                                break
+
+            return result
+
+        return lookup_old
 
 def make(bname: str, particles: List[str], arrays: Tuple[Any, Any, Any, BaseNotes],
          k: Callable[[DskBase], T]) -> T:

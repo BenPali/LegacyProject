@@ -241,3 +241,121 @@ def test_persons_of_name():
             assert 1 in result
             assert 2 in result
             assert 3 in result
+
+def test_person_of_key():
+    from dataclasses import dataclass
+
+    @dataclass
+    class MockPerson:
+        first_name: int
+        surname: int
+        occ: int
+
+    def mock_get_person(i):
+        if i == 0:
+            return MockPerson(first_name=1, surname=2, occ=0)
+        elif i == 5:
+            return MockPerson(first_name=1, surname=2, occ=5)
+        return None
+
+    def mock_get_string(i):
+        if i == 1:
+            return "John"
+        elif i == 2:
+            return "Smith"
+        return ""
+
+    def mock_persons_of_name(s):
+        if s == "John Smith":
+            return [0, 5]
+        return []
+
+    mock_persons = RecordAccess(
+        load_array=lambda: None,
+        get=mock_get_person,
+        get_nopending=mock_get_person,
+        len=10,
+        output_array=lambda oc: None,
+        clear_array=lambda: None
+    )
+
+    mock_strings = RecordAccess(
+        load_array=lambda: None,
+        get=mock_get_string,
+        get_nopending=mock_get_string,
+        len=10,
+        output_array=lambda oc: None,
+        clear_array=lambda: None
+    )
+
+    result = database.person_of_key(mock_persons, mock_strings, mock_persons_of_name, "John", "Smith", 0)
+    assert result == 0
+
+    result = database.person_of_key(mock_persons, mock_strings, mock_persons_of_name, "John", "Smith", 1)
+    assert result is None
+
+def test_iper_exists():
+    patches = {5: None, 10: None}
+    pending = {15: None}
+
+    assert database.iper_exists(patches, pending, 20, 5) == True
+    assert database.iper_exists(patches, pending, 20, 10) == True
+    assert database.iper_exists(patches, pending, 20, 15) == True
+    assert database.iper_exists(patches, pending, 20, 3) == True
+    assert database.iper_exists(patches, pending, 20, 25) == False
+    assert database.iper_exists(patches, pending, 20, -1) == False
+
+def test_ifam_exists():
+    patches = {2: None}
+    pending = {3: None}
+
+    assert database.ifam_exists(patches, pending, 10, 2) == True
+    assert database.ifam_exists(patches, pending, 10, 3) == True
+    assert database.ifam_exists(patches, pending, 10, 5) == True
+    assert database.ifam_exists(patches, pending, 10, 15) == False
+
+def test_patch_functions_integration():
+    patches_ht = database.empty_patch_ht()
+
+    assert patches_ht.h_person[0][0] == 0
+    assert len(patches_ht.h_person[1]) == 0
+
+    patches_ht.h_person[0][0] = 5
+    patches_ht.h_person[1][3] = "test_person"
+
+    assert patches_ht.h_person[0][0] == 5
+    assert patches_ht.h_person[1][3] == "test_person"
+
+def test_strings_of_fsname_callable():
+    from dataclasses import dataclass
+
+    @dataclass
+    class MockPerson:
+        first_name: int
+        surname: int
+
+    def mock_get_string(i):
+        if i == 0:
+            return "Smith"
+        elif i == 1:
+            return "von Berg"
+        return ""
+
+    mock_strings = RecordAccess(
+        load_array=lambda: None,
+        get=mock_get_string,
+        get_nopending=mock_get_string,
+        len=10,
+        output_array=lambda oc: None,
+        clear_array=lambda: None
+    )
+
+    person1 = MockPerson(first_name=0, surname=0)
+    patches_h_person = ([1], {0: person1})
+
+    lookup_fn = database.strings_of_fsname(
+        BaseVersion.GNWB0024, "/nonexistent", mock_strings, patches_h_person,
+        1, 0, lambda s: [s], lambda p: p.surname
+    )
+
+    assert callable(lookup_fn)
