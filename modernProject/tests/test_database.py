@@ -359,3 +359,56 @@ def test_strings_of_fsname_callable():
     )
 
     assert callable(lookup_fn)
+
+def test_record_access_of():
+    test_data = ["string0", "string1", "string2"]
+    record = database.record_access_of(test_data)
+
+    assert record.len == 3
+    assert record.get(0) == "string0"
+    assert record.get(1) == "string1"
+    assert record.get(2) == "string2"
+    assert record.get_nopending(1) == "string1"
+
+    record.load_array()
+    record.clear_array()
+
+def test_make_function():
+    from lib.gwdef import BaseNotes
+
+    test_persons = [{"id": 0}, {"id": 1}]
+    test_ascends = [{"parents": None}]
+    test_unions = [{"family": []}]
+    test_families = [{"father": 0}]
+    test_couples = [{"person1": 0}]
+    test_descends = [{"children": []}]
+    test_strings = ["", "John", "Smith"]
+
+    mock_bnotes = BaseNotes(
+        nread=lambda fname, mode: "",
+        norigin_file="",
+        efiles=lambda: []
+    )
+
+    persons_tuple = (test_persons, test_ascends, test_unions)
+    families_tuple = (test_families, test_couples, test_descends)
+    arrays = (persons_tuple, families_tuple, test_strings, mock_bnotes)
+
+    def callback(base):
+        assert base.data is not None
+        assert base.func is not None
+        assert base.version == BaseVersion.GNWB0024
+        assert base.data.persons.len == 2
+        assert base.data.strings.len == 3
+        assert base.data.families.len == 1
+        return "success"
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        result = database.make(tmpdir, [], arrays, callback)
+        assert result == "success"
+
+        gwb_dir = tmpdir + ".gwb"
+        assert os.path.exists(gwb_dir)
+        assert os.path.exists(os.path.join(gwb_dir, "notes_d"))
+        assert os.path.exists(os.path.join(gwb_dir, "wiznotes"))
+        assert os.path.exists(os.path.join(gwb_dir, "notes"))

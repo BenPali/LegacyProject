@@ -11,9 +11,9 @@ from lib.dbdisk import (
 from lib.gwdef import BaseNotes
 from lib import iovalue
 from lib import secure
-from lib import mutil
 from lib import name
 from lib import dutil
+from lib import filesystem
 
 T = TypeVar('T')
 
@@ -949,6 +949,167 @@ def strings_of_fsname(version: BaseVersion, bname: str, strings: RecordAccess,
 
         return lookup_old
 
+def record_access_of(tab: List[Any]) -> RecordAccess:
+    def load_array_fn():
+        pass
+
+    def get_fn(i: int) -> Any:
+        return tab[i]
+
+    def get_nopending_fn(i: int) -> Any:
+        return tab[i]
+
+    def output_array_fn(oc) -> None:
+        dutil.output_value_no_sharing(oc, tab)
+
+    def clear_array_fn() -> None:
+        pass
+
+    return RecordAccess(
+        load_array=load_array_fn,
+        get=get_fn,
+        get_nopending=get_nopending_fn,
+        len=len(tab),
+        output_array=output_array_fn,
+        clear_array=clear_array_fn
+    )
+
 def make(bname: str, particles: List[str], arrays: Tuple[Any, Any, Any, BaseNotes],
          k: Callable[[DskBase], T]) -> T:
-    raise NotImplementedError("make() not yet implemented")
+    if not bname.endswith(".gwb"):
+        bdir = bname + ".gwb"
+    else:
+        bdir = bname
+
+    filesystem.create_dir(os.path.join(bdir, "notes_d"), parent=True)
+    filesystem.create_dir(os.path.join(bdir, "wiznotes"))
+    filesystem.create_file(os.path.join(bdir, "notes"))
+
+    persons_tuple, families_tuple, strings, bnotes = arrays
+    persons, ascends, unions = persons_tuple
+    families, couples, descends = families_tuple
+
+    base_data = BaseData(
+        persons=record_access_of(persons),
+        ascends=record_access_of(ascends),
+        unions=record_access_of(unions),
+        visible=None,
+        families=record_access_of(families),
+        couples=record_access_of(couples),
+        descends=record_access_of(descends),
+        strings=record_access_of(strings),
+        particles_txt=particles,
+        particles=None,
+        bnotes=bnotes,
+        bdir=bdir,
+        perm=Perm.RDRW
+    )
+
+    def make_person_of_key(first_name: str, surname: str, occ: int) -> Optional[int]:
+        fn_str = name.lower(first_name)
+        sn_str = name.lower(surname)
+        for i, p in enumerate(persons):
+            p_fn = strings[p.first_name] if hasattr(p, 'first_name') else strings[p['first_name']]
+            p_sn = strings[p.surname] if hasattr(p, 'surname') else strings[p['surname']]
+            p_occ = p.occ if hasattr(p, 'occ') else p['occ']
+            if name.lower(p_fn) == fn_str and name.lower(p_sn) == sn_str and p_occ == occ:
+                return i
+        return None
+
+    def make_persons_of_name(s: str) -> List[int]:
+        return []
+
+    def make_strings_of_sname(s: str) -> List[int]:
+        return []
+
+    def make_strings_of_fname(s: str) -> List[int]:
+        return []
+
+    def make_find(istr: int) -> List[int]:
+        return []
+
+    def make_cursor(s: str) -> int:
+        raise KeyError(s)
+
+    def make_next(istr: int) -> int:
+        raise KeyError(istr)
+
+    make_string_person_index = StringPersonIndex(
+        find=make_find,
+        cursor=make_cursor,
+        next=make_next
+    )
+
+    def make_patch_person(i: int, p: DskPerson) -> None:
+        persons[i] = p
+
+    def make_patch_ascend(i: int, a: DskAscend) -> None:
+        ascends[i] = a
+
+    def make_patch_union(i: int, u: DskUnion) -> None:
+        unions[i] = u
+
+    def make_patch_family(i: int, f: DskFamily) -> None:
+        families[i] = f
+
+    def make_patch_couple(i: int, c: DskCouple) -> None:
+        couples[i] = c
+
+    def make_patch_descend(i: int, d: DskDescend) -> None:
+        descends[i] = d
+
+    def make_patch_name(s: str, ip: int) -> None:
+        pass
+
+    def make_insert_string(s: str) -> int:
+        strings.append(s)
+        return len(strings) - 1
+
+    def make_commit_patches() -> None:
+        pass
+
+    def make_commit_notes(fnotes: str, s: str) -> None:
+        pass
+
+    def make_commit_wiznotes(fnotes: str, s: str) -> None:
+        pass
+
+    def make_nb_of_real_persons() -> int:
+        return len(persons)
+
+    def make_iper_exists(i: int) -> bool:
+        return 0 <= i < len(persons)
+
+    def make_ifam_exists(i: int) -> bool:
+        return 0 <= i < len(families)
+
+    base_func = BaseFunc(
+        person_of_key=make_person_of_key,
+        persons_of_name=make_persons_of_name,
+        strings_of_sname=make_strings_of_sname,
+        strings_of_fname=make_strings_of_fname,
+        persons_of_surname=make_string_person_index,
+        persons_of_first_name=make_string_person_index,
+        patch_person=make_patch_person,
+        patch_ascend=make_patch_ascend,
+        patch_union=make_patch_union,
+        patch_family=make_patch_family,
+        patch_couple=make_patch_couple,
+        patch_descend=make_patch_descend,
+        patch_name=make_patch_name,
+        insert_string=make_insert_string,
+        commit_patches=make_commit_patches,
+        commit_notes=make_commit_notes,
+        commit_wiznotes=make_commit_wiznotes,
+        nb_of_real_persons=make_nb_of_real_persons,
+        iper_exists=make_iper_exists,
+        ifam_exists=make_ifam_exists
+    )
+
+    base = DskBase(
+        data=base_data,
+        func=base_func,
+        version=BaseVersion.GNWB0024
+    )
+
+    return k(base)
