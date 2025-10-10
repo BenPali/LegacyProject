@@ -178,16 +178,59 @@ def with_database(bname: str, k: Callable[[DskBase], T], read_only: bool = False
 
         bnotes = BaseNotes(norigin_file=norigin_file)
 
+        shift = 0
+        im_persons = make_immut_record_access(
+            read_only, ic, ic_acc, shift, persons_array_pos, persons_len, "persons"
+        )
+        shift += persons_len * iovalue.SIZEOF_LONG
+
+        im_ascends = make_immut_record_access(
+            read_only, ic, ic_acc, shift, ascends_array_pos, persons_len, "ascends"
+        )
+        shift += persons_len * iovalue.SIZEOF_LONG
+
+        im_unions = make_immut_record_access(
+            read_only, ic, ic_acc, shift, unions_array_pos, persons_len, "unions"
+        )
+        shift += persons_len * iovalue.SIZEOF_LONG
+
+        im_families = make_immut_record_access(
+            read_only, ic, ic_acc, shift, families_array_pos, families_len, "families"
+        )
+        shift += families_len * iovalue.SIZEOF_LONG
+
+        im_couples = make_immut_record_access(
+            read_only, ic, ic_acc, shift, couples_array_pos, families_len, "couples"
+        )
+        shift += families_len * iovalue.SIZEOF_LONG
+
+        im_descends = make_immut_record_access(
+            read_only, ic, ic_acc, shift, descends_array_pos, families_len, "descends"
+        )
+        shift += families_len * iovalue.SIZEOF_LONG
+
+        im_strings = make_immut_record_access(
+            read_only, ic, ic_acc, shift, strings_array_pos, strings_len, "strings"
+        )
+
+        persons = make_record_access(im_persons, patches.h_person, pending.h_person, persons_len)
+        ascends = make_record_access(im_ascends, patches.h_ascend, pending.h_ascend, persons_len)
+        unions = make_record_access(im_unions, patches.h_union, pending.h_union, persons_len)
+        families = make_record_access(im_families, patches.h_family, pending.h_family, families_len)
+        couples = make_record_access(im_couples, patches.h_couple, pending.h_couple, families_len)
+        descends = make_record_access(im_descends, patches.h_descend, pending.h_descend, families_len)
+        strings = make_record_access(im_strings, patches.h_string, pending.h_string, strings_len)
+
         base = DskBase(
             data=BaseData(
-                persons=None,
-                ascends=None,
-                unions=None,
+                persons=persons,
+                ascends=ascends,
+                unions=unions,
                 visible=None,
-                families=None,
-                couples=None,
-                descends=None,
-                strings=None,
+                families=families,
+                couples=couples,
+                descends=descends,
+                strings=strings,
                 particles_txt=particles_txt,
                 particles=None,
                 bnotes=bnotes,
