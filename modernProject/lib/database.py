@@ -349,6 +349,304 @@ def make_record_access(immut_record: ImmutRecord,
         clear_array=clear_array
     )
 
+TABLE_SIZE = 0x3FFF
+INT_SIZE = 4
+
+def name_index(s: str) -> int:
+    return hash(name.crush_lower(s)) % TABLE_SIZE
+
+def binary_search(arr: List[Tuple[Any, Any]], cmp: Callable[[Tuple[Any, Any]], int]) -> int:
+    if not arr:
+        raise KeyError("Not found")
+    low = 0
+    high = len(arr) - 1
+    while True:
+        if high <= low:
+            if cmp(arr[low]) == 0:
+                return low
+            raise KeyError("Not found")
+        mid = (low + high) // 2
+        c = cmp(arr[mid])
+        if c < 0:
+            high = mid - 1
+        elif c > 0:
+            low = mid + 1
+        else:
+            return mid
+
+def binary_search_key_after(arr: List[Tuple[Any, Any]], cmp: Callable[[Tuple[Any, Any]], int]) -> int:
+    if not arr:
+        raise KeyError("Not found")
+    acc = None
+    low = 0
+    high = len(arr) - 1
+    while True:
+        if high <= low:
+            if cmp(arr[low]) <= 0:
+                return low
+            if acc is not None:
+                return acc
+            raise KeyError("Not found")
+        mid = (low + high) // 2
+        c = cmp(arr[mid])
+        if c < 0:
+            acc = mid
+            high = mid - 1
+        elif c > 0:
+            low = mid + 1
+        else:
+            return mid
+
+def binary_search_next(arr: List[Tuple[Any, Any]], cmp: Callable[[Tuple[Any, Any]], int]) -> int:
+    if not arr:
+        raise KeyError("Not found")
+    acc = None
+    low = 0
+    high = len(arr) - 1
+    while True:
+        if high <= low:
+            if cmp(arr[low]) < 0:
+                return low
+            if acc is not None:
+                return acc
+            raise KeyError("Not found")
+        mid = (low + high) // 2
+        c = cmp(arr[mid])
+        if c < 0:
+            acc = mid
+            high = mid - 1
+        else:
+            low = mid + 1
+
+def compare_after_particle(particles: List[str], s1: str, s2: str) -> int:
+    def skip_particles(s: str) -> str:
+        words = s.split()
+        if not words:
+            return s
+        for particle in particles:
+            if words[0].lower() == particle.lower() and len(words) > 1:
+                return ' '.join(words[1:])
+        return s
+
+    s1_stripped = skip_particles(s1)
+    s2_stripped = skip_particles(s2)
+
+    if s1_stripped < s2_stripped:
+        return -1
+    elif s1_stripped > s2_stripped:
+        return 1
+    return 0
+
+def compare_snames(base_data: BaseData, s1: str, s2: str) -> int:
+    particles = base_data.particles_txt if base_data.particles_txt else []
+    return compare_after_particle(particles, s1, s2)
+
+def compare_snames_i(base_data: BaseData, is1: int, is2: int) -> int:
+    if is1 == is2:
+        return 0
+    return compare_snames(base_data, base_data.strings.get(is1), base_data.strings.get(is2))
+
+def compare_fnames(base_data: BaseData, s1: str, s2: str) -> int:
+    if s1 < s2:
+        return -1
+    elif s1 > s2:
+        return 1
+    return 0
+
+def compare_fnames_i(base_data: BaseData, is1: int, is2: int) -> int:
+    if is1 == is2:
+        return 0
+    s1 = base_data.strings.get(is1)
+    s2 = base_data.strings.get(is2)
+    return compare_fnames(base_data, s1, s2)
+
+def persons_of_name(bname: str, patches_h_name: Dict[int, List[int]]) -> Callable[[str], List[int]]:
+    cached_table = [None]
+
+    def lookup(s: str) -> List[int]:
+        i = name_index(s)
+        names_inx_file = os.path.join(bname, "names.inx")
+        names_acc_file = os.path.join(bname, "names.acc")
+
+        with secure.open_in_bin(names_inx_file) as ic_inx:
+            if os.path.exists(names_acc_file):
+                with secure.open_in_bin(names_acc_file) as ic_inx_acc:
+                    ic_inx_acc.seek(iovalue.SIZEOF_LONG * i)
+                    pos = input_binary_int(ic_inx_acc)
+                ic_inx.seek(pos)
+                ai = iovalue.input_value(ic_inx)
+            else:
+                if cached_table[0] is None:
+                    ic_inx.seek(INT_SIZE)
+                    cached_table[0] = iovalue.input_value(ic_inx)
+                ai = cached_table[0][i]
+
+        result = list(ai) if isinstance(ai, (list, tuple)) else []
+
+        if i in patches_h_name:
+            patch_list = patches_h_name[i]
+            for ip in patch_list:
+                if ip not in result:
+                    result.append(ip)
+
+        return result
+
+    return lookup
+
+def new_persons_of_first_name_or_surname(cmp_str: Callable[[BaseData, str, str], int],
+                                          cmp_istr: Callable[[BaseData, int, int], int],
+                                          base_data: BaseData, proj: Callable[[DskPerson], int],
+                                          person_patches: Dict[int, DskPerson], names_inx: str,
+                                          names_dat: str, bname: str) -> StringPersonIndex:
+    fname_dat = os.path.join(bname, names_dat)
+    bt_cache = [None]
+    patched_cache = [None]
+
+    def load_bt() -> List[Tuple[int, int]]:
+        if bt_cache[0] is None:
+            fname_inx = os.path.join(bname, names_inx)
+            with secure.open_in_bin(fname_inx) as ic_inx:
+                bt_cache[0] = iovalue.input_value(ic_inx)
+        return bt_cache[0]
+
+    def load_patched() -> List[Tuple[int, List[int]]]:
+        if patched_cache[0] is None:
+            ht = {}
+            for iper, p in person_patches.items():
+                k = proj(p)
+                if k not in ht:
+                    ht[k] = []
+            a = [(k, v) for k, v in ht.items()]
+            a.sort(key=lambda x: (cmp_istr(base_data, x[0], x[0]), x[0]))
+            patched_cache[0] = a
+        return patched_cache[0]
+
+    def find(istr: int) -> List[int]:
+        ipera = []
+        try:
+            bt = load_bt()
+            s = base_data.strings.get(istr)
+
+            def cmp_entry(entry):
+                k, _ = entry
+                if k == istr:
+                    return 0
+                return cmp_str(base_data, s, base_data.strings.get(k))
+
+            pos = bt[binary_search(bt, cmp_entry)][1]
+            with secure.open_in_bin(fname_dat) as ic_dat:
+                ic_dat.seek(pos)
+                length = input_binary_int(ic_dat)
+                for _ in range(length):
+                    iper = input_binary_int(ic_dat)
+                    ipera.append(iper)
+        except (KeyError, FileNotFoundError):
+            pass
+
+        patched_ipers = [i for i in person_patches.keys()]
+        ipera = [i for i in ipera if i not in patched_ipers]
+
+        for i, p in person_patches.items():
+            istr1 = proj(p)
+            if istr1 == istr and i not in ipera:
+                ipera.append(i)
+
+        return ipera
+
+    def cursor(s: str) -> int:
+        bt = load_bt()
+        patched = load_patched()
+
+        def cmp_bt(entry):
+            k, _ = entry
+            return cmp_str(base_data, s, base_data.strings.get(k))
+
+        istr1 = -1
+        try:
+            istr1 = bt[binary_search_key_after(bt, cmp_bt)][0]
+        except (KeyError, IndexError):
+            pass
+
+        istr2 = -1
+        try:
+            istr2 = patched[binary_search_key_after(patched, cmp_bt)][0]
+        except (KeyError, IndexError):
+            pass
+
+        if istr2 == -1:
+            if istr1 == -1:
+                raise KeyError("Not found")
+            return istr1
+        elif istr1 == -1:
+            return istr2
+        elif istr1 == istr2:
+            return istr1
+        else:
+            c = cmp_str(base_data, base_data.strings.get(istr1), base_data.strings.get(istr2))
+            return istr1 if c < 0 else istr2
+
+    def next_istr(istr: int) -> int:
+        bt = load_bt()
+        patched = load_patched()
+        s = base_data.strings.get(istr)
+
+        def cmp_bt(entry):
+            k, _ = entry
+            if k == istr:
+                return 0
+            return cmp_str(base_data, s, base_data.strings.get(k))
+
+        istr1 = -1
+        try:
+            istr1 = bt[binary_search_next(bt, cmp_bt)][0]
+        except (KeyError, IndexError):
+            pass
+
+        istr2 = -1
+        try:
+            istr2 = patched[binary_search_next(patched, cmp_bt)][0]
+        except (KeyError, IndexError):
+            pass
+
+        if istr2 == -1:
+            if istr1 == -1:
+                raise KeyError("Not found")
+            return istr1
+        elif istr1 == -1:
+            return istr2
+        elif istr1 == istr2:
+            return istr1
+        else:
+            c = cmp_str(base_data, base_data.strings.get(istr1), base_data.strings.get(istr2))
+            return istr1 if c < 0 else istr2
+
+    return StringPersonIndex(find=find, cursor=cursor, next=next_istr)
+
+def persons_of_surname(version: BaseVersion, base_data: BaseData, person_patches: Dict[int, DskPerson],
+                       bname: str) -> StringPersonIndex:
+    if version == BaseVersion.GNWB0024 or version == BaseVersion.GNWB0023 or version == BaseVersion.GNWB0022 or version == BaseVersion.GNWB0021:
+        return new_persons_of_first_name_or_surname(
+            compare_snames, compare_snames_i, base_data,
+            lambda p: p.surname, person_patches, "snames.inx", "snames.dat", bname
+        )
+    else:
+        raise NotImplementedError("GnWb0020 surname index not implemented")
+
+def persons_of_first_name(version: BaseVersion, base_data: BaseData, person_patches: Dict[int, DskPerson],
+                           bname: str) -> StringPersonIndex:
+    if version == BaseVersion.GNWB0024:
+        return new_persons_of_first_name_or_surname(
+            lambda bd, s1, s2: compare_fnames(bd, s1, s2), compare_fnames_i, base_data,
+            lambda p: p.first_name, person_patches, "fnames.inx", "fnames.dat", bname
+        )
+    elif version == BaseVersion.GNWB0023 or version == BaseVersion.GNWB0022 or version == BaseVersion.GNWB0021:
+        return new_persons_of_first_name_or_surname(
+            compare_snames, compare_snames_i, base_data,
+            lambda p: p.first_name, person_patches, "fnames.inx", "fnames.dat", bname
+        )
+    else:
+        raise NotImplementedError("GnWb0020 firstname index not implemented")
+
 def make(bname: str, particles: List[str], arrays: Tuple[Any, Any, Any, BaseNotes],
          k: Callable[[DskBase], T]) -> T:
     raise NotImplementedError("make() not yet implemented")

@@ -1,4 +1,5 @@
 from typing import Any
+from lib import iovalue
 
 
 def array_forall(f, arr):
@@ -29,3 +30,7 @@ def sort_uniq(cmp, lst):
         if item != result[-1]:
             result.append(item)
     return result
+
+
+def output_value_no_sharing(oc, v: Any) -> None:
+    iovalue.output(oc, v)

@@ -2,7 +2,8 @@ import os
 import tempfile
 import struct
 from lib import database
-from lib.dbdisk import Perm, BaseVersion
+from lib import iovalue
+from lib.dbdisk import Perm, BaseVersion, BaseData, RecordAccess
 
 def test_check_magic():
     with tempfile.NamedTemporaryFile(mode='wb', delete=False) as f:
@@ -166,3 +167,77 @@ def test_make_record_access_with_patches():
     assert record.get(2) == 300
     assert record.get_nopending(1) == 200
     assert record.len == 3
+
+def test_name_index():
+    result = database.name_index("Smith")
+    assert isinstance(result, int)
+    assert 0 <= result < database.TABLE_SIZE
+
+    assert database.name_index("Smith") == database.name_index("Smith")
+
+def test_binary_search():
+    arr = [(1, 100), (3, 200), (5, 300), (7, 400)]
+
+    idx = database.binary_search(arr, lambda x: 0 if x[0] == 3 else (-1 if x[0] < 3 else 1))
+    assert idx == 1
+    assert arr[idx][0] == 3
+
+    try:
+        database.binary_search(arr, lambda x: 0 if x[0] == 4 else (-1 if x[0] < 4 else 1))
+        assert False, "Should raise KeyError"
+    except KeyError:
+        pass
+
+def test_binary_search_key_after():
+    arr = [(1, 100), (5, 200), (10, 300), (15, 400)]
+
+    idx = database.binary_search_key_after(arr, lambda x: -1 if 7 < x[0] else 1 if 7 > x[0] else 0)
+    assert arr[idx][0] == 10
+
+    idx = database.binary_search_key_after(arr, lambda x: 0 if x[0] == 1 else (1 if x[0] < 1 else -1))
+    assert arr[idx][0] == 1
+
+def test_binary_search_next():
+    arr = [(1, 100), (5, 200), (10, 300), (15, 400)]
+
+    idx = database.binary_search_next(arr, lambda x: -1 if 5 < x[0] else 1 if 5 > x[0] else 0)
+    assert arr[idx][0] == 10
+
+def test_compare_after_particle():
+    result = database.compare_after_particle(["de", "von"], "Smith", "Jones")
+    assert result != 0
+
+    result = database.compare_after_particle(["de", "von"], "de Smith", "Smith")
+    assert result == 0
+
+    result = database.compare_after_particle(["de"], "von Smith", "Smith")
+    assert result != 0
+
+def test_persons_of_name():
+    with tempfile.TemporaryDirectory() as tmpdir:
+        names_inx_file = os.path.join(tmpdir, "names.inx")
+        names_acc_file = os.path.join(tmpdir, "names.acc")
+
+        test_table = [[] for _ in range(database.TABLE_SIZE)]
+        test_table[0] = [1, 2, 3]
+        test_table[100] = [4, 5]
+
+        with open(names_inx_file, 'wb') as f:
+            f.write(struct.pack('>I', 0))
+            iovalue.output(f, test_table)
+
+        patches_h_name = {}
+
+        lookup = database.persons_of_name(tmpdir, patches_h_name)
+
+        test_str = ""
+        for s in ["test", "sample", "data"]:
+            if database.name_index(s) == 0:
+                test_str = s
+                break
+
+        if test_str:
+            result = lookup(test_str)
+            assert 1 in result
+            assert 2 in result
+            assert 3 in result
