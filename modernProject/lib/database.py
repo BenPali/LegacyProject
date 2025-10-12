@@ -176,7 +176,11 @@ def with_database(bname: str, k: Callable[[DskBase], T], read_only: bool = False
         if os.path.exists(base_acc_file):
             ic_acc = open(base_acc_file, 'rb')
 
-        bnotes = BaseNotes(norigin_file=norigin_file)
+        bnotes = BaseNotes(
+            nread=lambda fname, mode: "",
+            norigin_file=norigin_file,
+            efiles=lambda: []
+        )
 
         shift = 0
         im_persons = make_immut_record_access(

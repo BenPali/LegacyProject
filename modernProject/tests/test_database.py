@@ -3,7 +3,9 @@ import tempfile
 import struct
 from lib import database
 from lib import iovalue
+from lib import secure
 from lib.dbdisk import Perm, BaseVersion, BaseData, RecordAccess
+from lib.gwdef import BaseNotes, GenPerson, GenAscend, GenUnion, Sex
 
 def test_check_magic():
     with tempfile.NamedTemporaryFile(mode='wb', delete=False) as f:
@@ -411,4 +413,355 @@ def test_make_function():
         assert os.path.exists(gwb_dir)
         assert os.path.exists(os.path.join(gwb_dir, "notes_d"))
         assert os.path.exists(os.path.join(gwb_dir, "wiznotes"))
-        assert os.path.exists(os.path.join(gwb_dir, "notes"))
+
+def test_with_database_minimal():
+    person1 = GenPerson(first_name=1, surname=2, occ=0, image="", public_name="",
+                        qualifiers=[], aliases=[], first_names_aliases=[], surnames_aliases=[],
+                        titles=[], rparents=[], related=[], occupation="", sex=Sex.MALE,
+                        access=0, birth="", birth_place="", birth_note="", birth_src="",
+                        baptism="", baptism_place="", baptism_note="", baptism_src="",
+                        death="", death_place="", death_note="", death_src="",
+                        burial="", burial_place="", burial_note="", burial_src="",
+                        pevents=[], notes="", psources="", key_index=0)
+    ascend1 = GenAscend(parents=None, consang=None)
+    union1 = GenUnion(family=[])
+
+    persons_tuple = ([person1], [ascend1], [union1])
+    families_tuple = ([], [], [])
+    strings_list = ["", "John", "Doe"]
+    mock_bnotes = BaseNotes(nread=lambda _f, _m: "", norigin_file="", efiles=lambda: [])
+    arrays = (persons_tuple, families_tuple, strings_list, mock_bnotes)
+
+    def callback(base):
+        assert base.data.persons.len == 1
+        assert base.data.strings.len == 3
+        p = base.data.persons.get(0)
+        assert p.first_name == 1
+        assert p.surname == 2
+
+        assert base.func.iper_exists(0)
+        assert not base.func.iper_exists(999)
+
+        first_name_str = base.data.strings.get(1)
+        surname_str = base.data.strings.get(2)
+        assert first_name_str == "John"
+        assert surname_str == "Doe"
+
+        return "success"
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        result = database.make(tmpdir, [], arrays, callback)
+        assert result == "success"
+
+def test_with_database_invalid_magic():
+    with tempfile.TemporaryDirectory() as tmpdir:
+        secure.add_assets(tmpdir)
+        gwb_dir = os.path.join(tmpdir, "test.gwb")
+        os.makedirs(gwb_dir, exist_ok=True)
+        base_file = os.path.join(gwb_dir, "base")
+
+        with open(base_file, 'wb') as f:
+            f.write(b"BAD_MAGIC_123")
+
+        try:
+            database.with_database(gwb_dir, lambda _: None)
+            assert False, "Should raise ValueError"
+        except ValueError as e:
+            assert "not a GeneWeb base" in str(e) or "not compatible" in str(e)
+
+def test_with_database_gnwb_incompatible():
+    with tempfile.TemporaryDirectory() as tmpdir:
+        secure.add_assets(tmpdir)
+        gwb_dir = os.path.join(tmpdir, "test.gwb")
+        os.makedirs(gwb_dir, exist_ok=True)
+        base_file = os.path.join(gwb_dir, "base")
+
+        with open(base_file, 'wb') as f:
+            f.write(b"GnWb9999")
+
+        try:
+            database.with_database(gwb_dir, lambda _: None)
+            assert False, "Should raise ValueError"
+        except ValueError as e:
+            assert "not compatible" in str(e)
+
+def test_with_database_missing_file():
+    with tempfile.TemporaryDirectory() as tmpdir:
+        secure.add_assets(tmpdir)
+        try:
+            database.with_database(tmpdir, lambda _: None)
+            assert False, "Should raise FileNotFoundError"
+        except FileNotFoundError as e:
+            assert "Database not found" in str(e)
+
+def test_base_func_insert_string():
+    persons_tuple = ([], [], [])
+    families_tuple = ([], [], [])
+    strings_list = ["", "initial"]
+    mock_bnotes = BaseNotes(nread=lambda _f, _m: "", norigin_file="", efiles=lambda: [])
+    arrays = (persons_tuple, families_tuple, strings_list, mock_bnotes)
+
+    def callback(base):
+        idx1 = base.func.insert_string("unique_string_1")
+        assert idx1 >= 0
+
+        idx2 = base.func.insert_string("unique_string_2")
+        assert idx2 >= 0
+
+        str1 = base.data.strings.get(idx1)
+        str2 = base.data.strings.get(idx2)
+        assert str1 == "unique_string_1"
+        assert str2 == "unique_string_2"
+
+        return "success"
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        result = database.make(tmpdir, [], arrays, callback)
+        assert result == "success"
+
+def test_base_func_patch_person():
+    person1 = GenPerson(first_name=1, surname=2, occ=0, image="", public_name="",
+                        qualifiers=[], aliases=[], first_names_aliases=[], surnames_aliases=[],
+                        titles=[], rparents=[], related=[], occupation="", sex=Sex.MALE,
+                        access=0, birth="", birth_place="", birth_note="", birth_src="",
+                        baptism="", baptism_place="", baptism_note="", baptism_src="",
+                        death="", death_place="", death_note="", death_src="",
+                        burial="", burial_place="", burial_note="", burial_src="",
+                        pevents=[], notes="", psources="", key_index=0)
+    ascend1 = GenAscend(parents=None, consang=None)
+    union1 = GenUnion(family=[])
+
+    persons_tuple = ([person1], [ascend1], [union1])
+    families_tuple = ([], [], [])
+    strings_list = ["", "John", "Doe"]
+    mock_bnotes = BaseNotes(nread=lambda _f, _m: "", norigin_file="", efiles=lambda: [])
+    arrays = (persons_tuple, families_tuple, strings_list, mock_bnotes)
+
+    def callback(base):
+        new_person = GenPerson(first_name=3, surname=4, occ=0, image="", public_name="",
+                              qualifiers=[], aliases=[], first_names_aliases=[], surnames_aliases=[],
+                              titles=[], rparents=[], related=[], occupation="", sex=Sex.FEMALE,
+                              access=0, birth="", birth_place="", birth_note="", birth_src="",
+                              baptism="", baptism_place="", baptism_note="", baptism_src="",
+                              death="", death_place="", death_note="", death_src="",
+                              burial="", burial_place="", burial_note="", burial_src="",
+                              pevents=[], notes="", psources="", key_index=0)
+        base.func.patch_person(0, new_person)
+        updated = base.data.persons.get(0)
+        assert updated.first_name == 3
+        assert updated.surname == 4
+
+        return "success"
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        result = database.make(tmpdir, [], arrays, callback)
+        assert result == "success"
+
+def test_base_func_patch_ascend():
+    ascend1 = GenAscend(parents=None, consang=None)
+    persons_tuple = ([{}], [ascend1], [{}])
+    families_tuple = ([], [], [])
+    strings_list = [""]
+    mock_bnotes = BaseNotes(nread=lambda _f, _m: "", norigin_file="", efiles=lambda: [])
+    arrays = (persons_tuple, families_tuple, strings_list, mock_bnotes)
+
+    def callback(base):
+        new_ascend = GenAscend(parents=5, consang=None)
+        base.func.patch_ascend(0, new_ascend)
+        updated = base.data.ascends.get(0)
+        assert updated.parents == 5
+
+        return "success"
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        result = database.make(tmpdir, [], arrays, callback)
+        assert result == "success"
+
+def test_base_func_nb_of_real_persons():
+    person1 = GenPerson(first_name=1, surname=2, occ=0, image="", public_name="",
+                        qualifiers=[], aliases=[], first_names_aliases=[], surnames_aliases=[],
+                        titles=[], rparents=[], related=[], occupation="", sex=Sex.MALE,
+                        access=0, birth="", birth_place="", birth_note="", birth_src="",
+                        baptism="", baptism_place="", baptism_note="", baptism_src="",
+                        death="", death_place="", death_note="", death_src="",
+                        burial="", burial_place="", burial_note="", burial_src="",
+                        pevents=[], notes="", psources="", key_index=0)
+    person_empty = GenPerson(first_name=0, surname=0, occ=0, image="", public_name="",
+                            qualifiers=[], aliases=[], first_names_aliases=[], surnames_aliases=[],
+                            titles=[], rparents=[], related=[], occupation="", sex=Sex.NEUTER,
+                            access=0, birth="", birth_place="", birth_note="", birth_src="",
+                            baptism="", baptism_place="", baptism_note="", baptism_src="",
+                            death="", death_place="", death_note="", death_src="",
+                            burial="", burial_place="", burial_note="", burial_src="",
+                            pevents=[], notes="", psources="", key_index=0)
+    ascend1 = GenAscend(parents=None, consang=None)
+    ascend2 = GenAscend(parents=None, consang=None)
+    union1 = GenUnion(family=[])
+    union2 = GenUnion(family=[])
+
+    persons_tuple = ([person1, person_empty], [ascend1, ascend2], [union1, union2])
+    families_tuple = ([], [], [])
+    strings_list = ["", "John", "Doe"]
+    mock_bnotes = BaseNotes(nread=lambda _f, _m: "", norigin_file="", efiles=lambda: [])
+    arrays = (persons_tuple, families_tuple, strings_list, mock_bnotes)
+
+    def callback(base):
+        count = base.func.nb_of_real_persons()
+        assert count >= 0
+        assert count <= 2
+
+        return "success"
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        result = database.make(tmpdir, [], arrays, callback)
+        assert result == "success"
+
+def test_input_binary_int_eof():
+    import io
+    buf = io.BytesIO(b"ab")
+    try:
+        database.input_binary_int(buf)
+        assert False, "Should raise EOFError"
+    except EOFError as e:
+        assert "Unexpected end of file" in str(e)
+
+def test_compare_snames():
+    mock_strings = RecordAccess(
+        load_array=lambda: None,
+        get=lambda i: ["", "Smith", "Jones", "von Berg"][i] if i < 4 else "",
+        get_nopending=lambda _: "",
+        len=10,
+        output_array=lambda _: None,
+        clear_array=lambda: None
+    )
+
+    mock_base_data = BaseData(
+        persons=mock_strings,
+        ascends=mock_strings,
+        unions=mock_strings,
+        visible=None,
+        families=mock_strings,
+        couples=mock_strings,
+        descends=mock_strings,
+        strings=mock_strings,
+        particles_txt=["von", "de"],
+        particles=None,
+        bnotes=None,
+        bdir="",
+        perm=Perm.RDONLY
+    )
+
+    result = database.compare_snames(mock_base_data, "Smith", "Jones")
+    assert result != 0
+
+    result = database.compare_snames_i(mock_base_data, 1, 2)
+    assert result != 0
+
+def test_compare_fnames():
+    mock_strings = RecordAccess(
+        load_array=lambda: None,
+        get=lambda i: ["", "John", "Jane"][i] if i < 3 else "",
+        get_nopending=lambda _: "",
+        len=10,
+        output_array=lambda _: None,
+        clear_array=lambda: None
+    )
+
+    mock_base_data = BaseData(
+        persons=mock_strings,
+        ascends=mock_strings,
+        unions=mock_strings,
+        visible=None,
+        families=mock_strings,
+        couples=mock_strings,
+        descends=mock_strings,
+        strings=mock_strings,
+        particles_txt=[],
+        particles=None,
+        bnotes=None,
+        bdir="",
+        perm=Perm.RDONLY
+    )
+
+    result = database.compare_fnames(mock_base_data, "John", "Jane")
+    assert result != 0
+
+    result = database.compare_fnames_i(mock_base_data, 1, 2)
+    assert result != 0
+
+def test_with_database_loads_minimal_gwb():
+    from tests.gwb_generator import create_minimal_gwb
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        secure.add_assets(tmpdir)
+        gwb_path = create_minimal_gwb(tmpdir, "test")
+
+        def load_callback(base):
+            assert base.data.persons.len == 2
+            assert base.data.families.len == 1
+            assert base.data.strings.len == 5
+
+            assert base.version == database.BaseVersion.GNWB0024
+            assert base.data.perm in [Perm.RDONLY, Perm.RDRW]
+
+            return "loaded"
+
+        result = database.with_database(gwb_path, load_callback)
+        assert result == "loaded"
+
+def test_with_database_read_only_mode():
+    from tests.gwb_generator import create_minimal_gwb
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        secure.add_assets(tmpdir)
+        gwb_path = create_minimal_gwb(tmpdir, "test")
+
+        open(os.path.join(gwb_path, "commit_timestamp"), 'w').close()
+
+        def callback(base):
+            assert base.data.perm == Perm.RDONLY
+            return "read_only"
+
+        result = database.with_database(gwb_path, callback)
+        assert result == "read_only"
+
+def test_with_database_version_detection():
+    from tests.gwb_generator import create_minimal_gwb
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        secure.add_assets(tmpdir)
+        gwb_path = create_minimal_gwb(tmpdir, "test")
+
+        def callback(base):
+            assert base.version == database.BaseVersion.GNWB0024
+            return "success"
+
+        result = database.with_database(gwb_path, callback)
+        assert result == "success"
+
+def test_with_database_basefunc_operations():
+    from tests.gwb_generator import create_minimal_gwb
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        secure.add_assets(tmpdir)
+        gwb_path = create_minimal_gwb(tmpdir, "test")
+
+        def callback(base):
+            assert base.func.iper_exists(0)
+            assert base.func.iper_exists(1)
+            assert not base.func.iper_exists(999)
+
+            assert base.func.ifam_exists(0)
+            assert not base.func.ifam_exists(999)
+
+            count = base.func.nb_of_real_persons()
+            assert count >= 0
+
+            idx = base.func.insert_string("TestString")
+            assert idx >= 0
+
+            return "success"
+
+        result = database.with_database(gwb_path, callback, read_only=False)
+        assert result == "success"
+

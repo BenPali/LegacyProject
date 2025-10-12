@@ -2,9 +2,11 @@ import os
 import tempfile
 import io
 from lib import outbase
-from lib.gwdef import BaseNotes
 from lib import database
-from lib.dbdisk import RecordAccess
+from lib import iovalue
+from lib import secure
+from lib.gwdef import BaseNotes, GenPerson, GenAscend, GenUnion, GenFamily, GenCouple, GenDescend, Sex
+from lib.dbdisk import RecordAccess, BaseData, Perm
 
 def test_is_prime():
     assert outbase.is_prime(2)
@@ -252,3 +254,4 @@ def test_dsk_person_misc_names():
     assert isinstance(names, list)
     assert len(names) > 0
     assert "John Smith" in names
+
