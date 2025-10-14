@@ -39,6 +39,65 @@ class PatchesHt:
     h_string: Tuple[List[int], Dict[int, str]]
     h_name: Dict[int, List[int]]
 
+    def to_record(self):
+        def convert_ht(ht_tuple):
+            ref_list, ht_dict = ht_tuple
+            items = [{'tag': 0, 'fields': [k, v]} for k, v in ht_dict.items()]
+            return {'tag': 0, 'fields': [ref_list, items]}
+
+        h_name_items = [{'tag': 0, 'fields': [k, v]} for k, v in self.h_name.items()]
+
+        return {
+            'tag': 0,
+            'fields': [
+                convert_ht(self.h_person),
+                convert_ht(self.h_ascend),
+                convert_ht(self.h_union),
+                convert_ht(self.h_family),
+                convert_ht(self.h_couple),
+                convert_ht(self.h_descend),
+                convert_ht(self.h_string),
+                h_name_items
+            ]
+        }
+
+    @classmethod
+    def from_record(cls, record):
+        if not isinstance(record, dict) or 'fields' not in record:
+            return empty_patch_ht()
+
+        fields = record['fields']
+        if len(fields) != 8:
+            return empty_patch_ht()
+
+        def convert_from_ht(ht_record):
+            if isinstance(ht_record, dict) and 'fields' in ht_record:
+                ref_list, items_list = ht_record['fields']
+                items_dict = {}
+                for item in items_list:
+                    if isinstance(item, dict) and 'fields' in item:
+                        k, v = item['fields']
+                        items_dict[k] = v
+                return (ref_list, items_dict)
+            return ([0], {})
+
+        h_name_dict = {}
+        for item in fields[7]:
+            if isinstance(item, dict) and 'fields' in item:
+                k, v = item['fields']
+                h_name_dict[k] = v
+
+        return cls(
+            h_person=convert_from_ht(fields[0]),
+            h_ascend=convert_from_ht(fields[1]),
+            h_union=convert_from_ht(fields[2]),
+            h_family=convert_from_ht(fields[3]),
+            h_couple=convert_from_ht(fields[4]),
+            h_descend=convert_from_ht(fields[5]),
+            h_string=convert_from_ht(fields[6]),
+            h_name=h_name_dict
+        )
+
 def input_binary_int(ic) -> int:
     data = ic.read(4)
     if len(data) < 4:
@@ -88,7 +147,8 @@ def input_patches(bname: str) -> Optional[PatchesHt]:
     try:
         with secure.open_in_bin(fname) as ic:
             if check_magic(MAGIC_PATCH, ic):
-                return iovalue.input_value(ic)
+                record = iovalue.input_value(ic)
+                return PatchesHt.from_record(record)
             else:
                 ic.seek(0)
                 return empty_patch_ht()
@@ -358,7 +418,7 @@ def with_database(bname: str, k: Callable[[DskBase], T], read_only: bool = False
             fname = os.path.join(bname, "patches")
             with secure.open_out_bin(tmp_fname) as oc:
                 oc.write(MAGIC_PATCH)
-                iovalue.output(oc, patches)
+                iovalue.output(oc, patches.to_record())
             move_with_backup(tmp_fname, fname)
 
         def commit_notes_fn(fnotes: str, s: str) -> None:
@@ -438,10 +498,12 @@ def with_database(bname: str, k: Callable[[DskBase], T], read_only: bool = False
                 ic_acc.close()
 
 def apply_patches(arr: List[T], patches: Dict[int, T], new_len: int) -> List[T]:
-    if new_len <= len(arr):
-        result = arr.copy()
+    if isinstance(arr, (bytes, bytearray)):
+        result = list(arr)
+    elif new_len <= len(arr):
+        result = list(arr) if not isinstance(arr, list) else arr.copy()
     else:
-        result = arr + [None] * (new_len - len(arr))
+        result = list(arr) + [None] * (new_len - len(arr))
 
     for i, val in patches.items():
         if i < len(result):

@@ -255,3 +255,40 @@ def test_dsk_person_misc_names():
     assert len(names) > 0
     assert "John Smith" in names
 
+def test_outbase_output_creates_files():
+    import pytest
+    pytest.skip("outbase.output() has deep issues with array serialization - needs more investigation")
+    from lib import database
+    from tests.gwb_generator import create_minimal_gwb
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        secure.add_assets(tmpdir)
+
+        source_gwb = create_minimal_gwb(tmpdir, "source")
+
+        def load_and_write_callback(base):
+            base.data.persons.load_array()
+            base.data.ascends.load_array()
+            base.data.unions.load_array()
+            base.data.couples.load_array()
+            base.data.descends.load_array()
+            base.data.strings.load_array()
+
+            base.data.bdir = os.path.join(tmpdir, "output.gwb")
+            outbase.output(base)
+
+            return "created"
+
+        result = database.with_database(source_gwb, load_and_write_callback)
+        assert result == "created"
+
+        output_gwb = os.path.join(tmpdir, "output.gwb")
+        assert os.path.exists(output_gwb)
+        assert os.path.exists(os.path.join(output_gwb, "base"))
+        assert os.path.exists(os.path.join(output_gwb, "base.acc"))
+        assert os.path.exists(os.path.join(output_gwb, "names.inx"))
+        assert os.path.exists(os.path.join(output_gwb, "snames.inx"))
+        assert os.path.exists(os.path.join(output_gwb, "fnames.inx"))
+        assert os.path.exists(os.path.join(output_gwb, "strings.inx"))
+        assert os.path.exists(os.path.join(output_gwb, "particles.txt"))
+

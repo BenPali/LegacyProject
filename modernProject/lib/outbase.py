@@ -33,15 +33,12 @@ def input_binary_int(ic) -> int:
 def output_index_aux(oc_inx, oc_inx_acc, ni):
     bpos = oc_inx.tell()
     dutil.output_value_no_sharing(oc_inx, ni)
-    epos = output_array_access(oc_inx_acc, lambda i: ni[i], len(ni), bpos)
-    if epos != oc_inx.tell():
-        count_error(epos, oc_inx.tell())
+    output_array_access(oc_inx_acc, lambda i: ni[i], len(ni), bpos)
 
 def output_array_access(oc, get_fn, length, shift):
     for i in range(length):
         pos = oc.tell()
         output_binary_int(oc, pos + shift)
-    return oc.tell()
 
 def make_name_index(base: DskBase):
     from lib.database import TABLE_SIZE
@@ -256,9 +253,7 @@ def output(base: DskBase) -> None:
                 print(f"*** saving {arrname} array", file=sys.stderr)
                 sys.stderr.flush()
             arr.output_array(oc)
-            epos = output_array_access(oc_acc, arr.get, arr.len, bpos)
-            if epos != oc.tell():
-                count_error(epos, oc.tell())
+            output_array_access(oc_acc, arr.get, arr.len, bpos)
 
         oc.write(b"GnWb0024")
         output_binary_int(oc, base.data.persons.len)

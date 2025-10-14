@@ -2,6 +2,8 @@ import os
 from lib import database
 from lib import iovalue
 from lib import secure
+from lib import name
+from lib import dutil
 
 def create_minimal_gwb(base_dir, db_name="test"):
     gwb_path = os.path.join(base_dir, f"{db_name}.gwb")
@@ -46,7 +48,7 @@ def create_minimal_gwb(base_dir, db_name="test"):
 
     unions = [
         {'tag': 0, 'fields': [[0]]},
-        {'tag': 0, 'fields': [[0]]}
+        {'tag': 0, 'fields': [[]]}
     ]
 
     families = [
@@ -85,20 +87,48 @@ def create_minimal_gwb(base_dir, db_name="test"):
 
         iovalue.output(f, "")
 
-        persons_pos = f.tell()
-        iovalue.output(f, persons)
-        ascends_pos = f.tell()
-        iovalue.output(f, ascends)
-        unions_pos = f.tell()
-        iovalue.output(f, unions)
-        families_pos = f.tell()
-        iovalue.output(f, families)
-        couples_pos = f.tell()
-        iovalue.output(f, couples)
-        descends_pos = f.tell()
-        iovalue.output(f, descends)
-        strings_pos = f.tell()
-        iovalue.output(f, strings)
+        persons_offsets = []
+        for person in persons:
+            persons_offsets.append(f.tell())
+            iovalue.output(f, person)
+
+        ascends_offsets = []
+        for ascend in ascends:
+            ascends_offsets.append(f.tell())
+            iovalue.output(f, ascend)
+
+        unions_offsets = []
+        for union in unions:
+            unions_offsets.append(f.tell())
+            iovalue.output(f, union)
+
+        families_offsets = []
+        for family in families:
+            families_offsets.append(f.tell())
+            iovalue.output(f, family)
+
+        couples_offsets = []
+        for couple in couples:
+            couples_offsets.append(f.tell())
+            iovalue.output(f, couple)
+
+        descends_offsets = []
+        for descend in descends:
+            descends_offsets.append(f.tell())
+            iovalue.output(f, descend)
+
+        strings_offsets = []
+        for string in strings:
+            strings_offsets.append(f.tell())
+            iovalue.output(f, string)
+
+        persons_pos = persons_offsets[0] if persons_offsets else f.tell()
+        ascends_pos = ascends_offsets[0] if ascends_offsets else f.tell()
+        unions_pos = unions_offsets[0] if unions_offsets else f.tell()
+        families_pos = families_offsets[0] if families_offsets else f.tell()
+        couples_pos = couples_offsets[0] if couples_offsets else f.tell()
+        descends_pos = descends_offsets[0] if descends_offsets else f.tell()
+        strings_pos = strings_offsets[0] if strings_offsets else f.tell()
 
         f.seek(header_end)
         database.output_binary_int(f, persons_pos)
@@ -111,19 +141,95 @@ def create_minimal_gwb(base_dir, db_name="test"):
 
     base_acc_file = os.path.join(gwb_path, "base.acc")
     with open(base_acc_file, 'wb') as f:
-        for _ in range(persons_len):
-            database.output_binary_int(f, 0)
-        for _ in range(persons_len):
-            database.output_binary_int(f, 0)
-        for _ in range(persons_len):
-            database.output_binary_int(f, 0)
-        for _ in range(families_len):
-            database.output_binary_int(f, 0)
-        for _ in range(families_len):
-            database.output_binary_int(f, 0)
-        for _ in range(families_len):
-            database.output_binary_int(f, 0)
-        for _ in range(strings_len):
-            database.output_binary_int(f, 0)
+        for offset in persons_offsets:
+            database.output_binary_int(f, offset)
+        for offset in ascends_offsets:
+            database.output_binary_int(f, offset)
+        for offset in unions_offsets:
+            database.output_binary_int(f, offset)
+        for offset in families_offsets:
+            database.output_binary_int(f, offset)
+        for offset in couples_offsets:
+            database.output_binary_int(f, offset)
+        for offset in descends_offsets:
+            database.output_binary_int(f, offset)
+        for offset in strings_offsets:
+            database.output_binary_int(f, offset)
+
+    generate_name_indexes(gwb_path, persons, strings)
 
     return gwb_path
+
+def generate_name_indexes(gwb_path, persons, strings):
+    names_inx_file = os.path.join(gwb_path, "names.inx")
+    snames_inx_file = os.path.join(gwb_path, "snames.inx")
+    snames_dat_file = os.path.join(gwb_path, "snames.dat")
+    fnames_inx_file = os.path.join(gwb_path, "fnames.inx")
+    fnames_dat_file = os.path.join(gwb_path, "fnames.dat")
+
+    names_table = [[] for _ in range(database.TABLE_SIZE)]
+    snames_table = {}
+    fnames_table = {}
+
+    for i, person in enumerate(persons):
+        if isinstance(person, dict) and 'fields' in person:
+            fields = person['fields']
+            fname_idx = fields[0] if len(fields) > 0 else 0
+            sname_idx = fields[1] if len(fields) > 1 else 0
+        elif isinstance(person, list):
+            fname_idx = person[0] if len(person) > 0 else 0
+            sname_idx = person[1] if len(person) > 1 else 0
+        else:
+            continue
+
+        if fname_idx >= len(strings) or sname_idx >= len(strings):
+            continue
+
+        fname = strings[fname_idx] if isinstance(strings[fname_idx], str) else strings[fname_idx].decode('utf-8', errors='ignore')
+        sname = strings[sname_idx] if isinstance(strings[sname_idx], str) else strings[sname_idx].decode('utf-8', errors='ignore')
+
+        if fname and sname and fname != "?" and sname != "?":
+            full_name = f"{fname} {sname}"
+            idx = hash(name.crush_lower(full_name)) % database.TABLE_SIZE
+            if i not in names_table[idx]:
+                names_table[idx].append(i)
+
+            if sname_idx not in snames_table:
+                snames_table[sname_idx] = []
+            if i not in snames_table[sname_idx]:
+                snames_table[sname_idx].append(i)
+
+            if fname_idx not in fnames_table:
+                fnames_table[fname_idx] = []
+            if i not in fnames_table[fname_idx]:
+                fnames_table[fname_idx].append(i)
+
+    with open(names_inx_file, 'wb') as f:
+        database.output_binary_int(f, 0)
+        iovalue.output(f, names_table)
+
+    snames_bt = sorted(snames_table.items(), key=lambda x: strings[x[0]] if x[0] < len(strings) else "")
+    with open(snames_dat_file, 'wb') as f:
+        snames_inx_data = []
+        for istr, ipers in snames_bt:
+            pos = f.tell()
+            database.output_binary_int(f, len(ipers))
+            for ip in ipers:
+                database.output_binary_int(f, ip)
+            snames_inx_data.append([istr, pos])
+
+    with open(snames_inx_file, 'wb') as f:
+        iovalue.output(f, snames_inx_data)
+
+    fnames_bt = sorted(fnames_table.items(), key=lambda x: strings[x[0]] if x[0] < len(strings) else "")
+    with open(fnames_dat_file, 'wb') as f:
+        fnames_inx_data = []
+        for istr, ipers in fnames_bt:
+            pos = f.tell()
+            database.output_binary_int(f, len(ipers))
+            for ip in ipers:
+                database.output_binary_int(f, ip)
+            fnames_inx_data.append([istr, pos])
+
+    with open(fnames_inx_file, 'wb') as f:
+        iovalue.output(f, fnames_inx_data)

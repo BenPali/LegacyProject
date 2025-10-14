@@ -232,6 +232,9 @@ def output_loop(ofuns: OutFuns, oc: BinaryIO, x: Any) -> None:
         for field in fields:
             output_loop(ofuns, oc, field)
 
+    elif x is None:
+        output_block_header(ofuns, oc, 0, 0)
+
     else:
         raise TypeError(f"Unsupported type for output: {type(x)}")
 

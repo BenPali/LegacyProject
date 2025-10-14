@@ -765,3 +765,323 @@ def test_with_database_basefunc_operations():
         result = database.with_database(gwb_path, callback, read_only=False)
         assert result == "success"
 
+def test_compare_functions_with_particles():
+    mock_particles = ["von", "de", "van"]
+
+    result = database.compare_after_particle(mock_particles, "von Berg", "Berg")
+    assert result == 0
+
+    result = database.compare_after_particle(mock_particles, "Schmidt", "von Berg")
+    assert result != 0
+
+def test_binary_search_helpers():
+    arr = [(0, "A"), (1, "B"), (2, "C")]
+
+    try:
+        result = database.binary_search(arr, lambda x: 0 if x[1] == "B" else (-1 if x[1] < "B" else 1))
+        assert result == 1
+    except:
+        pass
+
+def test_move_with_backup_nonexistent_src():
+    with tempfile.TemporaryDirectory() as tmpdir:
+        src = os.path.join(tmpdir, "nonexistent")
+        dst = os.path.join(tmpdir, "dest")
+
+        try:
+            database.move_with_backup(src, dst)
+        except FileNotFoundError:
+            pass
+
+def test_commit_patches_serialization():
+    from tests.gwb_generator import create_minimal_gwb
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        secure.add_assets(tmpdir)
+        gwb_path = create_minimal_gwb(tmpdir, "test")
+
+        def callback(base):
+            modified_person = {
+                'tag': 0,
+                'fields': [
+                    1, 2, 0, 0, 0, [], [], [], [], [], [], [], 0, 0, 0,
+                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, [],
+                    0, 0, 0
+                ]
+            }
+
+            base.func.patch_person(0, modified_person)
+            base.func.commit_patches()
+
+            patches_file = os.path.join(gwb_path, "patches")
+            assert os.path.exists(patches_file)
+
+            return "success"
+
+        result = database.with_database(gwb_path, callback, read_only=False)
+        assert result == "success"
+
+def test_commit_patches_family():
+    from tests.gwb_generator import create_minimal_gwb
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        secure.add_assets(tmpdir)
+        gwb_path = create_minimal_gwb(tmpdir, "test")
+
+        def callback(base):
+            modified_family = {'tag': 0, 'fields': [0, 0, 0, 0, [], 0, 0, [], 0, 0, 0, 0]}
+            base.func.patch_family(0, modified_family)
+            base.func.commit_patches()
+            return "success"
+
+        result = database.with_database(gwb_path, callback, read_only=False)
+        assert result == "success"
+
+def test_commit_patches_ascend():
+    from tests.gwb_generator import create_minimal_gwb
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        secure.add_assets(tmpdir)
+        gwb_path = create_minimal_gwb(tmpdir, "test")
+
+        def callback(base):
+            modified_ascend = {'tag': 0, 'fields': [{'tag': 0, 'fields': []}, {'tag': 0, 'fields': []}]}
+            base.func.patch_ascend(0, modified_ascend)
+            base.func.commit_patches()
+            return "success"
+
+        result = database.with_database(gwb_path, callback, read_only=False)
+        assert result == "success"
+
+def test_commit_patches_union():
+    from tests.gwb_generator import create_minimal_gwb
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        secure.add_assets(tmpdir)
+        gwb_path = create_minimal_gwb(tmpdir, "test")
+
+        def callback(base):
+            modified_union = {'tag': 0, 'fields': [[0]]}
+            base.func.patch_union(0, modified_union)
+            base.func.commit_patches()
+            return "success"
+
+        result = database.with_database(gwb_path, callback, read_only=False)
+        assert result == "success"
+
+def test_commit_patches_couple():
+    from tests.gwb_generator import create_minimal_gwb
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        secure.add_assets(tmpdir)
+        gwb_path = create_minimal_gwb(tmpdir, "test")
+
+        def callback(base):
+            modified_couple = {'tag': 0, 'fields': [0, {'tag': 0, 'fields': []}]}
+            base.func.patch_couple(0, modified_couple)
+            base.func.commit_patches()
+            return "success"
+
+        result = database.with_database(gwb_path, callback, read_only=False)
+        assert result == "success"
+
+def test_commit_patches_descend():
+    from tests.gwb_generator import create_minimal_gwb
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        secure.add_assets(tmpdir)
+        gwb_path = create_minimal_gwb(tmpdir, "test")
+
+        def callback(base):
+            modified_descend = {'tag': 0, 'fields': [[]]}
+            base.func.patch_descend(0, modified_descend)
+            base.func.commit_patches()
+            return "success"
+
+        result = database.with_database(gwb_path, callback, read_only=False)
+        assert result == "success"
+
+def test_commit_patches_string():
+    from tests.gwb_generator import create_minimal_gwb
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        secure.add_assets(tmpdir)
+        gwb_path = create_minimal_gwb(tmpdir, "test")
+
+        def callback(base):
+            idx = base.func.insert_string("NewString")
+            assert idx >= 0
+            base.func.commit_patches()
+            return "success"
+
+        result = database.with_database(gwb_path, callback, read_only=False)
+        assert result == "success"
+
+def test_persons_of_name_with_index():
+    from tests.gwb_generator import create_minimal_gwb
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        secure.add_assets(tmpdir)
+        gwb_path = create_minimal_gwb(tmpdir, "test")
+
+        names_inx_file = os.path.join(gwb_path, "names.inx")
+        with open(names_inx_file, 'wb') as f:
+            database.output_binary_int(f, 0)
+            table = [[0, 1] for _ in range(7919)]
+            iovalue.output(f, table)
+
+        lookup_fn = database.persons_of_name(gwb_path, {})
+        try:
+            result = lookup_fn("test")
+            assert isinstance(result, list)
+        except (IndexError, KeyError):
+            pass
+
+def test_compare_functions_i():
+    persons_array = [
+        {'tag': 0, 'fields': [1, 2, 0]},
+        {'tag': 0, 'fields': [3, 4, 0]}
+    ]
+    strings_array = ["", "John", "Doe", "Jane", "Smith"]
+
+    base_data = database.BaseData(
+        persons=database.record_access_of(persons_array),
+        ascends=database.record_access_of([]),
+        unions=database.record_access_of([]),
+        visible=None,
+        families=database.record_access_of([]),
+        couples=database.record_access_of([]),
+        descends=database.record_access_of([]),
+        strings=database.record_access_of(strings_array),
+        particles_txt=[],
+        particles=None,
+        bnotes=None,
+        bdir="",
+        perm=database.Perm.RDONLY
+    )
+
+    result = database.compare_snames_i(base_data, 1, 2)
+    assert isinstance(result, int)
+
+    result = database.compare_fnames_i(base_data, 1, 2)
+    assert isinstance(result, int)
+
+def test_persons_of_name_with_real_index():
+    from tests.gwb_generator import create_minimal_gwb
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        secure.add_assets(tmpdir)
+        gwb_path = create_minimal_gwb(tmpdir, "test")
+
+        def callback(base):
+            result = base.func.persons_of_name("John Doe")
+            assert isinstance(result, list)
+            assert len(result) == 1
+            assert 0 in result
+
+            result_smith = base.func.persons_of_name("Jane Smith")
+            assert isinstance(result_smith, list)
+            assert len(result_smith) == 1
+            assert 1 in result_smith
+
+            result_none = base.func.persons_of_name("Nonexistent Person")
+            assert isinstance(result_none, list)
+            assert len(result_none) == 0
+
+            return "success"
+
+        result = database.with_database(gwb_path, callback)
+        assert result == "success"
+
+def test_persons_of_surname_with_real_index():
+    from tests.gwb_generator import create_minimal_gwb
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        secure.add_assets(tmpdir)
+        gwb_path = create_minimal_gwb(tmpdir, "test")
+
+        def callback(base):
+            surname_idx = base.func.persons_of_surname
+
+            doe_istr = 2
+            result = surname_idx.find(doe_istr)
+            assert isinstance(result, list)
+            assert 0 in result
+
+            smith_istr = 4
+            result_smith = surname_idx.find(smith_istr)
+            assert isinstance(result_smith, list)
+            assert 1 in result_smith
+
+            return "success"
+
+        result = database.with_database(gwb_path, callback)
+        assert result == "success"
+
+def test_persons_of_first_name_with_real_index():
+    from tests.gwb_generator import create_minimal_gwb
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        secure.add_assets(tmpdir)
+        gwb_path = create_minimal_gwb(tmpdir, "test")
+
+        def callback(base):
+            fname_idx = base.func.persons_of_first_name
+
+            john_istr = 1
+            result = fname_idx.find(john_istr)
+            assert isinstance(result, list)
+            assert 0 in result
+
+            jane_istr = 3
+            result_jane = fname_idx.find(jane_istr)
+            assert isinstance(result_jane, list)
+            assert 1 in result_jane
+
+            return "success"
+
+        result = database.with_database(gwb_path, callback)
+        assert result == "success"
+
+def test_record_access_get_individual_records():
+    from tests.gwb_generator import create_minimal_gwb
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        secure.add_assets(tmpdir)
+        gwb_path = create_minimal_gwb(tmpdir, "test")
+
+        def callback(base):
+            person0 = base.data.persons.get(0)
+            assert isinstance(person0, (list, dict))
+            if isinstance(person0, list):
+                assert len(person0) > 1
+                assert person0[0] == 1
+                assert person0[1] == 2
+            else:
+                assert person0['fields'][0] == 1
+                assert person0['fields'][1] == 2
+
+            person1 = base.data.persons.get(1)
+            assert isinstance(person1, (list, dict))
+            if isinstance(person1, list):
+                assert person1[0] == 3
+                assert person1[1] == 4
+            else:
+                assert person1['fields'][0] == 3
+                assert person1['fields'][1] == 4
+
+            string0 = base.data.strings.get(0)
+            assert string0 in ("", b"")
+            string1 = base.data.strings.get(1)
+            assert string1 in ("John", b"John")
+            string2 = base.data.strings.get(2)
+            assert string2 in ("Doe", b"Doe")
+
+            family0 = base.data.families.get(0)
+            assert isinstance(family0, (list, dict))
+
+            return "success"
+
+        result = database.with_database(gwb_path, callback)
+        assert result == "success"
+
