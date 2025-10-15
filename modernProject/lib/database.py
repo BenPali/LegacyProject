@@ -907,9 +907,23 @@ def person_of_key(persons: RecordAccess, strings: RecordAccess,
 
     for ip in ipl:
         p = persons.get(ip)
-        p_first = name.lower(strings.get(p.first_name))
-        p_surname = name.lower(strings.get(p.surname))
-        if occ == p.occ and first_name_lower == p_first and surname_lower == p_surname:
+
+        p_first_idx = p.first_name if hasattr(p, 'first_name') else (p['first_name'] if isinstance(p, dict) else p[0])
+        p_surname_idx = p.surname if hasattr(p, 'surname') else (p['surname'] if isinstance(p, dict) else p[1])
+        p_occ = p.occ if hasattr(p, 'occ') else (p['occ'] if isinstance(p, dict) else p[2])
+
+        p_first_str = strings.get(p_first_idx)
+        p_surname_str = strings.get(p_surname_idx)
+
+        if isinstance(p_first_str, bytes):
+            p_first_str = p_first_str.decode('utf-8')
+        if isinstance(p_surname_str, bytes):
+            p_surname_str = p_surname_str.decode('utf-8')
+
+        p_first = name.lower(p_first_str)
+        p_surname = name.lower(p_surname_str)
+
+        if occ == p_occ and first_name_lower == p_first and surname_lower == p_surname:
             return ip
     return None
 
