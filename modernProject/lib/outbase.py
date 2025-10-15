@@ -11,6 +11,14 @@ from lib import filesystem
 
 verbose = False
 
+def get_person_field(p, field_name: str, field_index: int):
+    if hasattr(p, field_name):
+        return getattr(p, field_name)
+    elif isinstance(p, dict):
+        return p[field_name]
+    else:
+        return p[field_index]
+
 def trace(s: str) -> None:
     if verbose:
         print(f"*** {s}", file=sys.stderr)
@@ -22,6 +30,8 @@ def count_error(computed: int, found: int) -> None:
     sys.exit(2)
 
 def output_binary_int(oc, n: int) -> None:
+    if n < 0:
+        n = n & 0xFFFFFFFF
     oc.write(n.to_bytes(4, byteorder='big', signed=False))
 
 def input_binary_int(ic) -> int:
@@ -45,27 +55,35 @@ def make_name_index(base: DskBase):
     t = [[] for _ in range(TABLE_SIZE)]
     for i in range(base.data.persons.len):
         p = base.data.persons.get(i)
-        if hasattr(p, 'first_name'):
-            if p.first_name != 1 and p.surname != 1:
-                key_index = p.key_index if hasattr(p, 'key_index') else i
-                misc_names = dsk_person_misc_names(base, p)
-                indices = []
-                for n in misc_names:
-                    idx = dutil.name_index(n)
-                    if idx not in indices:
-                        indices.append(idx)
-                indices.sort()
-                for idx in indices:
-                    if key_index not in t[idx]:
-                        t[idx].append(key_index)
+        first_name = get_person_field(p, 'first_name', 0)
+        surname = get_person_field(p, 'surname', 1)
+        if first_name != 1 and surname != 1:
+            key_index = get_person_field(p, 'key_index', 34)
+            if key_index is None or key_index < 0:
+                key_index = i
+            misc_names = dsk_person_misc_names(base, p)
+            indices = []
+            for n in misc_names:
+                idx = dutil.name_index(n)
+                if idx not in indices:
+                    indices.append(idx)
+            indices.sort()
+            for idx in indices:
+                if key_index not in t[idx]:
+                    t[idx].append(key_index)
     return [list(x) for x in t]
 
 def dsk_person_misc_names(base: DskBase, p: DskPerson) -> List[str]:
     result = []
-    if hasattr(p, 'first_name'):
-        fn = base.data.strings.get(p.first_name)
-        sn = base.data.strings.get(p.surname)
-        result.append(f"{fn} {sn}")
+    first_name = get_person_field(p, 'first_name', 0)
+    surname = get_person_field(p, 'surname', 1)
+    fn = base.data.strings.get(first_name)
+    sn = base.data.strings.get(surname)
+    if isinstance(fn, bytes):
+        fn = fn.decode('utf-8')
+    if isinstance(sn, bytes):
+        sn = sn.decode('utf-8')
+    result.append(f"{fn} {sn}")
     return result
 
 def create_name_index(oc_inx, oc_inx_acc, base: DskBase) -> None:
@@ -84,6 +102,8 @@ def make_strings_of_fsname_aux(split_fn: Callable, get_fn: Callable, base: DskBa
         istr = get_fn(p)
         if istr != 1:
             s = base.data.strings.get(istr)
+            if isinstance(s, bytes):
+                s = s.decode('utf-8')
             add_name(s, istr)
             split_fn(lambda start, length: add_name(s[start:start+length], istr), s)
 
@@ -94,16 +114,32 @@ def make_strings_of_fsname_aux(split_fn: Callable, get_fn: Callable, base: DskBa
     return result
 
 def make_strings_of_fname(base: DskBase):
+    def get_first_name(p):
+        if hasattr(p, 'first_name'):
+            return p.first_name
+        elif isinstance(p, dict):
+            return p['first_name']
+        else:
+            return p[0]
+
     return make_strings_of_fsname_aux(
         name.split_fname_callback,
-        lambda p: p.first_name if hasattr(p, 'first_name') else p['first_name'],
+        get_first_name,
         base
     )
 
 def make_strings_of_sname(base: DskBase):
+    def get_surname(p):
+        if hasattr(p, 'surname'):
+            return p.surname
+        elif isinstance(p, dict):
+            return p['surname']
+        else:
+            return p[1]
+
     return make_strings_of_fsname_aux(
         name.split_sname_callback,
-        lambda p: p.surname if hasattr(p, 'surname') else p['surname'],
+        get_surname,
         base
     )
 
@@ -152,7 +188,9 @@ def output_name_index_aux(cmp_fn: Callable, get_fn: Callable, base: DskBase,
     for i in range(base.data.persons.len):
         p = base.data.persons.get(i)
         k = get_fn(p)
-        key_index = p.key_index if hasattr(p, 'key_index') else i
+        key_index = get_person_field(p, 'key_index', 34)
+        if key_index is None or key_index < 0:
+            key_index = i
         if k in ht:
             ht[k].append(key_index)
         else:
@@ -174,16 +212,32 @@ def output_name_index_aux(cmp_fn: Callable, get_fn: Callable, base: DskBase,
         dutil.output_value_no_sharing(oc_n_inx, bt2)
 
 def output_surname_index(base: DskBase, tmp_snames_inx: str, tmp_snames_dat: str) -> None:
+    def get_surname(p):
+        if hasattr(p, 'surname'):
+            return p.surname
+        elif isinstance(p, dict):
+            return p['surname']
+        else:
+            return p[1]
+
     output_name_index_aux(
         lambda k1, k2: dutil.compare_snames_i(base.data, k1, k2),
-        lambda p: p.surname if hasattr(p, 'surname') else p['surname'],
+        get_surname,
         base, tmp_snames_inx, tmp_snames_dat
     )
 
 def output_first_name_index(base: DskBase, tmp_fnames_inx: str, tmp_fnames_dat: str) -> None:
+    def get_first_name(p):
+        if hasattr(p, 'first_name'):
+            return p.first_name
+        elif isinstance(p, dict):
+            return p['first_name']
+        else:
+            return p[0]
+
     output_name_index_aux(
         lambda k1, k2: dutil.compare_fnames_i(base.data, k1, k2),
-        lambda p: p.first_name if hasattr(p, 'first_name') else p['first_name'],
+        get_first_name,
         base, tmp_fnames_inx, tmp_fnames_dat
     )
 
@@ -193,18 +247,16 @@ def output_particles_file(particles: List[str], fname: str) -> None:
             oc.write(mutil.tr(' ', '_', s) + '\n')
 
 def output_notes(base: DskBase, dst: str) -> None:
-    from lib.adef import RnAll
-    content = base.data.bnotes.nread("", RnAll)
+    content = base.data.bnotes.nread("", "RnAll")
     with open(dst, 'w') as oc:
         oc.write(content)
 
 def output_notes_d(base: DskBase, dst_dir: str) -> None:
-    from lib.adef import RnAll
     l = base.data.bnotes.efiles()
     for f in l:
         dst = os.path.join(dst_dir, f + ".txt")
         filesystem.create_dir(os.path.dirname(dst), parent=True)
-        content = base.data.bnotes.nread(f, RnAll)
+        content = base.data.bnotes.nread(f, "RnAll")
         with open(dst, 'w') as oc:
             oc.write(content)
 
@@ -329,9 +381,15 @@ def output(base: DskBase) -> None:
         nbp = 0
         for i in range(base.data.persons.len):
             p = base.data.persons.get(i)
-            key_index = p.key_index if hasattr(p, 'key_index') else -1
-            surname = p.surname if hasattr(p, 'surname') else 0
-            first_name = p.first_name if hasattr(p, 'first_name') else 0
+            key_index = get_person_field(p, 'key_index', 34)
+            surname = get_person_field(p, 'surname', 1)
+            first_name = get_person_field(p, 'first_name', 0)
+            if key_index is None:
+                key_index = -1
+            if surname is None:
+                surname = 0
+            if first_name is None:
+                first_name = 0
             if key_index != -1 and not ((surname == 0 or surname == 1) and (first_name == 0 or first_name == 1)):
                 nbp += 1
 

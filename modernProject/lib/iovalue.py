@@ -219,7 +219,7 @@ def output_loop(ofuns: OutFuns, oc: BinaryIO, x: Any) -> None:
         data = x.encode('utf-8')
         output_loop(ofuns, oc, data)
 
-    elif isinstance(x, list):
+    elif isinstance(x, (list, tuple)):
         size = len(x)
         output_block_header(ofuns, oc, 0, size)
         for item in x:

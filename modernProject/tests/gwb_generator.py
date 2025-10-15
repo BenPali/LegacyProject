@@ -87,48 +87,70 @@ def create_minimal_gwb(base_dir, db_name="test"):
 
         iovalue.output(f, "")
 
+        persons_pos = f.tell()
+        iovalue.output(f, persons)
+
+        ascends_pos = f.tell()
+        iovalue.output(f, ascends)
+
+        unions_pos = f.tell()
+        iovalue.output(f, unions)
+
+        families_pos = f.tell()
+        iovalue.output(f, families)
+
+        couples_pos = f.tell()
+        iovalue.output(f, couples)
+
+        descends_pos = f.tell()
+        iovalue.output(f, descends)
+
+        strings_pos = f.tell()
+        iovalue.output(f, strings)
+
+        end_pos = f.tell()
+
         persons_offsets = []
+        current_pos = persons_pos + iovalue.array_header_size(len(persons))
         for person in persons:
-            persons_offsets.append(f.tell())
-            iovalue.output(f, person)
+            persons_offsets.append(current_pos)
+            current_pos += iovalue.size(person)
 
         ascends_offsets = []
+        current_pos = ascends_pos + iovalue.array_header_size(len(ascends))
         for ascend in ascends:
-            ascends_offsets.append(f.tell())
-            iovalue.output(f, ascend)
+            ascends_offsets.append(current_pos)
+            current_pos += iovalue.size(ascend)
 
         unions_offsets = []
+        current_pos = unions_pos + iovalue.array_header_size(len(unions))
         for union in unions:
-            unions_offsets.append(f.tell())
-            iovalue.output(f, union)
+            unions_offsets.append(current_pos)
+            current_pos += iovalue.size(union)
 
         families_offsets = []
+        current_pos = families_pos + iovalue.array_header_size(len(families))
         for family in families:
-            families_offsets.append(f.tell())
-            iovalue.output(f, family)
+            families_offsets.append(current_pos)
+            current_pos += iovalue.size(family)
 
         couples_offsets = []
+        current_pos = couples_pos + iovalue.array_header_size(len(couples))
         for couple in couples:
-            couples_offsets.append(f.tell())
-            iovalue.output(f, couple)
+            couples_offsets.append(current_pos)
+            current_pos += iovalue.size(couple)
 
         descends_offsets = []
+        current_pos = descends_pos + iovalue.array_header_size(len(descends))
         for descend in descends:
-            descends_offsets.append(f.tell())
-            iovalue.output(f, descend)
+            descends_offsets.append(current_pos)
+            current_pos += iovalue.size(descend)
 
         strings_offsets = []
+        current_pos = strings_pos + iovalue.array_header_size(len(strings))
         for string in strings:
-            strings_offsets.append(f.tell())
-            iovalue.output(f, string)
-
-        persons_pos = persons_offsets[0] if persons_offsets else f.tell()
-        ascends_pos = ascends_offsets[0] if ascends_offsets else f.tell()
-        unions_pos = unions_offsets[0] if unions_offsets else f.tell()
-        families_pos = families_offsets[0] if families_offsets else f.tell()
-        couples_pos = couples_offsets[0] if couples_offsets else f.tell()
-        descends_pos = descends_offsets[0] if descends_offsets else f.tell()
-        strings_pos = strings_offsets[0] if strings_offsets else f.tell()
+            strings_offsets.append(current_pos)
+            current_pos += iovalue.size(string)
 
         f.seek(header_end)
         database.output_binary_int(f, persons_pos)

@@ -256,8 +256,6 @@ def test_dsk_person_misc_names():
     assert "John Smith" in names
 
 def test_outbase_output_creates_files():
-    import pytest
-    pytest.skip("outbase.output() has deep issues with array serialization - needs more investigation")
     from lib import database
     from tests.gwb_generator import create_minimal_gwb
 
