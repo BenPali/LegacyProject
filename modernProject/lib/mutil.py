@@ -161,3 +161,30 @@ def array_assoc(key, arr: List[tuple]) -> object:
         if k == key:
             return v
     raise KeyError(f"Key {key} not found")
+
+def compare_after_particle(particles: List[str], s1: str, s2: str) -> int:
+    def skip_particles(s: str) -> str:
+        words = s.split()
+        if not words:
+            return s
+        for particle in particles:
+            particle_norm = particle.replace('_', ' ')
+            particle_words = particle_norm.split()
+            if len(words) >= len(particle_words):
+                match = True
+                for i, pw in enumerate(particle_words):
+                    if words[i].lower() != pw.lower():
+                        match = False
+                        break
+                if match and len(words) > len(particle_words):
+                    return ' '.join(words[len(particle_words):])
+        return s
+
+    s1_stripped = skip_particles(s1)
+    s2_stripped = skip_particles(s2)
+
+    if s1_stripped < s2_stripped:
+        return -1
+    elif s1_stripped > s2_stripped:
+        return 1
+    return 0

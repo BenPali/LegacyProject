@@ -1,34 +1,21 @@
 from dataclasses import dataclass
 from enum import Enum, auto
-from typing import Callable, List, Optional, Any
+from typing import Callable, List, Optional, Any, TYPE_CHECKING
 
+if TYPE_CHECKING:
+    from lib.gwdef import GenPerson, GenFamily
+    from lib.adef import Couple
 
-class DskPerson:
-    pass
-
-
-class DskAscend:
-    pass
-
-
-class DskUnion:
-    pass
-
-
-class DskFamily:
-    pass
-
-
-class DskCouple:
-    pass
-
-
-class DskDescend:
-    pass
-
-
-class DskTitle:
-    pass
+    DskPerson = GenPerson[int, int, int]
+    DskFamily = GenFamily[int, int, int]
+else:
+    DskPerson = Any
+    DskAscend = Any
+    DskUnion = Any
+    DskFamily = Any
+    DskCouple = Any
+    DskDescend = Any
+    DskTitle = Any
 
 
 @dataclass
