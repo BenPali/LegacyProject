@@ -3,7 +3,7 @@ from lib.mutil import (
     list_iter_first, strip_all_trailing_spaces, tr, start_with,
     start_with_wildcard, contains, roman_of_arabian, arabian_of_roman,
     string_of_int_sep, initial, surnames_pieces, array_to_list_map,
-    array_to_list_rev_map, array_assoc
+    array_to_list_rev_map, array_assoc, compare_after_particle
 )
 
 
@@ -257,3 +257,35 @@ class TestEdgeCases:
     def test_surnames_pieces_mixed_case(self):
         pieces = surnames_pieces("Saint MARTIN Laurent")
         assert len(pieces) >= 2
+
+def test_compare_after_particle_no_particles():
+    assert compare_after_particle([], "Smith", "Jones") != 0
+    assert compare_after_particle([], "Smith", "Smith") == 0
+    assert compare_after_particle([], "Alpha", "Beta") < 0
+    assert compare_after_particle([], "Beta", "Alpha") > 0
+
+def test_compare_after_particle_with_particles():
+    particles = ["de", "von", "van"]
+    assert compare_after_particle(particles, "Smith", "Smith") == 0
+    assert compare_after_particle(particles, "de Smith", "Smith") == 0
+    assert compare_after_particle(particles, "von Jones", "de Jones") == 0
+    assert compare_after_particle(particles, "Smith", "Jones") != 0
+
+def test_compare_after_particle_particle_priority():
+    particles = ["de", "von"]
+    result = compare_after_particle(particles, "de Smith", "von Smith")
+    assert result == 0
+
+def test_compare_after_particle_empty_strings():
+    particles = ["de"]
+    assert compare_after_particle(particles, "", "") == 0
+    assert compare_after_particle(particles, "", "A") < 0
+    assert compare_after_particle(particles, "A", "") > 0
+
+def test_compare_after_particle_only_particle():
+    particles = ["de", "von"]
+    assert compare_after_particle(particles, "de", "de") == 0
+
+def test_compare_after_particle_underscore():
+    particles = ["de", "van der"]
+    assert compare_after_particle(particles, "van der Smith", "Smith") == 0
