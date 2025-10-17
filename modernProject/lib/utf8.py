@@ -33,8 +33,6 @@ def next(s: str, i: int) -> int:
     if i >= len(s):
         return i
     byte_str = s.encode('utf-8')
-    if i >= len(byte_str):
-        return i
     return i + nbc(byte_str[i])
 
 
@@ -132,7 +130,6 @@ def capitalize(s: str) -> str:
 
 
 class CType(Enum):
-    STR = auto()
     CHR = auto()
     EMPTY = auto()
 
@@ -158,25 +155,22 @@ class C:
                 else:
                     return ((CType.EMPTY, None), i, i + 1)
             else:
-                try:
-                    normalized = unicodedata.normalize('NFKD', c)
-                    ascii_char = normalized.encode('ascii', 'ignore').decode('ascii')
-                    if ascii_char:
-                        lower_char = ascii_char[0].lower()
-                        if ('a' <= lower_char <= 'z') or ('0' <= lower_char <= '9'):
+                normalized = unicodedata.normalize('NFKD', c)
+                ascii_char = normalized.encode('ascii', 'ignore').decode('ascii')
+                if ascii_char:
+                    lower_char = ascii_char[0].lower()
+                    if ('a' <= lower_char <= 'z') or ('0' <= lower_char <= '9'):
+                        return ((CType.CHR, lower_char), i, i + 1)
+                    elif lower_char in ('-', ' ', '\''):
+                        if trimmed:
                             return ((CType.CHR, lower_char), i, i + 1)
-                        elif lower_char in ('-', ' ', '\''):
-                            if trimmed:
-                                return ((CType.CHR, lower_char), i, i + 1)
-                            else:
-                                return ((CType.EMPTY, None), i, i + 1)
                         else:
                             return ((CType.EMPTY, None), i, i + 1)
                     else:
-                        i += 1
-                        continue
-                except:
-                    return ((CType.EMPTY, None), i, i + 1)
+                        return ((CType.EMPTY, None), i, i + 1)
+                else:
+                    i += 1
+                    continue
 
         return ((CType.EMPTY, None), i0, slen)
 
@@ -185,27 +179,19 @@ class C:
         if i >= len(s):
             return 0
         byte_str = s.encode('utf-8')
-        if i >= len(byte_str):
-            return 0
 
         n = byte_str[i]
         if n < 0x80:
             return n
         elif n <= 0xdf:
-            if i + 1 >= len(byte_str):
-                return n
             return ((n - 0xc0) << 6) | (0x7f & byte_str[i + 1])
         elif n <= 0xef:
-            if i + 2 >= len(byte_str):
-                return n
             n_prime = n - 0xe0
             m = byte_str[i + 1]
             n_prime = (n_prime << 6) | (0x7f & m)
             m = byte_str[i + 2]
             return (n_prime << 6) | (0x7f & m)
         else:
-            if i + 3 >= len(byte_str):
-                return n
             n_prime = n - 0xf0
             m = byte_str[i + 1]
             n_prime = (n_prime << 6) | (0x7f & m)
@@ -277,18 +263,6 @@ class C:
                 return 1
             elif c2_type == CType.EMPTY:
                 return -1
-            elif c1_type == CType.STR and c2_type == CType.STR:
-                if c1_val < c2_val:
-                    return -1
-                elif c1_val > c2_val:
-                    return 1
-                else:
-                    cmp = C.cmp_substring(n1, start1, ii1, n2, start2, ii2)
-                    if cmp == 0:
-                        i1 = ii1
-                        i2 = ii2
-                    else:
-                        return cmp
             elif c1_type == CType.CHR and c2_type == CType.CHR:
                 if c1_val < c2_val:
                     return -1
@@ -301,25 +275,6 @@ class C:
                         i2 = ii2
                     else:
                         return cmp
-            elif c1_type == CType.STR and c2_type == CType.CHR:
-                first_char = c1_val[0] if c1_val else ''
-                if first_char < c2_val:
-                    return -1
-                elif first_char > c2_val:
-                    return 1
-                else:
-                    return 1
-            elif c1_type == CType.CHR and c2_type == CType.STR:
-                first_char = c2_val[0] if c2_val else ''
-                if c1_val < first_char:
-                    return -1
-                elif c1_val > first_char:
-                    return 1
-                else:
-                    return -1
-            else:
-                i1 = ii1
-                i2 = ii2
 
 
 def compare(a: str, b: str) -> int:

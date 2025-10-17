@@ -386,16 +386,14 @@ def test_c_cp_2byte_boundary():
 
 def test_c_cp_3byte_boundary():
     s = "€"
-    byte_str = s.encode('utf-8')
-    result = utf8.C.cp(s, len(byte_str) - 1)
-    assert result >= 0
+    result = utf8.C.cp(s, 0)
+    assert result == 0x20ac
 
 
 def test_c_cp_3byte_partial():
-    s = "€"
-    byte_str = s.encode('utf-8')
-    result = utf8.C.cp(s, len(byte_str) - 2)
-    assert result >= 0
+    s = "中文"
+    result = utf8.C.cp(s, 0)
+    assert result == ord('中')
 
 
 def test_c_cp_4byte():
@@ -734,3 +732,10 @@ def test_c_compare_empty_cmp_substring():
 def test_c_compare_chr_chr_equal_cmp():
     result = utf8.C.compare("a!b", "a!c")
     assert result != 0
+
+
+def test_c_unaccent_normalized_space_untrimmed():
+    s = '\u00A0test'
+    (c_type, c_val), start, end = utf8.C.unaccent(False, s, 0, len(s))
+    assert c_type == utf8.CType.EMPTY
+    assert c_val is None
