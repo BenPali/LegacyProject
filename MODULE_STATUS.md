@@ -1,13 +1,13 @@
 # OCaml to Python Migration Status
 
-## Overall Progress: 38/115 modules (33.0%)
+## Overall Progress: 39/115 modules (33.9%)
 
 **Final Target:** 115/115 modules (100%)
-**Remaining:** 77 modules needed
+**Remaining:** 76 modules needed
 
 ---
 
-## Completed Modules (38/115)
+## Completed Modules (39/115)
 
 | Module | Lines | Python File | Tests | Notes |
 |--------|-------|-------------|-------|-------|
@@ -46,6 +46,7 @@
 | progrBar | 84 | progr_bar.py | ✅ | Progress bar |
 | secure | 120 | secure.py | ✅ | Secure file access |
 | sosa | 24 | sosa.py | ✅ | Sosa numbering |
+| stats | 123 | stats.py | ✅ | Database statistics |
 | templ | 1543 | templ.py | ✅ | Template rendering |
 | wserver | 367 | wserver.py | ✅ | Web server basics |
 | wserver_util | 9 | wserver_util.py | ✅ | Web server utilities |
@@ -224,7 +225,7 @@ Priority to unblock maximum dependencies:
 1. ✅ **event** (108) - Event handling
 2. ✅ **futil** (298) - Functional utilities
 3. ✅ **gutil** (304) - Database utilities
-4. **stats** (123) - Statistics
+4. ✅ **stats** (123) - Statistics
 5. **consang** (298) - Consanguinity
 6. **consangAll** (145) - Extended consanguinity
 7. **utf8** (229) - Text processing
@@ -277,11 +278,11 @@ Implement display modules after core logic is stable
 ## Progress Milestones
 
 - [x] 25% - 29 modules (PASSED ✅)
-- [ ] 50% - 58 modules (Need 20 more)
-- [ ] 75% - 87 modules (Need 49 more)
-- [ ] 100% - 115 modules (Need 77 more) 🎯
+- [ ] 50% - 58 modules (Need 19 more)
+- [ ] 75% - 87 modules (Need 48 more)
+- [ ] 100% - 115 modules (Need 76 more) 🎯
 
 ---
 
 **Last Updated:** 2025-10-17
-**Next Target:** stats.py
+**Next Target:** consang.py
