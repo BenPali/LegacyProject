@@ -1,13 +1,13 @@
 # OCaml to Python Migration Status
 
-## Overall Progress: 39/115 modules (33.9%)
+## Overall Progress: 40/115 modules (34.8%)
 
 **Final Target:** 115/115 modules (100%)
-**Remaining:** 76 modules needed
+**Remaining:** 75 modules needed
 
 ---
 
-## Completed Modules (39/115)
+## Completed Modules (40/115)
 
 | Module | Lines | Python File | Tests | Notes |
 |--------|-------|-------------|-------|-------|
@@ -48,6 +48,7 @@
 | sosa | 24 | sosa.py | ✅ | Sosa numbering |
 | stats | 123 | stats.py | ✅ | Database statistics |
 | templ | 1543 | templ.py | ✅ | Template rendering |
+| utf8 | 229 | utf8.py | ✅ | UTF-8 string operations |
 | wserver | 367 | wserver.py | ✅ | Web server basics |
 | wserver_util | 9 | wserver_util.py | ✅ | Web server utilities |
 
@@ -278,9 +279,9 @@ Implement display modules after core logic is stable
 ## Progress Milestones
 
 - [x] 25% - 29 modules (PASSED ✅)
-- [ ] 50% - 58 modules (Need 19 more)
-- [ ] 75% - 87 modules (Need 48 more)
-- [ ] 100% - 115 modules (Need 76 more) 🎯
+- [ ] 50% - 58 modules (Need 18 more)
+- [ ] 75% - 87 modules (Need 47 more)
+- [ ] 100% - 115 modules (Need 75 more) 🎯
 
 ---
 
