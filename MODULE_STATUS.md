@@ -46,7 +46,7 @@
 | progrBar | 84 | progr_bar.py | ✅ | Progress bar |
 | secure | 120 | secure.py | ✅ | Secure file access |
 | sosa | 24 | sosa.py | ✅ | Sosa numbering |
-| stats | 123 | stats.py | ✅ | Database statistics (95% coverage) |
+| stats | 123 | stats.py | ✅ | Database statistics |
 | templ | 1543 | templ.py | ✅ | Template rendering |
 | wserver | 367 | wserver.py | ✅ | Web server basics |
 | wserver_util | 9 | wserver_util.py | ✅ | Web server utilities |
