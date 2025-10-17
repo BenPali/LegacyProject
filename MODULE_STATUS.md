@@ -39,7 +39,7 @@
 | my_gzip | 82 | my_gzip.py | ✅ | Gzip handling |
 | my_unix | 7 | my_unix.py | ✅ | Unix utilities |
 | name | 266 | name.py | ✅ | Name processing |
-| outbase | 404 | outbase.py | ✅ | Database output (85% coverage, production ready) |
+| outbase | 404 | outbase.py | ✅ | Database output (85% coverage) |
 | output | 11 | output.py | ✅ | Output abstraction |
 | pool | 56 | pool.py | ✅ | Worker pool |
 | pqueue | 58 | pqueue.py | ✅ | Priority queue |
@@ -54,9 +54,9 @@
 
 ---
 
-## Core Modules - Ready to Implement (Priority Order)
+## Core Modules
 
-### Tier 1: Unblocked by def.py (High Priority)
+### Tier 1: Unblocked by def.py
 
 | Module | Lines | Dependencies | Description |
 |--------|-------|--------------|-------------|
@@ -86,7 +86,7 @@
 | translate | 308 | Def | Translation utilities |
 | sosaCache | 330 | Def | Sosa number caching |
 
-### Tier 4: Complex Core Modules (Require Multiple Dependencies)
+### Tier 4: Complex Core Modules
 
 | Module | Lines | Dependencies | Description |
 |--------|-------|--------------|-------------|
@@ -103,7 +103,7 @@
 
 These modules handle HTML/web display and can be implemented later:
 
-### Small Display Modules (< 100 lines)
+### Small Display Modules (~< 100 lines)
 
 | Module | Lines | Dependencies | Description |
 |--------|-------|--------------|-------------|
@@ -112,7 +112,7 @@ These modules handle HTML/web display and can be implemented later:
 | checkDataDisplay | 104 | Def | Data checking results display |
 | mergeIndOkDisplay | 88 | Def | Individual merge confirmation display |
 
-### Medium Display Modules (100-300 lines)
+### Medium Display Modules (100-1000 lines)
 
 | Module | Lines | Dependencies | Description |
 |--------|-------|--------------|-------------|
@@ -203,32 +203,27 @@ These handle database updates, merges, and search functionality:
 ## Dependency Summary
 
 ### Key Blockers Resolved:
-- ✅ **Adef** - Core date/calendar types (DONE)
-- ✅ **Def** - Core genealogical types (DONE as gwdef.py)
-- ✅ **Mutil** - String utilities (DONE)
-- ✅ **Name** - Name processing (DONE)
-- ✅ **Date** - Date operations (DONE)
+- ✅ **Adef** - Core date/calendar types
+- ✅ **Def** - Core genealogical types (as gwdef.py)
+- ✅ **Mutil** - String utilities
+- ✅ **Name** - Name processing
+- ✅ **Date** - Date operations
+- ✅ **Database** - Database support
 
 ### Most Dependent Modules (Blocking Many Others):
 1. **Driver** (864 lines) - Required by: Database, many query modules
-2. **Database** (1440 lines) - Required by: Most application logic
-3. **Util** (3101 lines) - Required by: Many UI and query modules
-4. **Config** - Required by: Most application modules (partially done)
-
-### Independent Modules (Can Implement Anytime):
-- utf8, hasher, translate, parser (templ-related)
-- geneweb_sosa variants
-- gw_ancient variants
+2. **Util** (3101 lines) - Required by: Many UI and query modules
+3. **Config** - Required by: Most application modules (partially done)
 
 ---
 
-## Recommended Implementation Order
+## Planned Implementation Order
 
-### Phase 1: Core Utilities (Next 10 modules)
+### Phase 1: Core Utilities
 Priority to unblock maximum dependencies:
-1. ✅ **event** (108) - Event handling (DONE)
-2. ✅ **futil** (298) - Functional utilities (DONE)
-3. **gutil** (304) - Database utilities
+1. ✅ **event** (108) - Event handling
+2. ✅ **futil** (298) - Functional utilities
+3. ✅ **gutil** (304) - Database utilities
 4. **stats** (123) - Statistics
 5. **consang** (298) - Consanguinity
 6. **consangAll** (145) - Extended consanguinity
@@ -237,7 +232,7 @@ Priority to unblock maximum dependencies:
 9. **birthDeath** (116) - Birth/death logic
 10. **changeChildren** (98) - Children modifications
 
-### Phase 2: Database Core (Next 6 modules)
+### Phase 2: Database Core
 Essential for database operations:
 1. **driver** (864) - Database driver ⚠️ CRITICAL
 2. **db_gc** (186) - Garbage collection
@@ -246,7 +241,7 @@ Essential for database operations:
 5. **checkItem** (1129) - Item validation
 6. **fixbase** (496) - Database fixes
 
-### Phase 3: Query & Relationship (Next 10 modules)
+### Phase 3: Query & Relationship
 1. **relation** (562)
 2. **relationLink** (822)
 3. **cousins** (599)
@@ -258,7 +253,7 @@ Essential for database operations:
 9. **difference** (174)
 10. **hasher** (469)
 
-### Phase 4: Update Operations (Next 11 modules)
+### Phase 4: Update Operations
 1. **update_util** (366)
 2. **updateData** (616)
 3. **update** (1362)
@@ -271,26 +266,11 @@ Essential for database operations:
 10. **mergeFamOk** (306)
 11. **advSearchOk** (661)
 
-### Phase 5: Display Modules (Next 41 modules)
+### Phase 5: Display Modules
 Implement display modules after core logic is stable
 
-### Phase 6: Remaining Specialized (Next 11 modules)
+### Phase 6: Remaining Specialized
 - Util (3101), perso (5637), and other large specialized modules
-
----
-
-## Statistics by Category
-
-| Category | Module Count | Total Lines | Avg Lines/Module |
-|----------|--------------|-------------|------------------|
-| ✅ Completed | 38 | ~10,033 | 264 |
-| Core Utilities | 9 | 1,946 | 216 |
-| Database Core | 6 | 3,648 | 608 |
-| Query/Relationship | 10 | 5,052 | 505 |
-| Update Operations | 11 | 9,641 | 876 |
-| Display Modules | 41 | ~22,000 | 537 |
-| Specialized | 1 | 5,637 | 5,637 |
-| **TOTAL** | **115** | **~57,568** | **500** |
 
 ---
 
@@ -304,5 +284,4 @@ Implement display modules after core logic is stable
 ---
 
 **Last Updated:** 2025-10-17
-**Current Branch:** impl-gutil
-**Next Target:** stats.py (gutil.py completed ✅)
+**Next Target:** stats.py
