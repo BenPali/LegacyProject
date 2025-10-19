@@ -1,13 +1,13 @@
 # OCaml to Python Migration Status
 
-## Overall Progress: 40/115 modules (34.8%)
+## Overall Progress: 41/115 modules (35.7%)
 
 **Final Target:** 115/115 modules (100%)
-**Remaining:** 75 modules needed
+**Remaining:** 74 modules needed
 
 ---
 
-## Completed Modules (40/115)
+## Completed Modules (41/115)
 
 | Module | Lines | Python File | Tests | Notes |
 |--------|-------|-------------|-------|-------|
@@ -19,6 +19,7 @@
 | calendar | 66 | calendar.py | ✅ | Calendar conversions |
 | collection | 70 | collection.py | ✅ | Lazy collections |
 | config | 201 | config.py | ✅ | Configuration |
+| consang | 298 | consang.py | ✅ | Core consanguinity calculations (93% coverage) |
 | date | 222 | date.py | ✅ | Date operations |
 | database | 1440 | database.py | ✅ | Main database module (70% coverage, production ready) |
 | dbdisk | 71 | dbdisk.py | ✅ | Database disk structures |
@@ -81,7 +82,6 @@
 
 | Module | Lines | Dependencies | Description |
 |--------|-------|--------------|-------------|
-| consang | 298 | Def | Core consanguinity calculations |
 | db_gc | 186 | Def | Database garbage collection |
 | check | 356 | Def | Database consistency checking |
 | hasher | 469 | - | Hash table utilities |
@@ -227,7 +227,7 @@ Priority to unblock maximum dependencies:
 2. ✅ **futil** (298) - Functional utilities
 3. ✅ **gutil** (304) - Database utilities
 4. ✅ **stats** (123) - Statistics
-5. **consang** (298) - Consanguinity
+5. ✅ **consang** (298) - Consanguinity
 6. **consangAll** (145) - Extended consanguinity
 7. **utf8** (229) - Text processing
 8. **title** (242) - Title handling
@@ -279,11 +279,11 @@ Implement display modules after core logic is stable
 ## Progress Milestones
 
 - [x] 25% - 29 modules (PASSED ✅)
-- [ ] 50% - 58 modules (Need 18 more)
-- [ ] 75% - 87 modules (Need 47 more)
-- [ ] 100% - 115 modules (Need 75 more) 🎯
+- [ ] 50% - 58 modules (Need 17 more)
+- [ ] 75% - 87 modules (Need 46 more)
+- [ ] 100% - 115 modules (Need 74 more) 🎯
 
 ---
 
-**Last Updated:** 2025-10-17
-**Next Target:** consang.py
+**Last Updated:** 2025-10-19
+**Next Target:** consangAll.py
