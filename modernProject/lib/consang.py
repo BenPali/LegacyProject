@@ -1,8 +1,8 @@
 from enum import Enum
 from dataclasses import dataclass, field
-from typing import List, Tuple, Callable, Optional
+from typing import List, Tuple, Callable
 from lib import adef
-from lib.database import Driver
+from lib import driver
 from lib.collection import Marker
 
 
@@ -59,48 +59,48 @@ def new_mark() -> int:
 def _noloop_aux(base, error: Callable, tab: Marker, i: int):
     visit_state = tab.get(i)
     if visit_state == Visit.NOT_VISITED:
-        person = Driver.poi(base, i)
-        parents_opt = Driver.get_parents(person)
+        person = driver.poi(base, i)
+        parents_opt = driver.get_parents(person)
         if parents_opt is not None:
-            fam = Driver.foi(base, parents_opt)
-            fath = Driver.get_father(fam)
-            moth = Driver.get_mother(fam)
+            fam = driver.foi(base, parents_opt)
+            fath = driver.get_father(fam)
+            moth = driver.get_mother(fam)
             tab.set(i, Visit.BEING_VISITED)
             _noloop_aux(base, error, tab, fath)
             _noloop_aux(base, error, tab, moth)
         tab.set(i, Visit.VISITED)
     elif visit_state == Visit.BEING_VISITED:
         from lib.gwdef import OwnAncestor
-        person = Driver.poi(base, i)
+        person = driver.poi(base, i)
         error(OwnAncestor(person))
 
 
 def check_noloop(base, error: Callable):
-    ipers = Driver.ipers(base)
-    tab = Driver.iper_marker(ipers, Visit.NOT_VISITED)
+    ipers = driver.ipers(base)
+    tab = driver.iper_marker(ipers, Visit.NOT_VISITED)
     for i in ipers:
         _noloop_aux(base, error, tab, i)
 
 
 def check_noloop_for_person_list(base, error: Callable, person_list: List[int]):
-    ipers = Driver.ipers(base)
-    tab = Driver.iper_marker(ipers, Visit.NOT_VISITED)
+    ipers = driver.ipers(base)
+    tab = driver.iper_marker(ipers, Visit.NOT_VISITED)
     for i in person_list:
         _noloop_aux(base, error, tab, i)
 
 
 def topological_sort(base, poi: Callable):
-    persons = Driver.ipers(base)
-    tab = Driver.iper_marker(persons, 0)
+    persons = driver.ipers(base)
+    tab = driver.iper_marker(persons, 0)
     cnt = 0
 
     for i in persons:
         a = poi(base, i)
-        parents_opt = Driver.get_parents(a)
+        parents_opt = driver.get_parents(a)
         if parents_opt is not None:
-            cpl = Driver.foi(base, parents_opt)
-            ifath = Driver.get_father(cpl)
-            imoth = Driver.get_mother(cpl)
+            cpl = driver.foi(base, parents_opt)
+            ifath = driver.get_father(cpl)
+            imoth = driver.get_mother(cpl)
             tab.set(ifath, tab.get(ifath) + 1)
             tab.set(imoth, tab.get(imoth) + 1)
 
@@ -119,11 +119,11 @@ def topological_sort(base, poi: Callable):
             a = poi(base, i)
             tab.set(i, tval)
             cnt += 1
-            parents_opt = Driver.get_parents(a)
+            parents_opt = driver.get_parents(a)
             if parents_opt is not None:
-                cpl = Driver.foi(base, parents_opt)
-                ifath = Driver.get_father(cpl)
-                imoth = Driver.get_mother(cpl)
+                cpl = driver.foi(base, parents_opt)
+                ifath = driver.get_father(cpl)
+                imoth = driver.get_mother(cpl)
                 tab.set(ifath, tab.get(ifath) - 1)
                 tab.set(imoth, tab.get(imoth) - 1)
                 if tab.get(ifath) == 0:
@@ -135,7 +135,7 @@ def topological_sort(base, poi: Callable):
 
     loop(0, todo)
 
-    if cnt != Driver.nb_of_persons(base):
+    if cnt != driver.nb_of_persons(base):
         def error_handler(err):
             from lib.gwdef import OwnAncestor
             if isinstance(err, OwnAncestor):
@@ -151,8 +151,8 @@ PHONY_REL = Relationship()
 
 
 def make_relationship_info(base, tstab: Marker) -> RelationshipInfo:
-    ipers = Driver.ipers(base)
-    tab = Driver.iper_marker(ipers, PHONY_REL)
+    ipers = driver.ipers(base)
+    tab = driver.iper_marker(ipers, PHONY_REL)
     return RelationshipInfo(tstab=tstab, reltab=tab, queue=[])
 
 
@@ -185,7 +185,7 @@ def insert_branch_len(ip: int, lens: List[Tuple[int, int, List[int]]], branch: T
 
 
 def consang_of(p) -> float:
-    consang = Driver.get_consang(p)
+    consang = driver.get_consang(p)
     if consang == adef.NO_CONSANG:
         return 0.0
     return consang.to_float()
@@ -298,7 +298,7 @@ def relationship_and_links(base, ri: RelationshipInfo, b: bool, ip1: int, ip2: i
     def treat_ancestor(u: int):
         nonlocal relationship_val, nb_anc1, nb_anc2
         tu = reltab.get(u)
-        a = Driver.poi(base, u)
+        a = driver.poi(base, u)
         contribution = (tu.weight1 * tu.weight2) - (tu.relationship * (1.0 + consang_of(a)))
 
         if tu.anc_stat1 == AncStat.IS_ANC:
@@ -312,11 +312,11 @@ def relationship_and_links(base, ri: RelationshipInfo, b: bool, ip1: int, ip2: i
             tops.append(u)
             tu.elim_ancestors = True
 
-        parents_opt = Driver.get_parents(a)
+        parents_opt = driver.get_parents(a)
         if parents_opt is not None:
-            cpl = Driver.foi(base, parents_opt)
-            treat_parent(u, tu, Driver.get_father(cpl))
-            treat_parent(u, tu, Driver.get_mother(cpl))
+            cpl = driver.foi(base, parents_opt)
+            treat_parent(u, tu, driver.get_father(cpl))
+            treat_parent(u, tu, driver.get_mother(cpl))
 
     insert(i1)
     insert(i2)

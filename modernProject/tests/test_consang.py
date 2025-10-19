@@ -125,7 +125,7 @@ def test_new_mark():
 
 
 def test_noloop_aux_no_loop():
-    from lib.database import Driver as RealDriver
+    from lib import driver as RealDriver
     original_poi = RealDriver.poi
     original_foi = RealDriver.foi
     original_get_parents = RealDriver.get_parents
@@ -184,7 +184,7 @@ def test_noloop_aux_no_loop():
 
 
 def test_noloop_aux_with_loop():
-    from lib.database import Driver as RealDriver
+    from lib import driver as RealDriver
     original_poi = RealDriver.poi
     original_foi = RealDriver.foi
     original_get_parents = RealDriver.get_parents
@@ -239,7 +239,7 @@ def test_noloop_aux_with_loop():
 
 
 def test_check_noloop():
-    from lib.database import Driver as RealDriver
+    from lib import driver as RealDriver
     original_ipers = RealDriver.ipers
     original_poi = RealDriver.poi
     original_foi = RealDriver.foi
@@ -293,7 +293,7 @@ def test_check_noloop():
 
 
 def test_check_noloop_for_person_list():
-    from lib.database import Driver as RealDriver
+    from lib import driver as RealDriver
     original_ipers = RealDriver.ipers
     original_poi = RealDriver.poi
     original_foi = RealDriver.foi
@@ -347,7 +347,7 @@ def test_check_noloop_for_person_list():
 
 
 def test_topological_sort():
-    from lib.database import Driver as RealDriver
+    from lib import driver as RealDriver
     original_ipers = RealDriver.ipers
     original_foi = RealDriver.foi
     original_get_parents = RealDriver.get_parents
@@ -404,7 +404,7 @@ def test_topological_sort():
 
 
 def test_topological_sort_with_loop():
-    from lib.database import Driver as RealDriver
+    from lib import driver as RealDriver
     original_ipers = RealDriver.ipers
     original_poi = RealDriver.poi
     original_foi = RealDriver.foi
@@ -462,7 +462,7 @@ def test_topological_sort_with_loop():
 
 
 def test_make_relationship_info():
-    from lib.database import Driver as RealDriver
+    from lib import driver as RealDriver
     original_ipers = RealDriver.ipers
     original_iper_marker = RealDriver.iper_marker
 
@@ -523,7 +523,7 @@ def test_insert_branch_len():
 
 
 def test_consang_of():
-    from lib.database import Driver as RealDriver
+    from lib import driver as RealDriver
     original_get_consang = RealDriver.get_consang
 
     try:
@@ -544,7 +544,7 @@ def test_consang_of():
 
 
 def test_relationship_and_links_same_person():
-    from lib.database import Driver as RealDriver
+    from lib import driver as RealDriver
     original_ipers = RealDriver.ipers
     original_iper_marker = RealDriver.iper_marker
 
@@ -575,7 +575,7 @@ def test_relationship_and_links_same_person():
 
 
 def test_relationship_and_links_siblings():
-    from lib.database import Driver as RealDriver
+    from lib import driver as RealDriver
     original_ipers = RealDriver.ipers
     original_poi = RealDriver.poi
     original_foi = RealDriver.foi
@@ -638,7 +638,7 @@ def test_relationship_and_links_siblings():
 
 
 def test_relationship_and_links_unrelated():
-    from lib.database import Driver as RealDriver
+    from lib import driver as RealDriver
     original_ipers = RealDriver.ipers
     original_poi = RealDriver.poi
     original_foi = RealDriver.foi
