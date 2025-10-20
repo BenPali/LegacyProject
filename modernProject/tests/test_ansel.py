@@ -11,10 +11,31 @@ class TestNoAccent:
         assert no_accent('\u00e1') == 'a'
         assert no_accent('\u00e2') == 'a'
         assert no_accent('\u00e5') == 'a'
+        assert no_accent('\u00f1') == 'n'
+        assert no_accent('\u00ff') == 'y'
 
     def test_uppercase_a_variants(self):
         assert no_accent('\u00c0') == 'A'
         assert no_accent('\u00c5') == 'A'
+        assert no_accent('\u00c8') == 'E'
+        assert no_accent('\u00c9') == 'E'
+        assert no_accent('\u00ca') == 'E'
+        assert no_accent('\u00cb') == 'E'
+        assert no_accent('\u00cc') == 'I'
+        assert no_accent('\u00cd') == 'I'
+        assert no_accent('\u00ce') == 'I'
+        assert no_accent('\u00cf') == 'I'
+        assert no_accent('\u00d1') == 'N'
+        assert no_accent('\u00d2') == 'O'
+        assert no_accent('\u00d3') == 'O'
+        assert no_accent('\u00d4') == 'O'
+        assert no_accent('\u00d5') == 'O'
+        assert no_accent('\u00d6') == 'O'
+        assert no_accent('\u00d9') == 'U'
+        assert no_accent('\u00da') == 'U'
+        assert no_accent('\u00db') == 'U'
+        assert no_accent('\u00dc') == 'U'
+        assert no_accent('\u00dd') == 'Y'
 
     def test_cedilla(self):
         assert no_accent('\u00e7') == 'c'
@@ -23,6 +44,10 @@ class TestNoAccent:
     def test_special_chars(self):
         assert no_accent('\u00ab') == '<'
         assert no_accent('\u00bb') == '>'
+        assert no_accent('\u00a8') == ' '
+        assert no_accent('\u00b0') == ' '
+        assert no_accent('\u00b4') == ' '
+        assert no_accent('\u00b8') == ' '
 
     def test_unchanged(self):
         assert no_accent('x') == 'x'
@@ -50,6 +75,7 @@ class TestAccentCode:
     def test_no_accent_char(self):
         assert accent_code('a') == 0
         assert accent_code('z') == 0
+        assert accent_code('A') == 0
 
 
 class TestOfIso88591:
@@ -74,6 +100,46 @@ class TestOfIso88591:
         assert ord(result[0]) == 225
         assert result[1] == 'a'
 
+    def test_ansel_conversions_63_123(self):
+        assert of_iso_8859_1("\u00e4") == chr(232) + 'a'
+        assert of_iso_8859_1("\u00f6") == chr(232) + 'o'
+        assert of_iso_8859_1("\u00fc") == chr(232) + 'u'
+
+        assert of_iso_8859_1("\u00c5") == chr(234) + 'A'
+        assert of_iso_8859_1("\u00e5") == chr(234) + 'a'
+
+        assert of_iso_8859_1("\u00c7") == chr(240) + 'C'
+        assert of_iso_8859_1("\u00e7") == chr(240) + 'c'
+
+        assert of_iso_8859_1("\u00a1") == chr(198)
+        assert of_iso_8859_1("\u00a3") == chr(185)
+        assert of_iso_8859_1("\u00a4") == chr(0x6f)
+        assert of_iso_8859_1("\u00a5") == chr(0x59)
+        assert of_iso_8859_1("\u00a6") == chr(0x7c)
+        assert of_iso_8859_1("\u00a9") == chr(195)
+        assert of_iso_8859_1("\u00aa") == chr(0x61)
+        assert of_iso_8859_1("\u00ad") == chr(0x2d)
+        assert of_iso_8859_1("\u00ae") == chr(170)
+        assert of_iso_8859_1("\u00b1") == chr(171)
+        assert of_iso_8859_1("\u00b2") == chr(0x32)
+        assert of_iso_8859_1("\u00b3") == chr(0x33)
+        assert of_iso_8859_1("\u00b7") == chr(168)
+        assert of_iso_8859_1("\u00b9") == chr(0x31)
+        assert of_iso_8859_1("\u00bf") == chr(197)
+        assert of_iso_8859_1("\u00c6") == chr(165)
+        assert of_iso_8859_1("\u00d0") == chr(163)
+        assert of_iso_8859_1("\u00f0") == chr(179)
+        assert of_iso_8859_1("\u00d8") == chr(162)
+        assert of_iso_8859_1("\u00f8") == chr(178)
+        assert of_iso_8859_1("\u00de") == chr(164)
+        assert of_iso_8859_1("\u00fe") == chr(180)
+        assert of_iso_8859_1("\u00df") == chr(207)
+
+    def test_of_iso_8859_1_length_and_identical_update(self):
+        result = of_iso_8859_1("\u00e9")
+        assert len(result) == 2
+        assert ord(result[0]) == 226
+        assert result[1] == 'e'
 
 class TestDiacriticFunctions:
     def test_grave(self):
@@ -147,3 +213,23 @@ class TestToIso88591:
         ansel = of_iso_8859_1(original)
         restored = to_iso_8859_1(ansel)
         assert restored == original
+
+
+class TestAnselCoverage:
+    def test_of_iso_8859_1_pairs(self):
+        assert of_iso_8859_1(chr(166)) == '|'
+        assert of_iso_8859_1(chr(172)) == '\x81'
+        assert of_iso_8859_1(chr(173)) == '-'
+
+    def test_to_iso_8859_1_diacritics(self):
+        assert to_iso_8859_1(chr(228) + 'a') == '\u00e3'
+        assert to_iso_8859_1(chr(228) + 'n') == '\u00f1'
+        assert to_iso_8859_1(chr(232) + 'a') == '\u00e4'
+        assert to_iso_8859_1(chr(232) + 'e') == '\u00eb'
+        assert to_iso_8859_1(chr(232) + 'u') == '\u00fc'
+        assert to_iso_8859_1(chr(234) + 'a') == '\u00e5'
+        assert to_iso_8859_1(chr(234) + 'A') == '\u00c5'
+        assert to_iso_8859_1(chr(240) + 'c') == '\u00e7'
+        assert to_iso_8859_1(chr(240) + 'C') == '\u00c7'
+        assert to_iso_8859_1(chr(252) + 'o') == '\u00f8'
+        assert to_iso_8859_1(chr(252) + 'O') == '\u00d8'

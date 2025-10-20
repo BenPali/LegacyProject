@@ -39,6 +39,16 @@ def test_compress_precision():
     u = uncompress(c)
     assert u.prec == Precision.BEFORE
 
+    d_maybe = Dmy(day=10, month=5, year=1985, prec=Precision.MAYBE, delta=0)
+    c = compress(d_maybe)
+    u = uncompress(c)
+    assert u.prec == Precision.MAYBE
+
+    d_after = Dmy(day=10, month=5, year=1985, prec=Precision.AFTER, delta=0)
+    c = compress(d_after)
+    u = uncompress(c)
+    assert u.prec == Precision.AFTER
+
 def test_compress_returns_none_for_invalid():
     d = Dmy(day=15, month=6, year=1990, prec=Precision.SURE, delta=5)
     assert compress(d) is None
@@ -57,12 +67,141 @@ def test_cdate_conversions():
     assert d2.dmy.month == 6
     assert d2.dmy.year == 1990
 
+def test_date_of_cdate_all_calendars():
+    for calendar in Calendar:
+        d = DateGreg(dmy=Dmy(day=15, month=6, year=1990, prec=Precision.SURE, delta=0), calendar=calendar)
+        cd = cdate_of_date(d)
+        assert isinstance(cd, Cdate)
+
+        d2 = date_of_cdate(cd)
+        assert isinstance(d2, Date)
+        assert d2.dmy.day == 15
+        assert d2.dmy.month == 6
+        assert d2.dmy.year == 1990
+    
+def test_date_of_cdate_date():
+    d = DateGreg(dmy=Dmy(day=15, month=6, year=1990, prec=Precision.SURE, delta=0), calendar=Calendar.GREGORIAN)
+    cd = CdateDate(date=d)
+    result = date_of_cdate(cd)
+    
+    assert result == d
+    assert result is cd.date
+
+def test_cdate_of_date_text():
+    text_date = DateText(text="TextDate")
+    cd = cdate_of_date(text_date)
+    
+    assert isinstance(cd, CdateText)
+    assert cd.text == "TextDate"
+    
+    result = date_of_cdate(cd)
+    assert isinstance(result, DateText)
+    assert result.text == "TextDate"
+
+def test_cdate_of_date_compressed_none():
+    d = DateGreg(dmy=Dmy(day=15, month=6, year=1990, prec=Precision.SURE, delta=5), calendar=Calendar.GREGORIAN)
+    cd = cdate_of_date(d)
+    
+    assert isinstance(cd, CdateDate)
+    assert cd.date == d
+    
+    result = date_of_cdate(cd)
+    assert result == d
+
 def test_cdate_none():
     cd = cdate_of_od(None)
     assert isinstance(cd, CdateNone)
 
     od = od_of_cdate(cd)
     assert od is None
+
+def test_time_elapsed_compute_prec():
+    d1 = Dmy(day=1, month=1, year=2000, prec=Precision.SURE, delta=0)
+    d2 = Dmy(day=1, month=1, year=2010, prec=Precision.SURE, delta=0)
+    result = time_elapsed(d1, d2)
+    assert result.prec == Precision.SURE
+
+    d1 = Dmy(day=1, month=1, year=2000, prec=Precision.MAYBE, delta=0)
+    d2 = Dmy(day=1, month=1, year=2010, prec=Precision.ABOUT, delta=0)
+    result = time_elapsed(d1, d2)
+    assert result.prec == Precision.MAYBE    
+
+    d1 = Dmy(day=1, month=1, year=2000, prec=Precision.ABOUT, delta=0)
+    d2 = Dmy(day=1, month=1, year=2010, prec=Precision.MAYBE, delta=0)
+    result = time_elapsed(d1, d2)
+    assert result.prec == Precision.MAYBE
+
+    d1 = Dmy(day=1, month=1, year=2000, prec=Precision.BEFORE, delta=0)
+    d2 = Dmy(day=1, month=1, year=2010, prec=Precision.AFTER, delta=0)
+    result = time_elapsed(d1, d2)
+    assert result.prec == Precision.AFTER
+
+    d1 = Dmy(day=1, month=1, year=2000, prec=Precision.AFTER, delta=0)
+    d2 = Dmy(day=1, month=1, year=2010, prec=Precision.BEFORE, delta=0)
+    result = time_elapsed(d1, d2)
+    assert result.prec == Precision.BEFORE    
+
+    d1 = Dmy(day=1, month=1, year=2000, prec=Precision.BEFORE, delta=0)
+    d2 = Dmy(day=1, month=1, year=2010, prec=Precision.BEFORE, delta=0)
+    result = time_elapsed(d1, d2)
+    assert result.prec == Precision.MAYBE
+
+def test_time_elapsed_special_cases():
+    d1 = Dmy(day=0, month=0, year=2000, prec=Precision.SURE, delta=0)
+    d2 = Dmy(day=15, month=6, year=2010, prec=Precision.SURE, delta=0)
+    result = time_elapsed(d1, d2)
+    assert result.day == 0
+    assert result.month == 0
+    assert result.year == 10
+    
+    d1 = Dmy(day=0, month=5, year=2000, prec=Precision.SURE, delta=0)
+    d2 = Dmy(day=0, month=0, year=2010, prec=Precision.SURE, delta=0)
+    result = time_elapsed(d1, d2)
+    assert result.day == 0
+    assert result.month == 0
+    assert result.year == 10
+    
+    d1 = Dmy(day=0, month=5, year=2000, prec=Precision.SURE, delta=0)
+    d2 = Dmy(day=0, month=3, year=2001, prec=Precision.SURE, delta=0)
+    result = time_elapsed(d1, d2)
+    assert result.day == 0
+    assert result.month == 10
+    assert result.year == 0
+    
+    d1 = Dmy(day=0, month=5, year=2000, prec=Precision.SURE, delta=0)
+    d2 = Dmy(day=15, month=3, year=2001, prec=Precision.SURE, delta=0)
+    result = time_elapsed(d1, d2)
+    assert result.day == 0
+    assert result.month == 10
+    assert result.year == 0
+    
+    d1 = Dmy(day=15, month=6, year=2000, prec=Precision.SURE, delta=0)
+    d2 = Dmy(day=0, month=0, year=2010, prec=Precision.SURE, delta=0)
+    result = time_elapsed(d1, d2)
+    assert result.day == 0
+    assert result.month == 0
+    assert result.year == 10
+    
+    d1 = Dmy(day=15, month=6, year=2000, prec=Precision.SURE, delta=0)
+    d2 = Dmy(day=0, month=3, year=2001, prec=Precision.SURE, delta=0)
+    result = time_elapsed(d1, d2)
+    assert result.day == 0
+    assert result.month == 9
+    assert result.year == 0
+    
+    d1 = Dmy(day=20, month=6, year=2000, prec=Precision.SURE, delta=0)
+    d2 = Dmy(day=10, month=7, year=2000, prec=Precision.SURE, delta=0)
+    result = time_elapsed(d1, d2)
+    assert result.day == 20
+    assert result.month == 0
+    assert result.year == 0
+    
+    d1 = Dmy(day=20, month=7, year=2000, prec=Precision.SURE, delta=0)
+    d2 = Dmy(day=10, month=6, year=2001, prec=Precision.SURE, delta=0)
+    result = time_elapsed(d1, d2)
+    assert result.day == 21
+    assert result.month == 10
+    assert result.year == 0
 
 def test_dmy_of_dmy2():
     dmy2 = Dmy2(day2=10, month2=3, year2=1985, delta2=0)
@@ -99,7 +238,25 @@ def test_time_elapsed_opt():
     d1 = Dmy(day=1, month=1, year=2000, prec=Precision.AFTER, delta=0)
     d2 = Dmy(day=1, month=1, year=2010, prec=Precision.AFTER, delta=0)
     assert time_elapsed_opt(d1, d2) is None
+    
+    d1 = Dmy(day=1, month=1, year=2000, prec=Precision.BEFORE, delta=0)
+    d2 = Dmy(day=1, month=1, year=2010, prec=Precision.BEFORE, delta=0)
+    assert time_elapsed_opt(d1, d2) is None
 
+    d1 = Dmy(day=1, month=1, year=2000, prec=Precision.AFTER, delta=0)
+    d2 = Dmy(day=1, month=1, year=2010, prec=Precision.SURE, delta=0)
+    elapsed = time_elapsed_opt(d1, d2)
+    assert elapsed is not None
+    assert elapsed.year == 10
+    assert elapsed.prec == Precision.BEFORE
+    
+    d1 = Dmy(day=1, month=1, year=2000, prec=Precision.BEFORE, delta=0)
+    d2 = Dmy(day=1, month=1, year=2010, prec=Precision.SURE, delta=0)
+    elapsed = time_elapsed_opt(d1, d2)
+    assert elapsed is not None
+    assert elapsed.year == 10
+    assert elapsed.prec == Precision.AFTER
+    
     d1 = Dmy(day=1, month=1, year=2000, prec=Precision.SURE, delta=0)
     d2 = Dmy(day=1, month=1, year=2010, prec=Precision.SURE, delta=0)
     elapsed = time_elapsed_opt(d1, d2)
@@ -128,6 +285,34 @@ def test_compare_dmy_different_days():
     assert compare_dmy(d1, d2) < 0
 
 def test_compare_dmy_with_precision():
+    d1 = Dmy(day=0, month=0, year=1990, prec=Precision.SURE, delta=0)
+    d2 = Dmy(day=0, month=0, year=1990, prec=Precision.ABOUT, delta=0)
+    assert compare_dmy_opt(d1, d2, False) == 0
+    
+    d1 = Dmy(day=0, month=0, year=1990, prec=Precision.AFTER, delta=0)
+    d2 = Dmy(day=0, month=0, year=1990, prec=Precision.AFTER, delta=0)
+    assert compare_dmy_opt(d1, d2, False) == 0
+    
+    d1 = Dmy(day=0, month=0, year=1990, prec=Precision.BEFORE, delta=0)
+    d2 = Dmy(day=0, month=0, year=1990, prec=Precision.BEFORE, delta=0)
+    assert compare_dmy_opt(d1, d2, False) == 0
+    
+    d1 = Dmy(day=0, month=0, year=1990, prec=Precision.BEFORE, delta=0)
+    d2 = Dmy(day=0, month=0, year=1990, prec=Precision.SURE, delta=0)
+    assert compare_dmy_opt(d1, d2, False) == -1
+    
+    d1 = Dmy(day=0, month=0, year=1990, prec=Precision.SURE, delta=0)
+    d2 = Dmy(day=0, month=0, year=1990, prec=Precision.AFTER, delta=0)
+    assert compare_dmy_opt(d1, d2, False) == -1
+    
+    d1 = Dmy(day=0, month=0, year=1990, prec=Precision.AFTER, delta=0)
+    d2 = Dmy(day=0, month=0, year=1990, prec=Precision.SURE, delta=0)
+    assert compare_dmy_opt(d1, d2, False) == 1
+    
+    d1 = Dmy(day=0, month=0, year=1990, prec=Precision.SURE, delta=0)
+    d2 = Dmy(day=0, month=0, year=1990, prec=Precision.BEFORE, delta=0)
+    assert compare_dmy_opt(d1, d2, False) == 1
+    
     d1 = Dmy(day=15, month=6, year=1990, prec=Precision.BEFORE, delta=0)
     d2 = Dmy(day=15, month=6, year=1990, prec=Precision.AFTER, delta=0)
     assert compare_dmy(d1, d2) < 0

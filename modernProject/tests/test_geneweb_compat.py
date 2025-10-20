@@ -66,6 +66,32 @@ def test_out_channel_with_open_text():
     finally:
         os.unlink(fname)
 
+def test_out_channel_with_open_gen():
+    mode = 'a'
+    perm = 0o644
+
+    with tempfile.NamedTemporaryFile(delete=False) as f:
+        fname = f.name
+
+    try:
+        OutChannel.with_open_gen(mode, perm, fname, lambda oc: oc.write("text output"))
+
+        with open(fname, 'r') as f:
+            assert f.read() == "text output"
+
+    finally:
+        os.unlink(fname)
+
+    mode = 'x'
+
+    try:
+        OutChannel.with_open_gen(mode, perm, fname, lambda oc: oc.write("text output"))
+
+        with open(fname, 'r') as f:
+            assert f.read() == "text output"
+    finally:
+        os.unlink(fname)
+
 def test_out_channel_output():
     with tempfile.NamedTemporaryFile(delete=False) as f:
         fname = f.name
