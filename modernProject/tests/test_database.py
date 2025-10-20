@@ -7,6 +7,8 @@ from lib import iovalue
 from lib import secure
 from lib.dbdisk import Perm, BaseVersion, BaseData, RecordAccess
 from lib.gwdef import BaseNotes, GenPerson, GenAscend, GenUnion, Sex
+from unittest.mock import patch, mock_open
+
 
 def test_check_magic():
     with tempfile.NamedTemporaryFile(mode='wb', delete=False) as f:
@@ -82,8 +84,6 @@ def test_move_with_backup():
         assert not os.path.exists(src_file)
         assert os.path.exists(backup_file)
         with open(backup_file, "r") as f: assert f.read() == "new destination content"
-
-from unittest.mock import patch, mock_open
 
 def test_input_patches_loading():
     with tempfile.TemporaryDirectory() as tmpdir:

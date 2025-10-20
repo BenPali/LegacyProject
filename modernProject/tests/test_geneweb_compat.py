@@ -148,3 +148,27 @@ def test_list_equal_custom_comparator():
     l1 = ["hello", "world"]
     l2 = ["HELLO", "WORLD"]
     assert ListCompat.equal(lambda a, b: a.lower() == b.lower(), l1, l2) == True
+
+def test_in_channel_exception_closes_file():
+    with tempfile.NamedTemporaryFile(mode='w', delete=False) as f:
+        fname = f.name
+        f.write("test")
+
+    try:
+        with pytest.raises(ValueError):
+            InChannel.with_open_text(fname, lambda ic: raise_error())
+    finally:
+        os.unlink(fname)
+
+def raise_error():
+    raise ValueError("test error")
+
+def test_out_channel_exception_closes_file():
+    with tempfile.NamedTemporaryFile(delete=False) as f:
+        fname = f.name
+
+    try:
+        with pytest.raises(ValueError):
+            OutChannel.with_open_text(fname, lambda oc: raise_error())
+    finally:
+        os.unlink(fname)

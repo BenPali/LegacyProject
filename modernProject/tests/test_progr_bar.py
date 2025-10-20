@@ -2,7 +2,8 @@ import pytest
 import sys
 from io import StringIO
 from modernProject.lib.progr_bar import ProgressBar, with_bar
-
+import time
+from unittest.mock import patch
 
 def test_progress_bar_creation():
     bar = ProgressBar()
@@ -112,10 +113,6 @@ def test_with_bar_decorator_custom_chars():
         assert "*****" in output
     finally:
         sys.stderr = old_stderr
-
-
-import time
-from unittest.mock import patch
 
 def test_progress_bar_throttling_and_output():
     bar = ProgressBar(width=10, full='=', empty='-')
