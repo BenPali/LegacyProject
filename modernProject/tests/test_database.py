@@ -1,5 +1,6 @@
 import os
 import tempfile
+from io import StringIO
 import struct
 from lib import database
 from lib import iovalue
@@ -54,27 +55,89 @@ def test_empty_patch_ht():
 
 def test_move_with_backup():
     with tempfile.TemporaryDirectory() as tmpdir:
-        src = os.path.join(tmpdir, "source.txt")
-        dst = os.path.join(tmpdir, "dest.txt")
-        backup = dst + "~"
+        src_file = os.path.join(tmpdir, "source.txt")
+        dst_file = os.path.join(tmpdir, "destination.txt")
+        backup_file = dst_file + "~"
+    
+        with open(src_file, "w") as f: f.write("source content")
+        database.move_with_backup(src_file, dst_file)
+        assert os.path.exists(dst_file)
+        assert not os.path.exists(src_file)
+        assert not os.path.exists(backup_file)
+        os.remove(dst_file)
+    
+        with open(src_file, "w") as f: f.write("source content")
+        with open(dst_file, "w") as f: f.write("destination content")
+        database.move_with_backup(src_file, dst_file)
+        assert os.path.exists(dst_file)
+        assert not os.path.exists(src_file)
+        assert os.path.exists(backup_file)
+        with open(backup_file, "r") as f: assert f.read() == "destination content"
 
-        with open(dst, 'w') as f:
-            f.write("old content")
+        with open(src_file, "w") as f: f.write("new source content")
+        with open(dst_file, "w") as f: f.write("new destination content")
+        with open(backup_file, "w") as f: f.write("old backup content")
+        database.move_with_backup(src_file, dst_file)
+        assert os.path.exists(dst_file)
+        assert not os.path.exists(src_file)
+        assert os.path.exists(backup_file)
+        with open(backup_file, "r") as f: assert f.read() == "new destination content"
 
-        with open(src, 'w') as f:
-            f.write("new content")
+from unittest.mock import patch, mock_open
 
-        database.move_with_backup(src, dst)
+def test_input_patches_loading():
+    with tempfile.TemporaryDirectory() as tmpdir:
+        bname = tmpdir
+        patches_file = os.path.join(bname, "patches")
+    
+        patches = database.input_patches(bname)
+        assert patches == database.empty_patch_ht()
+    
+        mock_record = {
+            'fields': [
+                {'fields': [[1], [{'fields': ['k1', 'v1']}] ]},
+                {'fields': [[2], [{'fields': ['k2', 'v2']}] ]},
+                {'fields': [[3], [{'fields': ['k3', 'v3']}] ]},
+                {'fields': [[4], [{'fields': ['k4', 'v4']}] ]},
+                {'fields': [[5], [{'fields': ['k5', 'v5']}] ]},
+                {'fields': [[6], [{'fields': ['k6', 'v6']}] ]},
+                {'fields': [[7], [{'fields': ['k7', 'v7']}] ]},
+                [
+                    {'fields': ['n1', 'nv1']},
+                ]
+            ]
+        }
+        with open(patches_file, "wb") as f:
+            f.write(database.MAGIC_PATCH)
+        
+        with patch('lib.secure.open_in_bin', new_callable=mock_open) as mock_open_bin:
+            with patch('lib.iovalue.input_value', return_value=mock_record):
+        
+                mock_file_handle = mock_open_bin.return_value.__enter__.return_value
+                mock_file_handle.read.side_effect = [database.MAGIC_PATCH, b'']
+                mock_file_handle.tell.return_value = len(database.MAGIC_PATCH)
 
-        assert not os.path.exists(src)
-        assert os.path.exists(dst)
-        assert os.path.exists(backup)
+                patches = database.input_patches(bname)
+                assert patches.h_person == ([1], {'k1': 'v1'})
+                assert patches.h_name == {'n1': 'nv1'}
+    
+        with open(patches_file, "wb") as f:
+            f.write(b"BAD_MAGIC")
 
-        with open(dst, 'r') as f:
-            assert f.read() == "new content"
+        with patch('lib.secure.open_in_bin', new_callable=mock_open) as mock_open_bin:
+            mock_file_handle = mock_open_bin.return_value.__enter__.return_value
+            mock_file_handle.read.return_value = b"BAD_MAGIC"
+            mock_file_handle.tell.return_value = 0
+            mock_file_handle.seek.return_value = None
 
-        with open(backup, 'r') as f:
-            assert f.read() == "old content"
+            patches = database.input_patches(bname)
+            assert patches == database.empty_patch_ht()
+
+        with patch('lib.secure.open_in_bin', side_effect=IOError("Test Error")) as mock_open_bin:
+            with patch('sys.stderr', new_callable=StringIO) as mock_stderr:
+                patches = database.input_patches(bname)
+                assert patches == database.empty_patch_ht()
+                assert "Warning: Could not load patches: Test Error" in mock_stderr.getvalue()
 
 def test_input_patches_nonexistent():
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -1085,3 +1148,39 @@ def test_record_access_get_individual_records():
         result = database.with_database(gwb_path, callback)
         assert result == "success"
 
+
+def test_database_from_record_conversion():
+
+    record = {
+        'fields': [
+        
+            {'fields': [[1], [{'fields': ['key1', 'value1']}] ]},
+        
+            'invalid_input',
+            {'fields': [[2], [{'fields': ['key2', 'value2']}] ]},
+            {'fields': [[3], [{'fields': ['key3', 'value3']}] ]},
+            {'fields': [[4], [{'fields': ['key4', 'value4']}] ]},
+            {'fields': [[5], [{'fields': ['key5', 'value5']}] ]},
+            {'fields': [[6], [{'fields': ['key6', 'value6']}] ]},
+        
+            [
+                {'fields': ['name1', 'value_name1']},
+                {'fields': ['name2', 'value_name2']},
+                'invalid_item_in_fields_7'
+            ]
+        ]
+    }
+
+    db_instance = database.PatchesHt.from_record(record)
+
+
+    assert db_instance.h_person == ([1], {'key1': 'value1'})
+    assert db_instance.h_ascend == ([0], {})
+    assert db_instance.h_union == ([2], {'key2': 'value2'})
+    assert db_instance.h_family == ([3], {'key3': 'value3'})
+    assert db_instance.h_couple == ([4], {'key4': 'value4'})
+    assert db_instance.h_descend == ([5], {'key5': 'value5'})
+    assert db_instance.h_string == ([6], {'key6': 'value6'})
+
+
+    assert db_instance.h_name == {'name1': 'value_name1', 'name2': 'value_name2'}
