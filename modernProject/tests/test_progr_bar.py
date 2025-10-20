@@ -112,3 +112,41 @@ def test_with_bar_decorator_custom_chars():
         assert "*****" in output
     finally:
         sys.stderr = old_stderr
+
+
+import time
+from unittest.mock import patch
+
+def test_progress_bar_throttling_and_output():
+    bar = ProgressBar(width=10, full='=', empty='-')
+    old_stderr = sys.stderr
+    try:
+        sys.stderr = StringIO()
+
+        with patch('time.time', return_value=0.0):
+            bar.progress(0, 100)
+            output = sys.stderr.getvalue()
+            sys.stderr.truncate(0)
+            sys.stderr.seek(0)
+
+        with patch('time.time', return_value=0.1):
+            bar.progress(10, 100)
+            output = sys.stderr.getvalue()
+            assert output == ""
+
+        with patch('time.time', return_value=0.3):
+            bar.progress(50, 100)
+            output = sys.stderr.getvalue()
+            assert output == "\r[=====-----] 50%"
+            sys.stderr.truncate(0)
+            sys.stderr.seek(0)
+
+        with patch('time.time', return_value=0.5):
+            bar.progress(100, 100)
+            output = sys.stderr.getvalue()
+            assert output == "\r[==========] 100%"
+            sys.stderr.truncate(0)
+            sys.stderr.seek(0)
+
+    finally:
+        sys.stderr = old_stderr
