@@ -1,13 +1,13 @@
 # OCaml to Python Migration Status
 
-## Overall Progress: 42/115 modules (36.5%)
+## Overall Progress: 43/115 modules (37.4%)
 
 **Final Target:** 115/115 modules (100%)
-**Remaining:** 73 modules needed
+**Remaining:** 72 modules needed
 
 ---
 
-## Completed Modules (42/115)
+## Completed Modules (43/115)
 
 | Module | Lines | Python File | Tests | Notes |
 |--------|-------|-------------|-------|-------|
@@ -20,6 +20,7 @@
 | collection | 70 | collection.py | ✅ | Lazy collections |
 | config | 201 | config.py | ✅ | Configuration |
 | consang | 298 | consang.py | ✅ | Core consanguinity calculations |
+| consangAll | 145 | consang_all.py | ✅ | Consanguinity calculations for all persons |
 | date | 222 | date.py | ✅ | Date operations |
 | database | 1440 | database.py | ✅ | Main database module |
 | dbdisk | 71 | dbdisk.py | ✅ | Database disk structures |
@@ -70,7 +71,6 @@
 
 | Module | Lines | Dependencies | Description |
 |--------|-------|--------------|-------------|
-| consangAll | 145 | Def | Consanguinity calculations for all persons |
 | birthDeath | 116 | Def | Birth/death analysis |
 | changeChildren | 98 | Def | Children modification utilities |
 | utf8 | 229 | (external: Uucp, Uutf) | UTF-8 string operations |
@@ -229,7 +229,7 @@ Priority to unblock maximum dependencies:
 3. ✅ **gutil** (304) - Database utilities
 4. ✅ **stats** (123) - Statistics
 5. ✅ **consang** (298) - Consanguinity
-6. **consangAll** (145) - Extended consanguinity
+6. ✅ **consangAll** (145) - Extended consanguinity
 7. **utf8** (229) - Text processing
 8. **title** (242) - Title handling
 9. **birthDeath** (116) - Birth/death logic
@@ -280,11 +280,11 @@ Implement display modules after core logic is stable
 ## Progress Milestones
 
 - [x] 25% - 29 modules (PASSED ✅)
-- [ ] 50% - 58 modules (Need 16 more)
-- [ ] 75% - 87 modules (Need 45 more)
-- [ ] 100% - 115 modules (Need 73 more) 🎯
+- [ ] 50% - 58 modules (Need 15 more)
+- [ ] 75% - 87 modules (Need 44 more)
+- [ ] 100% - 115 modules (Need 72 more) 🎯
 
 ---
 
-**Last Updated:** 2025-10-19
-**Next Target:** consangAll.py
+**Last Updated:** 2025-10-21
+**Next Target:** birthDeath.py
