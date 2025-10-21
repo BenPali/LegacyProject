@@ -3,7 +3,7 @@ from lib.mutil import (
     list_iter_first, strip_all_trailing_spaces, tr, start_with,
     start_with_wildcard, contains, roman_of_arabian, arabian_of_roman,
     string_of_int_sep, initial, surnames_pieces, array_to_list_map,
-    array_to_list_rev_map, array_assoc, compare_after_particle
+    array_to_list_rev_map, array_assoc, compare_after_particle, digest
 )
 
 
@@ -289,3 +289,25 @@ def test_compare_after_particle_only_particle():
 def test_compare_after_particle_underscore():
     particles = ["de", "van der"]
     assert compare_after_particle(particles, "van der Smith", "Smith") == 0
+
+def test_digest():
+    result = digest("hello world")
+    assert isinstance(result, str)
+    assert len(result) == 32
+    assert result == "5eb63bbbe01eeed093cb22bb8f5acdc3"
+
+def test_digest_empty():
+    result = digest("")
+    assert isinstance(result, str)
+    assert len(result) == 32
+    assert result == "d41d8cd98f00b204e9800998ecf8427e"
+
+def test_digest_unicode():
+    result = digest("Hello 潘諾華")
+    assert isinstance(result, str)
+    assert len(result) == 32
+
+def test_digest_consistent():
+    result1 = digest("test")
+    result2 = digest("test")
+    assert result1 == result2
