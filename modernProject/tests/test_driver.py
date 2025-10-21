@@ -667,3 +667,1191 @@ def test_families_with_selection():
     select_all = lambda f: True
     collection = families(mock_base, select=select_all)
     assert collection.length == 5
+
+
+def test_load_array_functions():
+    from lib.driver import (load_ascends_array, load_unions_array, load_couples_array,
+                           load_descends_array, load_strings_array, load_persons_array,
+                           load_families_array)
+    from types import SimpleNamespace
+
+    loaded = {'ascends': False, 'unions': False, 'couples': False, 'descends': False,
+              'strings': False, 'persons': False, 'families': False}
+
+    def make_loadable(name):
+        obj = SimpleNamespace()
+        obj.load_array = lambda: loaded.update({name: True})
+        return obj
+
+    mock_data = SimpleNamespace(
+        ascends=make_loadable('ascends'),
+        unions=make_loadable('unions'),
+        couples=make_loadable('couples'),
+        descends=make_loadable('descends'),
+        strings=make_loadable('strings'),
+        persons=make_loadable('persons'),
+        families=make_loadable('families')
+    )
+    mock_base = SimpleNamespace(data=mock_data)
+
+    load_ascends_array(mock_base)
+    assert loaded['ascends'] is True
+
+    load_unions_array(mock_base)
+    assert loaded['unions'] is True
+
+    load_couples_array(mock_base)
+    assert loaded['couples'] is True
+
+    load_descends_array(mock_base)
+    assert loaded['descends'] is True
+
+    load_strings_array(mock_base)
+    assert loaded['strings'] is True
+
+    load_persons_array(mock_base)
+    assert loaded['persons'] is True
+
+    load_families_array(mock_base)
+    assert loaded['families'] is True
+
+
+def test_load_array_functions_no_data():
+    from lib.driver import (load_ascends_array, load_unions_array, load_couples_array,
+                           load_descends_array, load_strings_array, load_persons_array,
+                           load_families_array)
+    from types import SimpleNamespace
+
+    mock_base = SimpleNamespace()
+
+    load_ascends_array(mock_base)
+    load_unions_array(mock_base)
+    load_couples_array(mock_base)
+    load_descends_array(mock_base)
+    load_strings_array(mock_base)
+    load_persons_array(mock_base)
+    load_families_array(mock_base)
+
+
+def test_clear_array_functions():
+    from lib.driver import (clear_ascends_array, clear_unions_array, clear_couples_array,
+                           clear_descends_array, clear_strings_array, clear_persons_array,
+                           clear_families_array)
+    from types import SimpleNamespace
+
+    cleared = {'ascends': False, 'unions': False, 'couples': False, 'descends': False,
+               'strings': False, 'persons': False, 'families': False}
+
+    def make_clearable(name):
+        obj = SimpleNamespace()
+        obj.clear_array = lambda: cleared.update({name: True})
+        return obj
+
+    mock_data = SimpleNamespace(
+        ascends=make_clearable('ascends'),
+        unions=make_clearable('unions'),
+        couples=make_clearable('couples'),
+        descends=make_clearable('descends'),
+        strings=make_clearable('strings'),
+        persons=make_clearable('persons'),
+        families=make_clearable('families')
+    )
+    mock_base = SimpleNamespace(data=mock_data)
+
+    clear_ascends_array(mock_base)
+    assert cleared['ascends'] is True
+
+    clear_unions_array(mock_base)
+    assert cleared['unions'] is True
+
+    clear_couples_array(mock_base)
+    assert cleared['couples'] is True
+
+    clear_descends_array(mock_base)
+    assert cleared['descends'] is True
+
+    clear_strings_array(mock_base)
+    assert cleared['strings'] is True
+
+    clear_persons_array(mock_base)
+    assert cleared['persons'] is True
+
+    clear_families_array(mock_base)
+    assert cleared['families'] is True
+
+
+def test_clear_array_functions_no_data():
+    from lib.driver import (clear_ascends_array, clear_unions_array, clear_couples_array,
+                           clear_descends_array, clear_strings_array, clear_persons_array,
+                           clear_families_array)
+    from types import SimpleNamespace
+
+    mock_base = SimpleNamespace()
+
+    clear_ascends_array(mock_base)
+    clear_unions_array(mock_base)
+    clear_couples_array(mock_base)
+    clear_descends_array(mock_base)
+    clear_strings_array(mock_base)
+    clear_persons_array(mock_base)
+    clear_families_array(mock_base)
+
+
+def test_gen_person_of_person():
+    from lib.driver import gen_person_of_person, Person
+    from lib.gwdef import GenPerson, Sex
+    from types import SimpleNamespace
+
+    mock_gen_person = GenPerson(
+        first_name=1,
+        surname=2,
+        occ=0,
+        image=0,
+        public_name=0,
+        qualifiers=[],
+        aliases=[],
+        first_names_aliases=[],
+        surnames_aliases=[],
+        titles=[],
+        rparents=[],
+        related=[],
+        occupation=0,
+        sex=Sex.MALE,
+        access=0,
+        birth=None,
+        birth_place=0,
+        birth_note=0,
+        birth_src=0,
+        baptism=None,
+        baptism_place=0,
+        baptism_note=0,
+        baptism_src=0,
+        death=None,
+        death_place=0,
+        death_note=0,
+        death_src=0,
+        burial=None,
+        burial_place=0,
+        burial_note=0,
+        burial_src=0,
+        pevents=[],
+        notes=0,
+        psources=0,
+        key_index=0
+    )
+
+    mock_base = SimpleNamespace()
+    mock_persons = SimpleNamespace(arr=[None])
+    mock_base.data = SimpleNamespace(persons=mock_persons)
+
+    person = Person(mock_base, 0)
+    person.gen_person = mock_gen_person
+    person.loaded = True
+
+    result = gen_person_of_person(person)
+    assert result == mock_gen_person
+    assert result.first_name == 1
+    assert result.surname == 2
+
+
+def test_gen_ascend_of_person():
+    from lib.driver import gen_ascend_of_person, Person
+    from lib.gwdef import GenAscend
+    from lib.adef import Fix
+    from types import SimpleNamespace
+
+    mock_gen_ascend = GenAscend(parents=None, consang=Fix.from_float(0.0))
+
+    mock_base = SimpleNamespace()
+    mock_persons = SimpleNamespace(arr=[None], get=lambda i: None)
+    mock_base.data = SimpleNamespace(persons=mock_persons)
+
+    person = Person(mock_base, 0)
+    person.gen_ascend = mock_gen_ascend
+    person.gen_person = SimpleNamespace()
+
+    result = gen_ascend_of_person(person)
+    assert result == mock_gen_ascend
+    assert result.parents is None
+    assert result.consang.to_float() == 0.0
+
+
+def test_gen_union_of_person():
+    from lib.driver import gen_union_of_person, Person
+    from lib.gwdef import GenUnion
+    from types import SimpleNamespace
+
+    mock_gen_union = GenUnion(family=[])
+
+    mock_base = SimpleNamespace()
+    mock_persons = SimpleNamespace(arr=[None], get=lambda i: None)
+    mock_base.data = SimpleNamespace(persons=mock_persons)
+
+    person = Person(mock_base, 0)
+    person.gen_union = mock_gen_union
+    person.gen_person = SimpleNamespace()
+
+    result = gen_union_of_person(person)
+    assert result == mock_gen_union
+    assert result.family == []
+
+
+def test_new_iper():
+    from lib.driver import new_iper
+    from types import SimpleNamespace
+
+    mock_persons = SimpleNamespace(arr=[None] * 42)
+    mock_data = SimpleNamespace(persons=mock_persons)
+    mock_base = SimpleNamespace(data=mock_data)
+
+    result = new_iper(mock_base)
+    assert result == 42
+
+
+def test_new_ifam():
+    from lib.driver import new_ifam
+    from types import SimpleNamespace
+
+    mock_families = SimpleNamespace(arr=[None] * 13)
+    mock_data = SimpleNamespace(families=mock_families)
+    mock_base = SimpleNamespace(data=mock_data)
+
+    result = new_ifam(mock_base)
+    assert result == 13
+
+
+def test_gen_couple_of_family():
+    from lib.driver import gen_couple_of_family, Family
+    from lib.gwdef import GenCouple
+    from types import SimpleNamespace
+
+    mock_gen_couple = GenCouple(father=0, mother=1)
+
+    mock_base = SimpleNamespace()
+    mock_families = SimpleNamespace(arr=[None], get=lambda i: None)
+    mock_base.data = SimpleNamespace(families=mock_families)
+
+    family = Family(mock_base, 0)
+    family.gen_couple = mock_gen_couple
+    family.gen_family = SimpleNamespace()
+
+    result = gen_couple_of_family(family)
+    assert result == mock_gen_couple
+    assert result.father == 0
+    assert result.mother == 1
+
+
+def test_gen_descend_of_family():
+    from lib.driver import gen_descend_of_family, Family
+    from lib.gwdef import GenDescend
+    from types import SimpleNamespace
+
+    mock_gen_descend = GenDescend(children=[0, 1, 2])
+
+    mock_base = SimpleNamespace()
+    mock_families = SimpleNamespace(arr=[None], get=lambda i: None)
+    mock_base.data = SimpleNamespace(families=mock_families)
+
+    family = Family(mock_base, 0)
+    family.gen_descend = mock_gen_descend
+    family.gen_family = SimpleNamespace()
+
+    result = gen_descend_of_family(family)
+    assert result == mock_gen_descend
+    assert result.children == [0, 1, 2]
+
+
+def test_gen_family_of_family():
+    from lib.driver import gen_family_of_family, Family
+    from lib.gwdef import GenFamily, RelationKind, NotDivorced
+    from lib.date import cdate_None
+    from types import SimpleNamespace
+
+    mock_gen_family = GenFamily(
+        marriage=cdate_None,
+        marriage_place=0,
+        marriage_note=0,
+        marriage_src=0,
+        relation=RelationKind.MARRIED,
+        divorce=NotDivorced(),
+        fevents=[],
+        witnesses=[],
+        comment=0,
+        origin_file=0,
+        fsources=0,
+        fam_index=5
+    )
+
+    mock_base = SimpleNamespace()
+    mock_families = SimpleNamespace(arr=[None], get=lambda i: None)
+    mock_base.data = SimpleNamespace(families=mock_families)
+
+    family = Family(mock_base, 5)
+    family.gen_family = mock_gen_family
+
+    result = gen_family_of_family(family)
+    assert result == mock_gen_family
+    assert result.fam_index == 5
+
+
+def test_person_of_gen_person():
+    from lib.driver import person_of_gen_person, Person
+    from lib.gwdef import GenPerson, GenAscend, GenUnion, Sex, Access, DontKnowIfDead, UnknownBurial
+    from lib.date import cdate_None
+    from lib.adef import NO_CONSANG
+    from types import SimpleNamespace
+
+    mock_base = SimpleNamespace()
+
+    mock_gen_person = GenPerson(
+        first_name=1, surname=2, occ=0, image=0,
+        first_names_aliases=[], surnames_aliases=[], public_name=0,
+        qualifiers=[], titles=[], rparents=[], related=[], aliases=[],
+        occupation=0, sex=Sex.MALE, access=Access.PUBLIC,
+        birth=cdate_None, birth_place=0, birth_note=0, birth_src=0,
+        baptism=cdate_None, baptism_place=0, baptism_note=0, baptism_src=0,
+        death=DontKnowIfDead(), death_place=0, death_note=0, death_src=0,
+        burial=UnknownBurial(), burial_place=0, burial_note=0, burial_src=0,
+        pevents=[], notes=0, psources=0, key_index=42
+    )
+    mock_gen_ascend = GenAscend(parents=None, consang=NO_CONSANG)
+    mock_gen_union = GenUnion(family=[])
+
+    result = person_of_gen_person(mock_base, (mock_gen_person, mock_gen_ascend, mock_gen_union))
+    assert isinstance(result, Person)
+    assert result.index == 42
+    assert result.gen_person == mock_gen_person
+    assert result.gen_ascend == mock_gen_ascend
+    assert result.gen_union == mock_gen_union
+
+
+def test_family_of_gen_family():
+    from lib.driver import family_of_gen_family, Family
+    from lib.gwdef import GenFamily, GenCouple, GenDescend, RelationKind, NotDivorced
+    from lib.date import cdate_None
+    from types import SimpleNamespace
+
+    mock_base = SimpleNamespace()
+
+    mock_gen_family = GenFamily(
+        marriage=cdate_None, marriage_place=0, marriage_note=0, marriage_src=0,
+        relation=RelationKind.MARRIED, divorce=NotDivorced(),
+        fevents=[], witnesses=[], comment=0, origin_file=0, fsources=0,
+        fam_index=10
+    )
+    mock_gen_couple = GenCouple(father=0, mother=1)
+    mock_gen_descend = GenDescend(children=[2, 3])
+
+    result = family_of_gen_family(mock_base, (mock_gen_family, mock_gen_couple, mock_gen_descend))
+    assert isinstance(result, Family)
+    assert result.index == 10
+    assert result.gen_family == mock_gen_family
+    assert result.gen_couple == mock_gen_couple
+    assert result.gen_descend == mock_gen_descend
+
+
+def test_no_person():
+    from lib.driver import no_person, Istr
+    from lib.gwdef import Sex, Access
+
+    result = no_person(42)
+    assert result.key_index == 42
+    assert result.first_name == Istr.QUEST
+    assert result.surname == Istr.QUEST
+    assert result.sex == Sex.NEUTER
+    assert result.access == Access.PRIVATE
+    assert result.first_names_aliases == []
+    assert result.surnames_aliases == []
+    assert result.qualifiers == []
+    assert result.titles == []
+
+
+def test_no_ascend():
+    from lib.driver import no_ascend
+    from lib.adef import NO_CONSANG
+
+    result = no_ascend()
+    assert result.parents is None
+    assert result.consang == NO_CONSANG
+
+
+def test_no_union():
+    from lib.driver import no_union
+
+    result = no_union()
+    assert result.family == []
+
+
+def test_no_family():
+    from lib.driver import no_family, Istr
+    from lib.gwdef import RelationKind
+
+    result = no_family(99)
+    assert result.fam_index == 99
+    assert result.marriage_place == Istr.EMPTY
+    assert result.relation == RelationKind.MARRIED
+    assert result.fevents == []
+    assert result.witnesses == []
+
+
+def test_no_descend():
+    from lib.driver import no_descend
+
+    result = no_descend()
+    assert result.children == []
+
+
+def test_no_couple():
+    from lib.driver import no_couple, Iper
+
+    result = no_couple()
+    assert result.father == Iper.dummy()
+    assert result.mother == Iper.dummy()
+
+
+def test_p_first_name():
+    from lib.driver import p_first_name, Person
+    from lib.gwdef import GenPerson, Sex, Access, DontKnowIfDead, UnknownBurial
+    from lib.date import cdate_None
+    from types import SimpleNamespace
+
+    mock_gen_person = GenPerson(
+        first_name=5, surname=2, occ=0, image=0,
+        first_names_aliases=[], surnames_aliases=[], public_name=0,
+        qualifiers=[], titles=[], rparents=[], related=[], aliases=[],
+        occupation=0, sex=Sex.MALE, access=Access.PUBLIC,
+        birth=cdate_None, birth_place=0, birth_note=0, birth_src=0,
+        baptism=cdate_None, baptism_place=0, baptism_note=0, baptism_src=0,
+        death=DontKnowIfDead(), death_place=0, death_note=0, death_src=0,
+        burial=UnknownBurial(), burial_place=0, burial_note=0, burial_src=0,
+        pevents=[], notes=0, psources=0, key_index=0
+    )
+
+    strings = ["", "?", "surname", "", "", "John"]
+    mock_strings = SimpleNamespace(get=lambda i: strings[i] if 0 <= i < len(strings) else "")
+    mock_base = SimpleNamespace(data=SimpleNamespace(strings=mock_strings))
+
+    person = Person(mock_base, 0)
+    person.gen_person = mock_gen_person
+
+    result = p_first_name(mock_base, person)
+    assert result == "John"
+
+
+def test_p_surname():
+    from lib.driver import p_surname, Person
+    from lib.gwdef import GenPerson, Sex, Access, DontKnowIfDead, UnknownBurial
+    from lib.date import cdate_None
+    from types import SimpleNamespace
+
+    mock_gen_person = GenPerson(
+        first_name=1, surname=7, occ=0, image=0,
+        first_names_aliases=[], surnames_aliases=[], public_name=0,
+        qualifiers=[], titles=[], rparents=[], related=[], aliases=[],
+        occupation=0, sex=Sex.MALE, access=Access.PUBLIC,
+        birth=cdate_None, birth_place=0, birth_note=0, birth_src=0,
+        baptism=cdate_None, baptism_place=0, baptism_note=0, baptism_src=0,
+        death=DontKnowIfDead(), death_place=0, death_note=0, death_src=0,
+        burial=UnknownBurial(), burial_place=0, burial_note=0, burial_src=0,
+        pevents=[], notes=0, psources=0, key_index=0
+    )
+
+    strings = ["", "?", "", "", "", "", "", "Smith"]
+    mock_strings = SimpleNamespace(get=lambda i: strings[i] if 0 <= i < len(strings) else "")
+    mock_base = SimpleNamespace(data=SimpleNamespace(strings=mock_strings))
+
+    person = Person(mock_base, 0)
+    person.gen_person = mock_gen_person
+
+    result = p_surname(mock_base, person)
+    assert result == "Smith"
+
+
+def test_person_misc_names():
+    from lib.driver import person_misc_names, Person, Istr
+    from lib.gwdef import GenPerson, Sex, Access, DontKnowIfDead, UnknownBurial
+    from lib.date import cdate_None
+    from types import SimpleNamespace
+
+    mock_gen_person = GenPerson(
+        first_name=2, surname=3, occ=0, image=0,
+        first_names_aliases=[4], surnames_aliases=[5], public_name=6,
+        qualifiers=[7], titles=[], rparents=[], related=[], aliases=[8],
+        occupation=0, sex=Sex.MALE, access=Access.PUBLIC,
+        birth=cdate_None, birth_place=0, birth_note=0, birth_src=0,
+        baptism=cdate_None, baptism_place=0, baptism_note=0, baptism_src=0,
+        death=DontKnowIfDead(), death_place=0, death_note=0, death_src=0,
+        burial=UnknownBurial(), burial_place=0, burial_note=0, burial_src=0,
+        pevents=[], notes=0, psources=0, key_index=0
+    )
+
+    strings = ["", "?", "John", "Doe", "Johnny", "Smith", "J.D.", "Jr", "John D."]
+    mock_strings = SimpleNamespace(get=lambda i: strings[i] if 0 <= i < len(strings) else "")
+    mock_base = SimpleNamespace(data=SimpleNamespace(strings=mock_strings))
+
+    person = Person(mock_base, 0)
+    person.gen_person = mock_gen_person
+
+    def nobtit(p):
+        return []
+
+    result = person_misc_names(mock_base, person, nobtit)
+    assert "John Doe" in result
+    assert "J.D. Doe" in result
+    assert "John D." in result
+    assert "John Jr Doe" in result
+    assert "Johnny Doe" in result
+    assert "John Smith" in result
+
+
+def test_insert_person_with_union_and_ascendants():
+    from lib.driver import insert_person_with_union_and_ascendants, Istr
+    from lib.gwdef import GenPerson, GenAscend, GenUnion, Sex, Access, DontKnowIfDead, UnknownBurial
+    from lib.date import cdate_None
+    from lib.adef import NO_CONSANG
+    from types import SimpleNamespace
+
+    patched = {'person': None, 'ascend': None, 'union': None}
+
+    def patch_person(ip, p):
+        patched['person'] = (ip, p)
+
+    def patch_ascend(ip, a):
+        patched['ascend'] = (ip, a)
+
+    def patch_union(ip, u):
+        patched['union'] = (ip, u)
+
+    mock_func = SimpleNamespace(
+        patch_person=patch_person,
+        patch_ascend=patch_ascend,
+        patch_union=patch_union
+    )
+    mock_persons = SimpleNamespace(arr=[None] * 5)
+    mock_data = SimpleNamespace(persons=mock_persons)
+    mock_base = SimpleNamespace(func=mock_func, data=mock_data)
+
+    gen_person = GenPerson(
+        first_name=Istr.QUEST, surname=Istr.QUEST, occ=0, image=0,
+        first_names_aliases=[], surnames_aliases=[], public_name=0,
+        qualifiers=[], titles=[], rparents=[], related=[], aliases=[],
+        occupation=0, sex=Sex.MALE, access=Access.PUBLIC,
+        birth=cdate_None, birth_place=0, birth_note=0, birth_src=0,
+        baptism=cdate_None, baptism_place=0, baptism_note=0, baptism_src=0,
+        death=DontKnowIfDead(), death_place=0, death_note=0, death_src=0,
+        burial=UnknownBurial(), burial_place=0, burial_note=0, burial_src=0,
+        pevents=[], notes=0, psources=0, key_index=-1
+    )
+    gen_ascend = GenAscend(parents=None, consang=NO_CONSANG)
+    gen_union = GenUnion(family=[])
+
+    result = insert_person_with_union_and_ascendants(mock_base, gen_person, gen_ascend, gen_union)
+    assert result == 5
+    assert patched['person'] is not None
+    assert patched['person'][0] == 5
+    assert patched['person'][1].key_index == 5
+    assert patched['ascend'] is not None
+    assert patched['union'] is not None
+
+
+def test_insert_family_with_couple_and_descendants():
+    from lib.driver import insert_family_with_couple_and_descendants, Istr
+    from lib.gwdef import GenFamily, GenCouple, GenDescend, RelationKind, NotDivorced
+    from lib.date import cdate_None
+    from types import SimpleNamespace
+
+    patched = {'family': None, 'couple': None, 'descend': None}
+
+    def patch_family(ifam, f):
+        patched['family'] = (ifam, f)
+
+    def patch_couple(ifam, c):
+        patched['couple'] = (ifam, c)
+
+    def patch_descend(ifam, d):
+        patched['descend'] = (ifam, d)
+
+    mock_func = SimpleNamespace(
+        patch_family=patch_family,
+        patch_couple=patch_couple,
+        patch_descend=patch_descend
+    )
+    mock_families = SimpleNamespace(arr=[None] * 3)
+    mock_data = SimpleNamespace(families=mock_families)
+    mock_base = SimpleNamespace(func=mock_func, data=mock_data)
+
+    gen_family = GenFamily(
+        marriage=cdate_None, marriage_place=Istr.EMPTY, marriage_note=Istr.EMPTY,
+        marriage_src=Istr.EMPTY, relation=RelationKind.MARRIED, divorce=NotDivorced(),
+        fevents=[], witnesses=[], comment=Istr.EMPTY, origin_file=Istr.EMPTY,
+        fsources=Istr.EMPTY, fam_index=-1
+    )
+    gen_couple = GenCouple(father=0, mother=1)
+    gen_descend = GenDescend(children=[2, 3])
+
+    result = insert_family_with_couple_and_descendants(mock_base, gen_family, gen_couple, gen_descend)
+    assert result == 3
+    assert patched['family'] is not None
+    assert patched['family'][0] == 3
+    assert patched['family'][1].fam_index == 3
+    assert patched['couple'] is not None
+    assert patched['descend'] is not None
+
+
+def test_delete_person_rec():
+    import lib.driver
+    from lib.gwdef import GenUnion
+    from types import SimpleNamespace
+
+    deleted = {'person': [], 'ascend': [], 'union': [], 'descend': []}
+
+    original_delete_person = lib.driver.delete_person
+    original_delete_ascend = lib.driver.delete_ascend
+    original_delete_union = lib.driver.delete_union
+    original_delete_descend = lib.driver.delete_descend
+    original_delete_family_rec = lib.driver.delete_family_rec
+
+    def mock_delete_person(base, ip):
+        deleted['person'].append(ip)
+
+    def mock_delete_ascend(base, ip):
+        deleted['ascend'].append(ip)
+
+    def mock_delete_union(base, ip):
+        deleted['union'].append(ip)
+
+    def mock_delete_descend(base, ifam):
+        deleted['descend'].append(ifam)
+
+    def mock_delete_family_rec(base, ifam):
+        pass
+
+    lib.driver.delete_person = mock_delete_person
+    lib.driver.delete_ascend = mock_delete_ascend
+    lib.driver.delete_union = mock_delete_union
+    lib.driver.delete_descend = mock_delete_descend
+    lib.driver.delete_family_rec = mock_delete_family_rec
+
+    try:
+        person = lib.driver.Person(None, 0)
+        person.gen_person = SimpleNamespace()
+        person.gen_ascend = SimpleNamespace(parents=5)
+        person.gen_union = GenUnion(family=[1, 2])
+
+        family1 = lib.driver.Family(None, 1)
+        family1.gen_couple = SimpleNamespace(father=0, mother=10)
+        family1.gen_family = SimpleNamespace()
+
+        family2 = lib.driver.Family(None, 2)
+        family2.gen_couple = SimpleNamespace(father=0, mother=11)
+        family2.gen_family = SimpleNamespace()
+
+        original_poi = lib.driver.poi
+        original_foi = lib.driver.foi
+
+        def mock_poi(base, ip):
+            return person
+
+        def mock_foi(base, ifam):
+            if ifam == 1:
+                return family1
+            elif ifam == 2:
+                return family2
+            return None
+
+        lib.driver.poi = mock_poi
+        lib.driver.foi = mock_foi
+
+        lib.driver.delete_person_rec(None, 0)
+        assert 0 in deleted['person']
+        assert 0 in deleted['ascend']
+        assert 0 in deleted['union']
+        assert 5 in deleted['descend']
+
+        lib.driver.poi = original_poi
+        lib.driver.foi = original_foi
+    finally:
+        lib.driver.delete_person = original_delete_person
+        lib.driver.delete_ascend = original_delete_ascend
+        lib.driver.delete_union = original_delete_union
+        lib.driver.delete_descend = original_delete_descend
+        lib.driver.delete_family_rec = original_delete_family_rec
+
+
+def test_delete_family_rec():
+    import lib.driver
+    from lib.gwdef import GenUnion
+    from types import SimpleNamespace
+
+    deleted = {'family': [], 'couple': [], 'descend': [], 'ascend': []}
+    patched_unions = {}
+
+    original_delete_family = lib.driver.delete_family
+    original_delete_couple = lib.driver.delete_couple
+    original_delete_descend = lib.driver.delete_descend
+    original_delete_ascend = lib.driver.delete_ascend
+    original_patch_union = lib.driver.patch_union
+
+    def mock_delete_family(base, ifam):
+        deleted['family'].append(ifam)
+
+    def mock_delete_couple(base, ifam):
+        deleted['couple'].append(ifam)
+
+    def mock_delete_descend(base, ifam):
+        deleted['descend'].append(ifam)
+
+    def mock_delete_ascend(base, ip):
+        deleted['ascend'].append(ip)
+
+    def mock_patch_union(base, ip, u):
+        patched_unions[ip] = u
+
+    lib.driver.delete_family = mock_delete_family
+    lib.driver.delete_couple = mock_delete_couple
+    lib.driver.delete_descend = mock_delete_descend
+    lib.driver.delete_ascend = mock_delete_ascend
+    lib.driver.patch_union = mock_patch_union
+
+    try:
+        father = lib.driver.Person(None, 0)
+        father.gen_person = SimpleNamespace()
+        father.gen_ascend = SimpleNamespace(parents=5)
+        father.gen_union = GenUnion(family=[5, 6])
+
+        mother = lib.driver.Person(None, 1)
+        mother.gen_person = SimpleNamespace()
+        mother.gen_ascend = SimpleNamespace(parents=5)
+        mother.gen_union = GenUnion(family=[5, 7])
+
+        child1 = lib.driver.Person(None, 2)
+        child1.gen_person = SimpleNamespace()
+        child1.gen_ascend = SimpleNamespace(parents=5)
+
+        child2 = lib.driver.Person(None, 3)
+        child2.gen_person = SimpleNamespace()
+        child2.gen_ascend = SimpleNamespace(parents=5)
+
+        family = lib.driver.Family(None, 5)
+        family.gen_couple = SimpleNamespace(father=0, mother=1)
+        family.gen_descend = SimpleNamespace(children=[2, 3])
+        family.gen_family = SimpleNamespace()
+
+        original_poi = lib.driver.poi
+        original_foi = lib.driver.foi
+
+        def mock_poi(base, ip):
+            if ip == 0:
+                return father
+            elif ip == 1:
+                return mother
+            elif ip == 2:
+                return child1
+            elif ip == 3:
+                return child2
+            return None
+
+        def mock_foi(base, ifam):
+            if ifam == 5:
+                return family
+            return None
+
+        lib.driver.poi = mock_poi
+        lib.driver.foi = mock_foi
+
+        lib.driver.delete_family_rec(None, 5)
+        assert 5 in deleted['family']
+        assert 5 in deleted['couple']
+        assert 5 in deleted['descend']
+        assert 2 in deleted['ascend']
+        assert 3 in deleted['ascend']
+        assert 0 in patched_unions
+        assert 1 in patched_unions
+
+        lib.driver.poi = original_poi
+        lib.driver.foi = original_foi
+    finally:
+        lib.driver.delete_family = original_delete_family
+        lib.driver.delete_couple = original_delete_couple
+        lib.driver.delete_descend = original_delete_descend
+        lib.driver.delete_ascend = original_delete_ascend
+        lib.driver.patch_union = original_patch_union
+
+
+def test_empty_person():
+    from lib.driver import empty_person, Person
+    from types import SimpleNamespace
+
+    mock_base = SimpleNamespace()
+    result = empty_person(mock_base, 42)
+    assert isinstance(result, Person)
+    assert result.index == 42
+    assert result.base == mock_base
+
+
+def test_empty_family():
+    from lib.driver import empty_family, Family
+    from types import SimpleNamespace
+
+    mock_base = SimpleNamespace()
+    result = empty_family(mock_base, 10)
+    assert isinstance(result, Family)
+    assert result.index == 10
+    assert result.base == mock_base
+
+
+def test_get_separation():
+    from lib.driver import get_separation, Family
+    from lib.gwdef import NotDivorced
+    from types import SimpleNamespace
+
+    mock_base = SimpleNamespace()
+    family = Family(mock_base, 0)
+    family.gen_family = SimpleNamespace(divorce=NotDivorced())
+
+    result = get_separation(family)
+    assert isinstance(result, NotDivorced)
+
+
+def test_children_of_p():
+    from lib.driver import children_of_p, Person, Family
+    from lib.gwdef import GenUnion
+    from types import SimpleNamespace
+
+    mock_base = SimpleNamespace()
+
+    person = Person(mock_base, 0)
+    person.gen_union = GenUnion(family=[1, 2])
+    person.gen_person = SimpleNamespace()
+
+    fam1 = Family(mock_base, 1)
+    fam1.gen_descend = SimpleNamespace(children=[10, 11])
+    fam1.gen_family = SimpleNamespace()
+
+    fam2 = Family(mock_base, 2)
+    fam2.gen_descend = SimpleNamespace(children=[12])
+    fam2.gen_family = SimpleNamespace()
+
+    import lib.driver
+    original_foi = lib.driver.foi
+
+    def mock_foi(base, ifam):
+        if ifam == 1:
+            return fam1
+        elif ifam == 2:
+            return fam2
+        return None
+
+    lib.driver.foi = mock_foi
+    try:
+        result = children_of_p(mock_base, person)
+        assert result == [10, 11, 12]
+    finally:
+        lib.driver.foi = original_foi
+
+
+def test_nobtitles():
+    from lib.driver import nobtitles, Person, Istr
+    from lib.gwdef import GenPerson, Sex, Access, DontKnowIfDead, UnknownBurial
+    from lib.date import cdate_None
+    from types import SimpleNamespace
+
+    mock_title1 = SimpleNamespace(name=5)
+    mock_title2 = SimpleNamespace(name=6)
+    mock_title3 = SimpleNamespace(name=7)
+
+    mock_gen_person = GenPerson(
+        first_name=1, surname=2, occ=0, image=0,
+        first_names_aliases=[], surnames_aliases=[], public_name=0,
+        qualifiers=[], titles=[mock_title1, mock_title2, mock_title3],
+        rparents=[], related=[], aliases=[],
+        occupation=0, sex=Sex.MALE, access=Access.PUBLIC,
+        birth=cdate_None, birth_place=0, birth_note=0, birth_src=0,
+        baptism=cdate_None, baptism_place=0, baptism_note=0, baptism_src=0,
+        death=DontKnowIfDead(), death_place=0, death_note=0, death_src=0,
+        burial=UnknownBurial(), burial_place=0, burial_note=0, burial_src=0,
+        pevents=[], notes=0, psources=0, key_index=0
+    )
+
+    strings = ["", "?", "", "", "", "Duke", "Earl", "Baron"]
+    mock_strings = SimpleNamespace(get=lambda i: strings[i] if 0 <= i < len(strings) else "")
+    mock_base = SimpleNamespace(data=SimpleNamespace(strings=mock_strings))
+
+    person = Person(mock_base, 0)
+    person.gen_person = mock_gen_person
+
+    result = nobtitles(mock_base, ["Duke", "Earl"], [], person)
+    assert len(result) == 2
+
+    result = nobtitles(mock_base, [], ["Baron"], person)
+    assert len(result) == 2
+
+
+def test_make():
+    from lib.driver import make
+    import pytest
+
+    with pytest.raises(NotImplementedError):
+        make("test", [], None, None, lambda x: x)
+
+
+def test_load_database():
+    from lib.driver import load_database
+    import pytest
+
+    if hasattr(load_database, '_loaded_bases'):
+        load_database._loaded_bases.clear()
+
+    with pytest.raises(Exception):
+        load_database("nonexistent_db")
+
+
+def test_with_database():
+    from lib.driver import with_database
+    import pytest
+
+    with pytest.raises(Exception):
+        with_database("nonexistent_db", lambda base: 42)
+
+
+def test_sync():
+    from lib.driver import sync
+    from types import SimpleNamespace
+
+    synced = {'called': False}
+
+    def mock_sync(scratch):
+        synced['called'] = True
+
+    mock_func = SimpleNamespace(sync=mock_sync)
+    mock_base = SimpleNamespace(func=mock_func)
+
+    sync(mock_base)
+    assert synced['called'] is True
+
+
+def test_spi_functions():
+    from lib.driver import spi_find, spi_first, spi_next, Istr
+    from types import SimpleNamespace
+
+    mock_spi = SimpleNamespace(
+        find=lambda i: [1, 2, 3],
+        first=lambda s: 5,
+        next=lambda i: i + 1
+    )
+
+    assert spi_find(mock_spi, 10) == [1, 2, 3]
+    assert spi_first(mock_spi, "test") == 5
+    assert spi_next(mock_spi, 10) == 11
+
+    empty_spi = SimpleNamespace()
+    assert spi_find(empty_spi, 10) == []
+    assert spi_first(empty_spi, "test") == Istr.EMPTY
+    assert spi_next(empty_spi, 10) == Istr.EMPTY
+
+
+def test_base_visible_get():
+    from lib.driver import base_visible_get, Person
+    from types import SimpleNamespace
+
+    called = {'value': False}
+
+    def fct(person):
+        called['value'] = True
+        return True
+
+    mock_base = SimpleNamespace()
+    result = base_visible_get(mock_base, fct, 0)
+    assert result is True
+    assert called['value'] is True
+
+
+def test_base_visible_write():
+    from lib.driver import base_visible_write
+    from types import SimpleNamespace
+
+    written = {'called': False}
+
+    mock_func = SimpleNamespace(base_visible_write=lambda: written.update({'called': True}))
+    mock_base = SimpleNamespace(func=mock_func)
+
+    base_visible_write(mock_base)
+    assert written['called'] is True
+
+
+def test_base_particles():
+    from lib.driver import base_particles
+    from types import SimpleNamespace
+    import re
+
+    mock_base = SimpleNamespace()
+    result = base_particles(mock_base)
+    assert isinstance(result, type(re.compile('')))
+
+
+def test_base_strings_of_first_name():
+    from lib.driver import base_strings_of_first_name
+    from types import SimpleNamespace
+
+    mock_func = SimpleNamespace(base_strings_of_first_name=lambda s: [1, 2, 3])
+    mock_base = SimpleNamespace(func=mock_func)
+
+    result = base_strings_of_first_name(mock_base, "John")
+    assert result == [1, 2, 3]
+
+    empty_base = SimpleNamespace()
+    assert base_strings_of_first_name(empty_base, "John") == []
+
+
+def test_base_strings_of_surname():
+    from lib.driver import base_strings_of_surname
+    from types import SimpleNamespace
+
+    mock_func = SimpleNamespace(base_strings_of_surname=lambda s: [4, 5, 6])
+    mock_base = SimpleNamespace(func=mock_func)
+
+    result = base_strings_of_surname(mock_base, "Smith")
+    assert result == [4, 5, 6]
+
+    empty_base = SimpleNamespace()
+    assert base_strings_of_surname(empty_base, "Smith") == []
+
+
+def test_base_notes_read():
+    from lib.driver import base_notes_read
+    from types import SimpleNamespace
+
+    mock_func = SimpleNamespace(base_notes_read=lambda fname: "Test note content")
+    mock_base = SimpleNamespace(func=mock_func)
+
+    result = base_notes_read(mock_base, "test.txt")
+    assert result == "Test note content"
+
+    empty_base = SimpleNamespace()
+    assert base_notes_read(empty_base, "test.txt") == ""
+
+
+def test_base_wiznotes_read():
+    from lib.driver import base_wiznotes_read
+    from types import SimpleNamespace
+
+    mock_func = SimpleNamespace(base_wiznotes_read=lambda fname: "Wizard note")
+    mock_base = SimpleNamespace(func=mock_func)
+
+    result = base_wiznotes_read(mock_base, "wiz.txt")
+    assert result == "Wizard note"
+
+    empty_base = SimpleNamespace()
+    assert base_wiznotes_read(empty_base, "wiz.txt") == ""
+
+
+def test_base_notes_read_first_line():
+    from lib.driver import base_notes_read_first_line
+    from types import SimpleNamespace
+
+    mock_func = SimpleNamespace(base_notes_read=lambda fname: "First line\nSecond line\nThird line")
+    mock_base = SimpleNamespace(func=mock_func)
+
+    result = base_notes_read_first_line(mock_base, "test.txt")
+    assert result == "First line"
+
+
+def test_base_notes_are_empty():
+    from lib.driver import base_notes_are_empty
+    from types import SimpleNamespace
+
+    mock_func = SimpleNamespace(base_notes_read=lambda fname: "")
+    mock_base = SimpleNamespace(func=mock_func)
+
+    assert base_notes_are_empty(mock_base, "empty.txt") is True
+
+    mock_func2 = SimpleNamespace(base_notes_read=lambda fname: "Not empty")
+    mock_base2 = SimpleNamespace(func=mock_func2)
+
+    assert base_notes_are_empty(mock_base2, "notempty.txt") is False
+
+
+def test_base_notes_origin_file():
+    from lib.driver import base_notes_origin_file
+    from types import SimpleNamespace
+
+    mock_func = SimpleNamespace(base_notes_origin_file=lambda: "origin.gw")
+    mock_base = SimpleNamespace(func=mock_func)
+
+    result = base_notes_origin_file(mock_base)
+    assert result == "origin.gw"
+
+    empty_base = SimpleNamespace()
+    assert base_notes_origin_file(empty_base) == ""
+
+
+def test_base_notes_dir():
+    from lib.driver import base_notes_dir
+    from types import SimpleNamespace
+
+    mock_data = SimpleNamespace(bdir="/path/to/base")
+    mock_base = SimpleNamespace(data=mock_data)
+
+    result = base_notes_dir(mock_base)
+    assert result == "/path/to/base/notes"
+
+    empty_base = SimpleNamespace()
+    assert base_notes_dir(empty_base) == ""
+
+
+def test_base_wiznotes_dir():
+    from lib.driver import base_wiznotes_dir
+    from types import SimpleNamespace
+
+    mock_data = SimpleNamespace(bdir="/path/to/base")
+    mock_base = SimpleNamespace(data=mock_data)
+
+    result = base_wiznotes_dir(mock_base)
+    assert result == "/path/to/base/wiznotes"
+
+    empty_base = SimpleNamespace()
+    assert base_wiznotes_dir(empty_base) == ""
+
+
+def test_read_nldb():
+    from lib.driver import read_nldb
+    from types import SimpleNamespace
+
+    mock_func = SimpleNamespace(read_nldb=lambda: {'key': 'value'})
+    mock_base = SimpleNamespace(func=mock_func)
+
+    result = read_nldb(mock_base)
+    assert result == {'key': 'value'}
+
+    empty_base = SimpleNamespace()
+    assert read_nldb(empty_base) == {}
+
+
+def test_write_nldb():
+    from lib.driver import write_nldb
+    from types import SimpleNamespace
+
+    written = {'data': None}
+
+    def mock_write(nldb):
+        written['data'] = nldb
+
+    mock_func = SimpleNamespace(write_nldb=mock_write)
+    mock_base = SimpleNamespace(func=mock_func)
+
+    write_nldb(mock_base, {'test': 'data'})
+    assert written['data'] == {'test': 'data'}
+
+
+def test_date_of_last_change():
+    from lib.driver import date_of_last_change
+    from types import SimpleNamespace
+
+    mock_func = SimpleNamespace(date_of_last_change=lambda: 1234567890.0)
+    mock_base = SimpleNamespace(func=mock_func)
+
+    result = date_of_last_change(mock_base)
+    assert result == 1234567890.0
+
+    empty_base = SimpleNamespace()
+    assert date_of_last_change(empty_base) == 0.0

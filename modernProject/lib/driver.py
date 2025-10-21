@@ -705,3 +705,561 @@ def iper_marker(collection, default_value: Any):
 def ifam_marker(collection, default_value: Any):
     from lib.collection import make_marker
     return make_marker(key_fn=lambda i: i, c=collection, initial=default_value)
+
+
+def load_ascends_array(base):
+    if hasattr(base, 'data') and hasattr(base.data, 'ascends') and hasattr(base.data.ascends, 'load_array'):
+        base.data.ascends.load_array()
+
+
+def load_unions_array(base):
+    if hasattr(base, 'data') and hasattr(base.data, 'unions') and hasattr(base.data.unions, 'load_array'):
+        base.data.unions.load_array()
+
+
+def load_couples_array(base):
+    if hasattr(base, 'data') and hasattr(base.data, 'couples') and hasattr(base.data.couples, 'load_array'):
+        base.data.couples.load_array()
+
+
+def load_descends_array(base):
+    if hasattr(base, 'data') and hasattr(base.data, 'descends') and hasattr(base.data.descends, 'load_array'):
+        base.data.descends.load_array()
+
+
+def load_strings_array(base):
+    if hasattr(base, 'data') and hasattr(base.data, 'strings') and hasattr(base.data.strings, 'load_array'):
+        base.data.strings.load_array()
+
+
+def load_persons_array(base):
+    if hasattr(base, 'data') and hasattr(base.data, 'persons') and hasattr(base.data.persons, 'load_array'):
+        base.data.persons.load_array()
+
+
+def load_families_array(base):
+    if hasattr(base, 'data') and hasattr(base.data, 'families') and hasattr(base.data.families, 'load_array'):
+        base.data.families.load_array()
+
+
+def clear_ascends_array(base):
+    if hasattr(base, 'data') and hasattr(base.data, 'ascends') and hasattr(base.data.ascends, 'clear_array'):
+        base.data.ascends.clear_array()
+
+
+def clear_unions_array(base):
+    if hasattr(base, 'data') and hasattr(base.data, 'unions') and hasattr(base.data.unions, 'clear_array'):
+        base.data.unions.clear_array()
+
+
+def clear_couples_array(base):
+    if hasattr(base, 'data') and hasattr(base.data, 'couples') and hasattr(base.data.couples, 'clear_array'):
+        base.data.couples.clear_array()
+
+
+def clear_descends_array(base):
+    if hasattr(base, 'data') and hasattr(base.data, 'descends') and hasattr(base.data.descends, 'clear_array'):
+        base.data.descends.clear_array()
+
+
+def clear_strings_array(base):
+    if hasattr(base, 'data') and hasattr(base.data, 'strings') and hasattr(base.data.strings, 'clear_array'):
+        base.data.strings.clear_array()
+
+
+def clear_persons_array(base):
+    if hasattr(base, 'data') and hasattr(base.data, 'persons') and hasattr(base.data.persons, 'clear_array'):
+        base.data.persons.clear_array()
+
+
+def clear_families_array(base):
+    if hasattr(base, 'data') and hasattr(base.data, 'families') and hasattr(base.data.families, 'clear_array'):
+        base.data.families.clear_array()
+
+
+def gen_person_of_person(person: Person) -> GenPerson:
+    person._ensure_loaded()
+    return person.gen_person
+
+
+def gen_ascend_of_person(person: Person) -> GenAscend:
+    person._ensure_loaded()
+    return person.gen_ascend
+
+
+def gen_union_of_person(person: Person) -> GenUnion:
+    person._ensure_loaded()
+    return person.gen_union
+
+
+def new_iper(base) -> iper:
+    return nb_of_persons(base)
+
+
+def new_ifam(base) -> ifam:
+    return nb_of_families(base)
+
+
+def gen_couple_of_family(family: Family) -> GenCouple:
+    family._ensure_loaded()
+    return family.gen_couple
+
+
+def gen_descend_of_family(family: Family) -> GenDescend:
+    family._ensure_loaded()
+    return family.gen_descend
+
+
+def gen_family_of_family(family: Family) -> GenFamily:
+    family._ensure_loaded()
+    return family.gen_family
+
+
+def person_of_gen_person(base, gen_data: Tuple[GenPerson, GenAscend, GenUnion]) -> Person:
+    gen_person, gen_ascend, gen_union = gen_data
+    person = Person(base=base, index=gen_person.key_index)
+    person.gen_person = gen_person
+    person.gen_ascend = gen_ascend
+    person.gen_union = gen_union
+    return person
+
+
+def family_of_gen_family(base, gen_data: Tuple[GenFamily, GenCouple, GenDescend]) -> Family:
+    gen_family, gen_couple, gen_descend = gen_data
+    family = Family(base=base, index=gen_family.fam_index)
+    family.gen_family = gen_family
+    family.gen_couple = gen_couple
+    family.gen_descend = gen_descend
+    return family
+
+
+def no_person(ip: iper) -> GenPerson:
+    from lib.gwdef import Sex, Access, DontKnowIfDead, UnknownBurial
+    from lib.date import cdate_None
+    return GenPerson(
+        first_name=Istr.QUEST,
+        surname=Istr.QUEST,
+        occ=0,
+        image=Istr.EMPTY,
+        first_names_aliases=[],
+        surnames_aliases=[],
+        public_name=Istr.EMPTY,
+        qualifiers=[],
+        titles=[],
+        rparents=[],
+        related=[],
+        aliases=[],
+        occupation=Istr.EMPTY,
+        sex=Sex.NEUTER,
+        access=Access.PRIVATE,
+        birth=cdate_None,
+        birth_place=Istr.EMPTY,
+        birth_note=Istr.EMPTY,
+        birth_src=Istr.EMPTY,
+        baptism=cdate_None,
+        baptism_place=Istr.EMPTY,
+        baptism_note=Istr.EMPTY,
+        baptism_src=Istr.EMPTY,
+        death=DontKnowIfDead(),
+        death_place=Istr.EMPTY,
+        death_note=Istr.EMPTY,
+        death_src=Istr.EMPTY,
+        burial=UnknownBurial(),
+        burial_place=Istr.EMPTY,
+        burial_note=Istr.EMPTY,
+        burial_src=Istr.EMPTY,
+        pevents=[],
+        notes=Istr.EMPTY,
+        psources=Istr.EMPTY,
+        key_index=ip
+    )
+
+
+def no_ascend() -> GenAscend:
+    from lib.adef import NO_CONSANG
+    return GenAscend(parents=None, consang=NO_CONSANG)
+
+
+def no_union() -> GenUnion:
+    return GenUnion(family=[])
+
+
+def no_family(ifam_val: ifam) -> GenFamily:
+    from lib.gwdef import RelationKind, NotDivorced
+    from lib.date import cdate_None
+    return GenFamily(
+        marriage=cdate_None,
+        marriage_place=Istr.EMPTY,
+        marriage_note=Istr.EMPTY,
+        marriage_src=Istr.EMPTY,
+        relation=RelationKind.MARRIED,
+        divorce=NotDivorced(),
+        fevents=[],
+        witnesses=[],
+        comment=Istr.EMPTY,
+        origin_file=Istr.EMPTY,
+        fsources=Istr.EMPTY,
+        fam_index=ifam_val
+    )
+
+
+def no_descend() -> GenDescend:
+    return GenDescend(children=[])
+
+
+def no_couple() -> GenCouple:
+    return GenCouple(father=Iper.dummy(), mother=Iper.dummy())
+
+
+def p_first_name(base, person: Person) -> str:
+    return sou(base, get_first_name(person))
+
+
+def p_surname(base, person: Person) -> str:
+    return sou(base, get_surname(person))
+
+
+def person_misc_names(base, person: Person, nobtit: Callable[[Person], List[Any]]) -> List[str]:
+    result = []
+
+    first = p_first_name(base, person)
+    surname = p_surname(base, person)
+
+    result.append(first + " " + surname)
+
+    if get_public_name(person) != Istr.EMPTY:
+        public = sou(base, get_public_name(person))
+        result.append(public + " " + surname)
+
+    for alias in get_aliases(person):
+        if alias != Istr.EMPTY:
+            result.append(sou(base, alias))
+
+    for qualifier in get_qualifiers(person):
+        if qualifier != Istr.EMPTY:
+            result.append(first + " " + sou(base, qualifier) + " " + surname)
+
+    for fn_alias in get_first_names_aliases(person):
+        if fn_alias != Istr.EMPTY:
+            result.append(sou(base, fn_alias) + " " + surname)
+
+    for sn_alias in get_surnames_aliases(person):
+        if sn_alias != Istr.EMPTY:
+            result.append(first + " " + sou(base, sn_alias))
+
+    titles = nobtit(person)
+    for title in titles:
+        if hasattr(title, 'name') and title.name != Istr.EMPTY:
+            title_name = sou(base, title.name)
+            result.append(title_name)
+        if hasattr(title, 'place') and title.place != Istr.EMPTY:
+            place = sou(base, title.place)
+            result.append(first + " " + surname + " " + place)
+
+    return result
+
+
+def insert_person_with_union_and_ascendants(base, p: GenPerson, a: GenAscend, u: GenUnion) -> iper:
+    ip = new_iper(base)
+    new_p = GenPerson(
+        first_name=p.first_name,
+        surname=p.surname,
+        occ=p.occ,
+        image=p.image,
+        first_names_aliases=p.first_names_aliases,
+        surnames_aliases=p.surnames_aliases,
+        public_name=p.public_name,
+        qualifiers=p.qualifiers,
+        titles=p.titles,
+        rparents=p.rparents,
+        related=p.related,
+        aliases=p.aliases,
+        occupation=p.occupation,
+        sex=p.sex,
+        access=p.access,
+        birth=p.birth,
+        birth_place=p.birth_place,
+        birth_note=p.birth_note,
+        birth_src=p.birth_src,
+        baptism=p.baptism,
+        baptism_place=p.baptism_place,
+        baptism_note=p.baptism_note,
+        baptism_src=p.baptism_src,
+        death=p.death,
+        death_place=p.death_place,
+        death_note=p.death_note,
+        death_src=p.death_src,
+        burial=p.burial,
+        burial_place=p.burial_place,
+        burial_note=p.burial_note,
+        burial_src=p.burial_src,
+        pevents=p.pevents,
+        notes=p.notes,
+        psources=p.psources,
+        key_index=ip
+    )
+    patch_person(base, ip, new_p)
+    patch_ascend(base, ip, a)
+    patch_union(base, ip, u)
+    return ip
+
+
+def insert_family_with_couple_and_descendants(base, f: GenFamily, c: GenCouple, d: GenDescend) -> ifam:
+    ifam_val = new_ifam(base)
+    new_f = GenFamily(
+        marriage=f.marriage,
+        marriage_place=f.marriage_place,
+        marriage_note=f.marriage_note,
+        marriage_src=f.marriage_src,
+        relation=f.relation,
+        divorce=f.divorce,
+        fevents=f.fevents,
+        witnesses=f.witnesses,
+        comment=f.comment,
+        origin_file=f.origin_file,
+        fsources=f.fsources,
+        fam_index=ifam_val
+    )
+    patch_family(base, ifam_val, new_f)
+    patch_couple(base, ifam_val, c)
+    patch_descend(base, ifam_val, d)
+    return ifam_val
+
+
+def delete_person_rec(base, ip: iper):
+    person = poi(base, ip)
+    person._ensure_loaded()
+
+    families = get_family(person)
+    for ifam_val in families:
+        family = foi(base, ifam_val)
+        family._ensure_loaded()
+        if get_father(family) == ip or get_mother(family) == ip:
+            delete_family_rec(base, ifam_val)
+
+    parent_fam = get_parents(person)
+    if parent_fam is not None:
+        delete_descend(base, parent_fam)
+
+    delete_person(base, ip)
+    delete_ascend(base, ip)
+    delete_union(base, ip)
+
+
+def delete_family_rec(base, ifam_val: ifam):
+    family = foi(base, ifam_val)
+    family._ensure_loaded()
+
+    father_ip = get_father(family)
+    mother_ip = get_mother(family)
+
+    if not Iper.is_dummy(father_ip):
+        father = poi(base, father_ip)
+        father._ensure_loaded()
+        union = get_family(father)
+        new_union = GenUnion(family=[f for f in union if f != ifam_val])
+        patch_union(base, father_ip, new_union)
+
+    if not Iper.is_dummy(mother_ip):
+        mother = poi(base, mother_ip)
+        mother._ensure_loaded()
+        union = get_family(mother)
+        new_union = GenUnion(family=[f for f in union if f != ifam_val])
+        patch_union(base, mother_ip, new_union)
+
+    children = get_children(family)
+    for child_ip in children:
+        child = poi(base, child_ip)
+        child._ensure_loaded()
+        if get_parents(child) == ifam_val:
+            delete_ascend(base, child_ip)
+
+    delete_family(base, ifam_val)
+    delete_couple(base, ifam_val)
+    delete_descend(base, ifam_val)
+
+
+def empty_person(base, ip: iper) -> Person:
+    return Person(base=base, index=ip)
+
+
+def empty_family(base, ifam_val: ifam) -> Family:
+    return Family(base=base, index=ifam_val)
+
+
+def get_separation(family: Family):
+    return get_divorce(family)
+
+
+def children_of_p(base, person: Person) -> List[iper]:
+    result = []
+    for ifam_val in get_family(person):
+        fam = foi(base, ifam_val)
+        result.extend(get_children(fam))
+    return result
+
+
+def nobtitles(base, allowed_titles, denied_titles, person: Person) -> List[Any]:
+    titles = get_titles(person)
+    allowed = allowed_titles.value if hasattr(allowed_titles, 'value') else (allowed_titles if isinstance(allowed_titles, list) else [])
+    denied = denied_titles.value if hasattr(denied_titles, 'value') else (denied_titles if isinstance(denied_titles, list) else [])
+
+    if not allowed:
+        if not denied:
+            return titles
+        return [t for t in titles if hasattr(t, 'name') and sou(base, t.name) not in denied]
+
+    result = []
+    for title in titles:
+        if hasattr(title, 'name'):
+            title_name = sou(base, title.name)
+            if title_name in allowed and title_name not in denied:
+                result.append(title)
+    return result
+
+
+def make(bname: str, particles: List[str], arrays, base_notes, continuation: Callable):
+    raise NotImplementedError("make() is not implemented - use database.Database instead")
+
+
+def load_database(bname: str):
+    if hasattr(load_database, '_loaded_bases'):
+        if bname in load_database._loaded_bases:
+            raise RuntimeError(f"Database {bname} already loaded")
+    else:
+        load_database._loaded_bases = {}
+
+    from lib import database
+    base = database.Database(bname)
+    load_database._loaded_bases[bname] = base
+    return base
+
+
+def with_database(bname: str, continuation: Callable):
+    if hasattr(load_database, '_loaded_bases') and bname in load_database._loaded_bases:
+        return continuation(load_database._loaded_bases[bname])
+
+    from lib import database
+    base = database.Database(bname)
+    try:
+        return continuation(base)
+    finally:
+        if hasattr(base, 'close'):
+            base.close()
+
+
+def sync(base, scratch: bool = False):
+    if hasattr(base, 'func') and hasattr(base.func, 'sync'):
+        base.func.sync(scratch)
+
+
+def spi_find(spi, istr_val: istr) -> List[iper]:
+    if hasattr(spi, 'find'):
+        return spi.find(istr_val)
+    return []
+
+
+def spi_first(spi, s: str) -> istr:
+    if hasattr(spi, 'first'):
+        return spi.first(s)
+    return Istr.EMPTY
+
+
+def spi_next(spi, istr_val: istr) -> istr:
+    if hasattr(spi, 'next'):
+        return spi.next(istr_val)
+    return Istr.EMPTY
+
+
+def base_visible_get(base, fct: Callable[[Person], bool], ip: iper) -> bool:
+    if hasattr(base, 'func') and hasattr(base.func, 'base_visible_get'):
+        return base.func.base_visible_get(fct, ip)
+    return fct(poi(base, ip))
+
+
+def base_visible_write(base):
+    if hasattr(base, 'func') and hasattr(base.func, 'base_visible_write'):
+        base.func.base_visible_write()
+
+
+def base_particles(base):
+    if hasattr(base, 'func') and hasattr(base.func, 'base_particles'):
+        return base.func.base_particles()
+    import re
+    return re.compile(r'(?!)')
+
+
+def base_strings_of_first_name(base, s: str) -> List[istr]:
+    if hasattr(base, 'func') and hasattr(base.func, 'base_strings_of_first_name'):
+        return base.func.base_strings_of_first_name(s)
+    return []
+
+
+def base_strings_of_surname(base, s: str) -> List[istr]:
+    if hasattr(base, 'func') and hasattr(base.func, 'base_strings_of_surname'):
+        return base.func.base_strings_of_surname(s)
+    return []
+
+
+def base_notes_read(base, fname: str) -> str:
+    if hasattr(base, 'func') and hasattr(base.func, 'base_notes_read'):
+        return base.func.base_notes_read(fname)
+    return ""
+
+
+def base_wiznotes_read(base, fname: str) -> str:
+    if hasattr(base, 'func') and hasattr(base.func, 'base_wiznotes_read'):
+        return base.func.base_wiznotes_read(fname)
+    return ""
+
+
+def base_notes_read_first_line(base, fname: str) -> str:
+    content = base_notes_read(base, fname)
+    if content:
+        return content.split('\n')[0] if '\n' in content else content
+    return ""
+
+
+def base_notes_are_empty(base, fname: str) -> bool:
+    return base_notes_read(base, fname) == ""
+
+
+def base_notes_origin_file(base) -> str:
+    if hasattr(base, 'func') and hasattr(base.func, 'base_notes_origin_file'):
+        return base.func.base_notes_origin_file()
+    return ""
+
+
+def base_notes_dir(base) -> str:
+    if hasattr(base, 'func') and hasattr(base.func, 'base_notes_dir'):
+        return base.func.base_notes_dir()
+    import os
+    if hasattr(base, 'data') and hasattr(base.data, 'bdir'):
+        return os.path.join(base.data.bdir, 'notes')
+    return ""
+
+
+def base_wiznotes_dir(base) -> str:
+    if hasattr(base, 'func') and hasattr(base.func, 'base_wiznotes_dir'):
+        return base.func.base_wiznotes_dir()
+    import os
+    if hasattr(base, 'data') and hasattr(base.data, 'bdir'):
+        return os.path.join(base.data.bdir, 'wiznotes')
+    return ""
+
+
+def read_nldb(base):
+    if hasattr(base, 'func') and hasattr(base.func, 'read_nldb'):
+        return base.func.read_nldb()
+    return {}
+
+
+def write_nldb(base, nldb):
+    if hasattr(base, 'func') and hasattr(base.func, 'write_nldb'):
+        base.func.write_nldb(nldb)
+
+
+def date_of_last_change(base) -> float:
+    if hasattr(base, 'func') and hasattr(base.func, 'date_of_last_change'):
+        return base.func.date_of_last_change()
+    return 0.0
