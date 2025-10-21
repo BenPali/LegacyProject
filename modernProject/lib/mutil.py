@@ -1,4 +1,5 @@
 import re
+import hashlib
 from typing import List, Callable, TypeVar
 
 
@@ -188,3 +189,6 @@ def compare_after_particle(particles: List[str], s1: str, s2: str) -> int:
     elif s1_stripped > s2_stripped:
         return 1
     return 0
+
+def digest(s: str) -> str:
+    return hashlib.md5(s.encode('utf-8')).hexdigest()

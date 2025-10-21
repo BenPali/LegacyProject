@@ -1,13 +1,13 @@
 # OCaml to Python Migration Status
 
-## Overall Progress: 44/115 modules (38.3%)
+## Overall Progress: 45/115 modules (39.1%)
 
 **Final Target:** 115/115 modules (100%)
-**Remaining:** 71 modules needed
+**Remaining:** 70 modules needed
 
 ---
 
-## Completed Modules (44/115)
+## Completed Modules (45/115)
 
 | Module | Lines | Python File | Tests | Notes |
 |--------|-------|-------------|-------|-------|
@@ -18,6 +18,7 @@
 | birthDeath | 116 | birth_death.py | ✅ | Birth/death analysis |
 | buff | 36 | buff.py | ✅ | String buffer |
 | calendar | 66 | calendar.py | ✅ | Calendar conversions |
+| changeChildren | 98 | change_children.py | ✅ | Children modification utilities |
 | collection | 70 | collection.py | ✅ | Lazy collections |
 | config | 201 | config.py | ✅ | Configuration |
 | consang | 298 | consang.py | ✅ | Core consanguinity calculations |
@@ -72,7 +73,6 @@
 
 | Module | Lines | Dependencies | Description |
 |--------|-------|--------------|-------------|
-| changeChildren | 98 | Def | Children modification utilities |
 | utf8 | 229 | (external: Uucp, Uutf) | UTF-8 string operations |
 | title | 242 | Def | Nobility title processing |
 | difference | 174 | Def | Database difference analysis |
@@ -287,4 +287,4 @@ Implement display modules after core logic is stable
 ---
 
 **Last Updated:** 2025-10-21
-**Next Target:** changeChildren.py
+**Next Target:** title.py
