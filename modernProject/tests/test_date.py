@@ -349,3 +349,66 @@ def test_cdate_to_dmy_opt():
 
     cd_text = CdateText(text="some date")
     assert cdate_to_dmy_opt(cd_text) is None
+
+def test_cdate_of_death():
+    from lib.gwdef import DeathWithReason, DeathReason, NotDead, DontKnowIfDead
+    cdate = CdateGregorian(value=compress(Dmy(day=10, month=5, year=2000, prec=Precision.SURE, delta=0)))
+    death_with_date = DeathWithReason(reason=DeathReason.KILLED, date=cdate)
+    result = cdate_of_death(death_with_date)
+    assert result == cdate
+
+    not_dead = NotDead()
+    assert cdate_of_death(not_dead) is None
+
+    dont_know = DontKnowIfDead()
+    assert cdate_of_death(dont_know) is None
+
+def test_dmy_of_death():
+    from lib.gwdef import DeathWithReason, DeathReason, NotDead
+    cdate = CdateGregorian(value=compress(Dmy(day=25, month=12, year=1995, prec=Precision.SURE, delta=0)))
+    death_with_date = DeathWithReason(reason=DeathReason.MURDERED, date=cdate)
+    result = dmy_of_death(death_with_date)
+    assert result is not None
+    assert result.day == 25
+    assert result.month == 12
+    assert result.year == 1995
+
+    not_dead = NotDead()
+    assert dmy_of_death(not_dead) is None
+
+def test_date_of_death():
+    from lib.gwdef import DeathWithReason, DeathReason, DeadDontKnowWhen
+    cdate = CdateGregorian(value=compress(Dmy(day=1, month=1, year=1980, prec=Precision.SURE, delta=0)))
+    death_with_date = DeathWithReason(reason=DeathReason.EXECUTED, date=cdate)
+    result = date_of_death(death_with_date)
+    assert result is not None
+    assert isinstance(result, DateGreg)
+    assert result.dmy.day == 1
+    assert result.dmy.month == 1
+    assert result.dmy.year == 1980
+
+    dead_unknown = DeadDontKnowWhen()
+    assert date_of_death(dead_unknown) is None
+
+def test_cdate_of_death_with_text_date():
+    from lib.gwdef import DeathWithReason, DeathReason
+    cdate = CdateText(text="around 1900")
+    death_with_text = DeathWithReason(reason=DeathReason.DISAPPEARED, date=cdate)
+    result = cdate_of_death(death_with_text)
+    assert result == cdate
+
+def test_dmy_of_death_with_text_date():
+    from lib.gwdef import DeathWithReason, DeathReason
+    cdate = CdateText(text="unknown date")
+    death_with_text = DeathWithReason(reason=DeathReason.UNSPECIFIED, date=cdate)
+    result = dmy_of_death(death_with_text)
+    assert result is None
+
+def test_date_of_death_with_julian():
+    from lib.gwdef import DeathWithReason, DeathReason
+    dmy = Dmy(day=15, month=8, year=1750, prec=Precision.SURE, delta=0)
+    compressed = compress(dmy)
+    cdate = CdateJulian(value=compressed)
+    death_with_date = DeathWithReason(reason=DeathReason.KILLED, date=cdate)
+    result = date_of_death(death_with_date)
+    assert result is not None
