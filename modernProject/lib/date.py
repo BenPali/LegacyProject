@@ -278,3 +278,21 @@ def cdate_to_dmy_opt(cdate: Cdate) -> Optional[Dmy]:
     if isinstance(od, DateGreg):
         return od.dmy
     return None
+
+def cdate_of_death(death):
+    from lib.gwdef import DeathWithReason
+    if isinstance(death, DeathWithReason):
+        return death.date
+    return None
+
+def dmy_of_death(death) -> Optional[Dmy]:
+    cd = cdate_of_death(death)
+    if cd is not None:
+        return cdate_to_dmy_opt(cd)
+    return None
+
+def date_of_death(death) -> Optional[Date]:
+    cd = cdate_of_death(death)
+    if cd is not None:
+        return od_of_cdate(cd)
+    return None
