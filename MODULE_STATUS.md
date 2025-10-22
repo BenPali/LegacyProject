@@ -1,13 +1,13 @@
 # OCaml to Python Migration Status
 
-## Overall Progress: 46/115 modules (40.0%)
+## Overall Progress: 48/115 modules (41.7%)
 
 **Final Target:** 115/115 modules (100%)
-**Remaining:** 69 modules needed
+**Remaining:** 67 modules needed
 
 ---
 
-## Completed Modules (46/115)
+## Completed Modules (48/115)
 
 | Module | Lines | Python File | Tests | Notes |
 |--------|-------|-------------|-------|-------|
@@ -55,6 +55,7 @@
 | stats | 123 | stats.py | ✅ | Database statistics |
 | templ | 1543 | templ.py | ✅ | Template rendering |
 | title | 242 | title.py | ✅ | Nobility title processing |
+| translate | 308 | translate.py | ✅ | Translation utilities |
 | utf8 | 229 | utf8.py | ✅ | UTF-8 string operations |
 | wserver | 367 | wserver.py | ✅ | Web server basics |
 | wserver_util | 9 | wserver_util.py | ✅ | Web server utilities |
@@ -87,7 +88,6 @@
 | db_gc | 186 | Def | Database garbage collection |
 | check | 356 | Def | Database consistency checking |
 | hasher | 469 | - | Hash table utilities |
-| translate | 308 | Def | Translation utilities |
 | sosaCache | 330 | Def | Sosa number caching |
 
 ### Tier 4: Complex Core Modules
@@ -281,9 +281,9 @@ Implement display modules after core logic is stable
 ## Progress Milestones
 
 - [x] 25% - 29 modules (PASSED ✅)
-- [ ] 50% - 58 modules (Need 12 more)
-- [ ] 75% - 87 modules (Need 41 more)
-- [ ] 100% - 115 modules (Need 69 more) 🎯
+- [ ] 50% - 58 modules (Need 10 more)
+- [ ] 75% - 87 modules (Need 39 more)
+- [ ] 100% - 115 modules (Need 67 more) 🎯
 
 ---
 
