@@ -54,6 +54,7 @@
 | sosa | 24 | sosa.py | ✅ | Sosa numbering |
 | stats | 123 | stats.py | ✅ | Database statistics |
 | templ | 1543 | templ.py | ✅ | Template rendering |
+| title | 242 | title.py | ✅ | Nobility title processing |
 | utf8 | 229 | utf8.py | ✅ | UTF-8 string operations |
 | wserver | 367 | wserver.py | ✅ | Web server basics |
 | wserver_util | 9 | wserver_util.py | ✅ | Web server utilities |
@@ -75,7 +76,6 @@
 | Module | Lines | Dependencies | Description |
 |--------|-------|--------------|-------------|
 | utf8 | 229 | (external: Uucp, Uutf) | UTF-8 string operations |
-| title | 242 | Def | Nobility title processing |
 | difference | 174 | Def | Database difference analysis |
 | notesLinks | 157 | Def | Notes and links handling |
 | alln | 157 | Def | Name listings |
