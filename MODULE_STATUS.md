@@ -1,13 +1,13 @@
 # OCaml to Python Migration Status
 
-## Overall Progress: 45/115 modules (39.1%)
+## Overall Progress: 46/115 modules (40.0%)
 
 **Final Target:** 115/115 modules (100%)
-**Remaining:** 70 modules needed
+**Remaining:** 69 modules needed
 
 ---
 
-## Completed Modules (45/115)
+## Completed Modules (46/115)
 
 | Module | Lines | Python File | Tests | Notes |
 |--------|-------|-------------|-------|-------|
@@ -53,6 +53,7 @@
 | sosa | 24 | sosa.py | ✅ | Sosa numbering |
 | stats | 123 | stats.py | ✅ | Database statistics |
 | templ | 1543 | templ.py | ✅ | Template rendering |
+| title | 242 | title.py | ✅ | Nobility title processing |
 | utf8 | 229 | utf8.py | ✅ | UTF-8 string operations |
 | wserver | 367 | wserver.py | ✅ | Web server basics |
 | wserver_util | 9 | wserver_util.py | ✅ | Web server utilities |
@@ -74,7 +75,6 @@
 | Module | Lines | Dependencies | Description |
 |--------|-------|--------------|-------------|
 | utf8 | 229 | (external: Uucp, Uutf) | UTF-8 string operations |
-| title | 242 | Def | Nobility title processing |
 | difference | 174 | Def | Database difference analysis |
 | notesLinks | 157 | Def | Notes and links handling |
 | alln | 157 | Def | Name listings |
@@ -287,4 +287,4 @@ Implement display modules after core logic is stable
 ---
 
 **Last Updated:** 2025-10-21
-**Next Target:** title.py
+**Next Target:** difference.py
