@@ -1,13 +1,13 @@
 # OCaml to Python Migration Status
 
-## Overall Progress: 48/115 modules (41.7%)
+## Overall Progress: 49/115 modules (42.6%)
 
 **Final Target:** 115/115 modules (100%)
-**Remaining:** 67 modules needed
+**Remaining:** 66 modules needed
 
 ---
 
-## Completed Modules (48/115)
+## Completed Modules (49/115)
 
 | Module | Lines | Python File | Tests | Notes |
 |--------|-------|-------------|-------|-------|
@@ -45,6 +45,7 @@
 | my_gzip | 82 | my_gzip.py | ✅ | Gzip handling |
 | my_unix | 7 | my_unix.py | ✅ | Unix utilities |
 | name | 266 | name.py | ✅ | Name processing |
+| notesLinks | 157 | notes_links.py | ✅ | Notes and links handling |
 | outbase | 404 | outbase.py | ✅ | Database output |
 | output | 11 | output.py | ✅ | Output abstraction |
 | pool | 56 | pool.py | ✅ | Worker pool |
@@ -78,7 +79,6 @@
 |--------|-------|--------------|-------------|
 | utf8 | 229 | (external: Uucp, Uutf) | UTF-8 string operations |
 | difference | 174 | Def | Database difference analysis |
-| notesLinks | 157 | Def | Notes and links handling |
 | alln | 157 | Def | Name listings |
 
 ### Tier 3: Medium Complexity Modules
@@ -281,11 +281,11 @@ Implement display modules after core logic is stable
 ## Progress Milestones
 
 - [x] 25% - 29 modules (PASSED ✅)
-- [ ] 50% - 58 modules (Need 10 more)
-- [ ] 75% - 87 modules (Need 39 more)
-- [ ] 100% - 115 modules (Need 67 more) 🎯
+- [ ] 50% - 58 modules (Need 9 more)
+- [ ] 75% - 87 modules (Need 38 more)
+- [ ] 100% - 115 modules (Need 66 more) 🎯
 
 ---
 
-**Last Updated:** 2025-10-22
-**Next Target:** alln.py
+**Last Updated:** 2025-10-23
+**Next Target:** hasher.py
