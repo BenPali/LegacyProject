@@ -1,13 +1,13 @@
 # OCaml to Python Migration Status
 
-## Overall Progress: 49/115 modules (42.6%)
+## Overall Progress: 50/115 modules (43.5%)
 
 **Final Target:** 115/115 modules (100%)
-**Remaining:** 66 modules needed
+**Remaining:** 65 modules needed
 
 ---
 
-## Completed Modules (49/115)
+## Completed Modules (50/115)
 
 | Module | Lines | Python File | Tests | Notes |
 |--------|-------|-------------|-------|-------|
@@ -36,6 +36,7 @@
 | geneweb_compat | 61 | geneweb_compat.py | ✅ | GeneWeb compatibility |
 | gutil | 304 | gutil.py | ✅ | General database utilities |
 | gw_ancient | 13 | gw_ancient.py | ✅ | Ancient data stubs |
+| hasher | 469 | hasher.py | ✅ | SHA256 hashing utilities |
 | iovalue | 209 | iovalue.py | ✅ | Binary serialization |
 | json_converter | 247 | json_converter.py | ✅ | JSON utilities |
 | loc | 46 | loc.py | ✅ | Source location |
@@ -87,7 +88,6 @@
 |--------|-------|--------------|-------------|
 | db_gc | 186 | Def | Database garbage collection |
 | check | 356 | Def | Database consistency checking |
-| hasher | 469 | - | Hash table utilities |
 | sosaCache | 330 | Def | Sosa number caching |
 
 ### Tier 4: Complex Core Modules
@@ -255,7 +255,6 @@ Essential for database operations:
 7. **alln** (157)
 8. **notesLinks** (157)
 9. **difference** (174)
-10. **hasher** (469)
 
 ### Phase 4: Update Operations
 1. **update_util** (366)
@@ -281,11 +280,11 @@ Implement display modules after core logic is stable
 ## Progress Milestones
 
 - [x] 25% - 29 modules (PASSED ✅)
-- [ ] 50% - 58 modules (Need 9 more)
-- [ ] 75% - 87 modules (Need 38 more)
-- [ ] 100% - 115 modules (Need 66 more) 🎯
+- [ ] 50% - 58 modules (Need 8 more)
+- [ ] 75% - 87 modules (Need 37 more)
+- [ ] 100% - 115 modules (Need 65 more) 🎯
 
 ---
 
 **Last Updated:** 2025-10-23
-**Next Target:** hasher.py
+**Next Target:** alln.py
