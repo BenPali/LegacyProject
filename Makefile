@@ -25,7 +25,7 @@ coverage:
 		exit 1; \
 	fi
 	@echo "Running tests with coverage..."
-	@PYTHONPATH=modernProject python -m pytest modernProject/tests/ -q --cov=modernProject/lib --cov-report=html:modernProject/htmlcov --cov-report=xml:coverage.xml --cov-report=term | grep -E "^(modernProject/lib/|TOTAL|passed|skipped|failed)"
+	@PYTHONPATH=modernProject python -m pytest modernProject/tests/ -q --cov=modernProject/lib --cov=modernProject/bin --cov-report=html:modernProject/htmlcov --cov-report=xml:coverage.xml --cov-report=term | grep -E "^(modernProject/lib/|modernProject/bin/|TOTAL|passed|skipped|failed)"
 	@echo ""
 	@echo "HTML report: modernProject/htmlcov/index.html"
 
