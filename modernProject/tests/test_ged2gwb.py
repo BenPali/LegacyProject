@@ -276,3 +276,289 @@ def test_parse_family_with_divorce():
     finally:
         if os.path.exists(test_file):
             os.unlink(test_file)
+
+
+def test_parse_line_edge_cases():
+    parser = GedcomParser('dummy.ged')
+
+    empty_line = parser.parse_line('')
+    assert empty_line is None
+
+    short_line = parser.parse_line('0')
+    assert short_line is None
+
+    line_with_newline = parser.parse_line('0 HEAD\n')
+    assert line_with_newline.tag == 'HEAD'
+
+
+def test_parse_date_month_year():
+    parser = GedcomParser('dummy.ged')
+
+    cdate = parser.parse_date('MAY 1917')
+    assert cdate is not None
+    assert isinstance(cdate, adef.CdateDate)
+    assert cdate.date.dmy.month == 5
+    assert cdate.date.dmy.year == 1917
+    assert cdate.date.dmy.day == 0
+
+
+def test_parse_date_year_only():
+    parser = GedcomParser('dummy.ged')
+
+    cdate = parser.parse_date('1950')
+    assert cdate is not None
+    assert isinstance(cdate, adef.CdateDate)
+    assert cdate.date.dmy.year == 1950
+    assert cdate.date.dmy.month == 0
+    assert cdate.date.dmy.day == 0
+
+
+def test_parse_date_empty():
+    parser = GedcomParser('dummy.ged')
+
+    cdate = parser.parse_date('')
+    assert cdate is None
+
+    cdate = parser.parse_date(None)
+    assert cdate is None
+
+
+def test_parse_name_edge_cases():
+    parser = GedcomParser('dummy.ged')
+
+    first, surname, occ, _, suffix = parser.parse_name('')
+    assert first == ''
+    assert surname == ''
+
+    first, surname, occ, _, suffix = parser.parse_name('SingleName')
+    assert first == 'SingleName'
+    assert surname == ''
+
+
+def test_detect_encoding_utf8():
+    test_gedcom = """0 HEAD
+1 CHAR UTF-8
+0 TRLR
+"""
+
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.ged', delete=False) as f:
+        f.write(test_gedcom)
+        test_file = f.name
+
+    try:
+        parser = GedcomParser(test_file)
+        encoding = parser.detect_encoding()
+        assert encoding in ['utf-8', 'ansel', 'ascii', 'utf-16']
+
+    finally:
+        if os.path.exists(test_file):
+            os.unlink(test_file)
+
+
+def test_parse_person_with_baptism():
+    test_gedcom = """0 HEAD
+1 SOUR GeneWeb
+1 GEDC
+2 VERS 5.5.1
+2 FORM LINEAGE-LINKED
+1 CHAR UTF-8
+0 @I1@ INDI
+1 NAME John /Doe/
+1 SEX M
+1 BAPM
+2 DATE 15 FEB 1900
+2 PLAC Boston
+0 TRLR
+"""
+
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.ged', delete=False) as f:
+        f.write(test_gedcom)
+        test_file = f.name
+
+    try:
+        parser = GedcomParser(test_file)
+        parser.load()
+
+        person_data = parser.individuals['@I1@']
+        person = person_data['person']
+        assert isinstance(person.baptism, adef.CdateDate)
+
+    finally:
+        if os.path.exists(test_file):
+            os.unlink(test_file)
+
+
+def test_parse_person_with_death():
+    test_gedcom = """0 HEAD
+1 SOUR GeneWeb
+1 GEDC
+2 VERS 5.5.1
+2 FORM LINEAGE-LINKED
+1 CHAR UTF-8
+0 @I1@ INDI
+1 NAME John /Doe/
+1 SEX M
+1 DEAT
+2 DATE 1 JAN 1980
+2 PLAC New York
+0 TRLR
+"""
+
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.ged', delete=False) as f:
+        f.write(test_gedcom)
+        test_file = f.name
+
+    try:
+        parser = GedcomParser(test_file)
+        parser.load()
+
+        person_data = parser.individuals['@I1@']
+        person = person_data['person']
+        assert isinstance(person.death, gwdef.DeadDontKnowWhen)
+        assert person.death_place == 'New York'
+
+    finally:
+        if os.path.exists(test_file):
+            os.unlink(test_file)
+
+
+def test_parse_person_with_burial():
+    test_gedcom = """0 HEAD
+1 SOUR GeneWeb
+1 GEDC
+2 VERS 5.5.1
+2 FORM LINEAGE-LINKED
+1 CHAR UTF-8
+0 @I1@ INDI
+1 NAME John /Doe/
+1 SEX M
+1 DEAT Y
+1 BURI
+2 DATE 5 JAN 1980
+2 PLAC Cemetery
+0 TRLR
+"""
+
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.ged', delete=False) as f:
+        f.write(test_gedcom)
+        test_file = f.name
+
+    try:
+        parser = GedcomParser(test_file)
+        parser.load()
+
+        person_data = parser.individuals['@I1@']
+        person = person_data['person']
+        assert isinstance(person.burial, gwdef.Buried)
+        assert isinstance(person.burial.date, adef.CdateDate)
+        assert person.burial_place == 'Cemetery'
+
+    finally:
+        if os.path.exists(test_file):
+            os.unlink(test_file)
+
+
+def test_parse_family_with_children():
+    test_gedcom = """0 HEAD
+1 SOUR GeneWeb
+1 GEDC
+2 VERS 5.5.1
+2 FORM LINEAGE-LINKED
+1 CHAR UTF-8
+0 @I1@ INDI
+1 NAME Alice /Smith/
+1 SEX F
+0 @I2@ INDI
+1 NAME Bob /Smith/
+1 SEX M
+0 @I3@ INDI
+1 NAME Charlie /Smith/
+1 SEX M
+0 @F1@ FAM
+1 HUSB @I2@
+1 WIFE @I1@
+1 CHIL @I3@
+0 TRLR
+"""
+
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.ged', delete=False) as f:
+        f.write(test_gedcom)
+        test_file = f.name
+
+    try:
+        parser = GedcomParser(test_file)
+        parser.load()
+
+        family_data = parser.families['@F1@']
+        assert '@I3@' in family_data['children']
+
+    finally:
+        if os.path.exists(test_file):
+            os.unlink(test_file)
+
+
+def test_parse_person_female():
+    test_gedcom = """0 HEAD
+1 SOUR GeneWeb
+1 GEDC
+2 VERS 5.5.1
+2 FORM LINEAGE-LINKED
+1 CHAR UTF-8
+0 @I1@ INDI
+1 NAME Jane /Doe/
+1 SEX F
+0 TRLR
+"""
+
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.ged', delete=False) as f:
+        f.write(test_gedcom)
+        test_file = f.name
+
+    try:
+        parser = GedcomParser(test_file)
+        parser.load()
+
+        person_data = parser.individuals['@I1@']
+        person = person_data['person']
+        assert person.sex == gwdef.Sex.FEMALE
+
+    finally:
+        if os.path.exists(test_file):
+            os.unlink(test_file)
+
+
+def test_parse_person_neuter_sex():
+    test_gedcom = """0 HEAD
+1 SOUR GeneWeb
+1 GEDC
+2 VERS 5.5.1
+2 FORM LINEAGE-LINKED
+1 CHAR UTF-8
+0 @I1@ INDI
+1 NAME Unknown /Person/
+0 TRLR
+"""
+
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.ged', delete=False) as f:
+        f.write(test_gedcom)
+        test_file = f.name
+
+    try:
+        parser = GedcomParser(test_file)
+        parser.load()
+
+        person_data = parser.individuals['@I1@']
+        person = person_data['person']
+        assert person.sex == gwdef.Sex.NEUTER
+
+    finally:
+        if os.path.exists(test_file):
+            os.unlink(test_file)
+
+
+def test_get_merged_value_not_found():
+    parser = GedcomParser('dummy.ged')
+    record = GedcomLine(0, '@I1@', 'INDI', '')
+
+    merged = parser.get_merged_value(record, 'NONEXISTENT', 'default')
+    assert merged == 'default'
