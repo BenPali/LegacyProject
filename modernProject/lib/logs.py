@@ -108,3 +108,13 @@ def warn(msg: str, *args):
 
 def err(msg: str, *args):
     report(LogLevel.LOG_ERR, msg, *args)
+
+
+LOG_EMERG = LogLevel.LOG_EMERG
+LOG_ALERT = LogLevel.LOG_ALERT
+LOG_CRIT = LogLevel.LOG_CRIT
+LOG_ERR = LogLevel.LOG_ERR
+LOG_WARNING = LogLevel.LOG_WARNING
+LOG_NOTICE = LogLevel.LOG_NOTICE
+LOG_INFO = LogLevel.LOG_INFO
+LOG_DEBUG = LogLevel.LOG_DEBUG
