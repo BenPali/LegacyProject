@@ -6,7 +6,7 @@ from dataclasses import dataclass
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from lib import config, driver, secure, templ, util, translate
+from lib import config, driver, secure, templ, util, translate, logs
 
 
 @dataclass
@@ -25,11 +25,43 @@ def get_date(conf: config.Config) -> str:
     return f"{now.day:02d}/{now.month:02d}/{now.year}"
 
 
+def convert_ged_if_needed(base_dir: str, db_name: str) -> bool:
+    base_path = Path(base_dir)
+    ged_file = base_path / f"{db_name}.ged"
+    gwb_dir = base_path / f"{db_name}.gwb"
+
+    if ged_file.exists() and not gwb_dir.exists():
+        try:
+            import subprocess
+            logs.info(f"Auto-converting {db_name}.ged to {db_name}.gwb")
+            result = subprocess.run(
+                ['python', '-m', 'bin.ged2gwb', str(ged_file), '-o', str(gwb_dir)],
+                cwd=str(Path(__file__).parent.parent),
+                capture_output=True,
+                text=True,
+                timeout=60
+            )
+            if result.returncode == 0:
+                logs.info(f"Successfully converted {db_name}.ged")
+                return True
+            else:
+                logs.err(f"Failed to convert {db_name}.ged: {result.stderr}")
+                return False
+        except Exception as e:
+            logs.err(f"Error converting {db_name}.ged: {e}")
+            return False
+    return gwb_dir.exists()
+
+
 def list_databases(base_dir: str = ".") -> List[str]:
     try:
         base_path = Path(base_dir)
-        gwb_files = list(base_path.glob("*.gwb"))
-        return sorted([f.stem for f in gwb_files])
+        databases = set()
+        for gwb_file in base_path.glob("*.gwb"):
+            databases.add(gwb_file.stem)
+        for ged_file in base_path.glob("*.ged"):
+            databases.add(ged_file.stem)
+        return sorted(list(databases))
     except Exception:
         return []
 
@@ -73,6 +105,15 @@ def propose_base(conf: config.Config):
     conf.output_conf.body("<input type='text' name='b' size='40' placeholder='Database name'>")
     conf.output_conf.body(" ")
     conf.output_conf.body("<button type='submit'>Open Database</button>")
+    conf.output_conf.body("</form>")
+    conf.output_conf.body("</div>")
+
+    conf.output_conf.body("<h2>Upload GEDCOM File:</h2>")
+    conf.output_conf.body("<div class='form-container'>")
+    conf.output_conf.body("<form method='POST' action='?upload=1' enctype='multipart/form-data'>")
+    conf.output_conf.body("<input type='file' name='gedcom' accept='.ged' required>")
+    conf.output_conf.body("<button type='submit'>Upload & Import</button>")
+    conf.output_conf.body("<div style='font-size: 14px; color: #666; margin-top: 10px;'>Upload a GEDCOM (.ged) file to automatically create a new database</div>")
     conf.output_conf.body("</form>")
     conf.output_conf.body("</div>")
 

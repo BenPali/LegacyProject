@@ -180,7 +180,106 @@ def only_special_env(env: List[tuple[str, Any]]) -> bool:
     return True
 
 
+def handle_gedcom_upload(conf: config.Config):
+    try:
+        import re
+
+        logs.info(f"Upload request received, method: {conf.method}")
+        logs.info(f"Body data length: {len(conf.body_data)}")
+
+        content_disp = conf.headers.get('content-disposition', '')
+        if content_disp:
+            filename_match = re.search(r'filename="([^"]+)"', content_disp)
+            if filename_match:
+                filename = filename_match.group(1)
+
+                gedcom_content = conf.body_data
+                if b'\r\n\r\n' in gedcom_content:
+                    header_end = gedcom_content.find(b'\r\n\r\n')
+                    gedcom_content = gedcom_content[header_end + 4:]
+
+                if b'--' in gedcom_content:
+                    lines = gedcom_content.split(b'\r\n')
+                    while lines and (not lines[-1] or lines[-1].startswith(b'--')):
+                        lines.pop()
+                    gedcom_content = b'\r\n'.join(lines) + b'\r\n'
+
+                db_name = filename.rsplit('.', 1)[0] if '.' in filename else filename
+
+                base_dir = secure.base_dir()
+                ged_path = os.path.join(base_dir, f"{db_name}.ged")
+
+                with open(ged_path, 'wb') as f:
+                    f.write(gedcom_content)
+
+                logs.info(f"Uploaded GEDCOM file: {db_name}.ged ({len(gedcom_content)} bytes)")
+
+                conf.output_conf.status(303)
+                conf.output_conf.header("Content-type: text/html; charset=utf-8")
+                conf.output_conf.header("Location: /")
+                conf.output_conf.header("")
+                conf.output_conf.body(f"<html><body>File {db_name}.ged uploaded successfully. Redirecting...</body></html>")
+                return
+
+        content_type = conf.headers.get('content-type', '')
+        if content_type.startswith('multipart/form-data'):
+            boundary_match = re.search(r'boundary=([^\s;]+)', content_type)
+            if not boundary_match:
+                incorrect_request(conf, "No boundary found in multipart data")
+                return
+
+            boundary = boundary_match.group(1).encode()
+            parts = conf.body_data.split(b'--' + boundary)
+
+            gedcom_content = None
+            filename = None
+
+            for part in parts:
+                if b'Content-Disposition' in part and b'name="gedcom"' in part:
+                    filename_match = re.search(rb'filename="([^"]+)"', part)
+                    if filename_match:
+                        filename = filename_match.group(1).decode('utf-8', errors='ignore')
+
+                    content_start = part.find(b'\r\n\r\n')
+                    if content_start != -1:
+                        gedcom_content = part[content_start + 4:].rstrip(b'\r\n')
+
+            if not gedcom_content or not filename:
+                incorrect_request(conf, "No GEDCOM file found in upload")
+                return
+
+            db_name = filename.rsplit('.', 1)[0] if '.' in filename else filename
+
+            base_dir = secure.base_dir()
+            ged_path = os.path.join(base_dir, f"{db_name}.ged")
+
+            with open(ged_path, 'wb') as f:
+                f.write(gedcom_content)
+
+            logs.info(f"Uploaded GEDCOM file: {db_name}.ged ({len(gedcom_content)} bytes)")
+
+            conf.output_conf.status(303)
+            conf.output_conf.header("Content-type: text/html; charset=utf-8")
+            conf.output_conf.header("Location: /")
+            conf.output_conf.header("")
+            conf.output_conf.body(f"<html><body>File {db_name}.ged uploaded successfully. Redirecting...</body></html>")
+            return
+
+        incorrect_request(conf, "Invalid upload format")
+
+    except Exception as e:
+        logs.err(f"Error handling GEDCOM upload: {e}")
+        import traceback
+        logs.err(traceback.format_exc())
+        incorrect_request(conf, f"Upload failed: {e}")
+
+
 def treat_request(conf: config.Config):
+    # Handle GEDCOM upload
+    if conf.method == 'POST' and 'upload=1' in conf.request:
+        handle_gedcom_upload(conf)
+        return
+
     if 'robots.txt' in conf.command or 'robots' in conf.request:
         from bin import gwd
         gwd.robots_txt(conf)
@@ -226,6 +325,9 @@ def default_person_page(conf: config.Config):
     if not conf.bname:
         srcfile_display.propose_base(conf)
         return
+
+    base_dir = secure.base_dir()
+    srcfile_display.convert_ged_if_needed(base_dir, conf.bname)
 
     i = util.p_getenv(conf.env, 'i')
     if i:

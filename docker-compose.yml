@@ -1,0 +1,30 @@
+services:
+  geneweb:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: geneweb-python:latest
+    container_name: geneweb-daemon
+    restart: unless-stopped
+    ports:
+      - "0.0.0.0:2317:2317"
+    volumes:
+      - ./geneweb_databases:/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - TZ=UTC
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; s=socket.socket(); s.connect(('127.0.0.1', 2317)); s.close()"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+    networks:
+      - geneweb-network
+
+networks:
+  geneweb-network:
+    driver: bridge
+
+volumes:
+  geneweb-data:
