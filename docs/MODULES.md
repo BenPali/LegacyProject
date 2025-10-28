@@ -1,71 +1,82 @@
-# Modules Python — Vue d’ensemble et fonctionnement
+# Python Modules — Overview and Behavior
 
-Ce document présente brièvement les modules Python implémentés, leur rôle et les grandes lignes de leur fonctionnement. Les descriptions ci‑dessous s’appuient sur le code des fichiers concernés.
+This document summarizes the implemented Python modules, their responsibilities, and how they work. Descriptions are based on the actual code.
 
-## Cœur et types
+## Core and Types
 
-- `gwdef.py` — Définitions des structures généalogiques (personnes, familles, événements, titres, avertissements). Fournit les énumérations (`Sex`, `Access`, `GenPersEventName`, `GenFamEventName`, etc.) et les dataclasses génériques `GenPerson`, `GenFamily`, `GenPersEvent`, `GenFamEvent`, ainsi que `BaseNotes`.
-- `adef.py` — Types et auxiliaires génériques (dates, calendriers, couples, constantes). Sert de base aux conversions et à la représentation des dates.
-- `date.py` — Conversions et comparaisons de dates. Implémente la compression/décompression des `Dmy`, la conversion entre `Date` et `Cdate`, et des aides pour comparer des dates (strict ou non).
-- `calendar.py` — Conversion entre formats de calendrier et enveloppes `Dmy`/`Dmy2`.
-- `name.py` — Normalisation des noms: abréviations, suppression d’accents, transformation en minuscules, concaténation et vérification des caractères interdits.
-- `utf8.py` — Aides sur UTF‑8 (parcours, longueur) utilisées par la normalisation des noms.
+- `gwdef.py` — Genealogical data structures (persons, families, events, titles, warnings). Provides enums (`Sex`, `Access`, `GenPersEventName`, `GenFamEventName`, etc.) and dataclasses `GenPerson`, `GenFamily`, `GenPersEvent`, `GenFamEvent`, plus `BaseNotes`.
+- `adef.py` — Generic types and helpers (dates, calendars, pairs, constants). Underpins date conversions and representations.
+- `date.py` — Date conversions and comparisons. Implements compression/decompression of `Dmy`, conversion between `Date` and `Cdate`, and helpers for strict/non‑strict date comparison.
+- `calendar.py` — Calendar conversions and wrappers for `Dmy`/`Dmy2`.
+- `name.py` — Name normalization: abbreviations, diacritics removal, lowercase, concatenation, and forbidden character checks.
+- `utf8.py` — UTF‑8 helpers (iteration, length) used by name normalization.
 
-## Base de données
+## Database
 
-- `dbdisk.py` — Contrats et interfaces de la couche disque: `RecordAccess`, `StringPersonIndex`, `BaseData`, `BaseFunc`, `BaseVersion`, `DskBase`, et `Perm`. Définit la forme des données et des fonctions manipulées par la base.
-- `database.py` — Ouverture et lecture d’une base GeneWeb. `with_database` vérifie les « magic numbers » pour déterminer `BaseVersion`, construit les accès immuables aux tableaux, applique les patches (`input_patches`/`commit_patches`), charge la synchro (`input_synchro`) et les `particles.txt`. Fournit les fonctions d’index (personnes par nom/prénom) selon la version et encapsule l’exécution d’un callback sur `DskBase`.
-- `driver.py` — Accès haut niveau aux personnes/familles. Charge paresseusement les structures `GenPerson`, `GenFamily`, `GenAscend`, `GenUnion` à partir des accès disque et expose des helpers pour naviguer dans la base (ex: `gen_person_of_person`, `no_person`).
-- `dutil.py` — Helpers de conversion entre structures disque et structures génériques (ex: `person_to_gen_person`, `ascend_to_gen_ascend`, etc.) et utilitaires d’index/tri.
-- `outbase.py` — Écriture d’une base et de ses index. Produit `base`, `base.acc`, les index `names.inx/acc`, les tables `snames.dat/inx` et `fnames.dat/inx`, le fichier `nb_persons`, les notes et `particles.txt`. Utilise `secure`/`iovalue` et renomme des fichiers temporaires en atomique.
-- `filesystem.py` — Opérations de fichiers sécurisées: création de dossiers avec permissions, copie, suppression, vérification de type/permission.
-- `secure.py` — Garde‑fou pour l’accès aux fichiers: vérifie les chemins autorisés, fournit des wrappers d’ouverture (`open_in_bin`, `open_out_bin`, etc.).
+- `dbdisk.py` — Disk‑layer contracts and interfaces: `RecordAccess`, `StringPersonIndex`, `BaseData`, `BaseFunc`, `BaseVersion`, `DskBase`, and `Perm`. Defines data shapes and functions consumed by the base.
+- `database.py` — Opening and reading a GeneWeb base. `with_database` checks magic numbers to determine `BaseVersion`, builds immutable table accessors, applies patches (`input_patches`/`commit_patches`), loads synchronization (`input_synchro`) and `particles.txt`. Exposes name/firstname indexes according to version and runs a callback with `DskBase`.
+- `driver.py` — High‑level access to persons/families. Lazily loads `GenPerson`, `GenFamily`, `GenAscend`, `GenUnion` from disk access and exposes helpers to navigate (e.g., `gen_person_of_person`, `no_person`).
+- `dutil.py` — Conversions between disk structures and generic ones (e.g., `person_to_gen_person`, `ascend_to_gen_ascend`) and small index/sort utilities.
+- `outbase.py` — Writing a base and its indexes. Produces `base`, `base.acc`, `names.inx/acc`, `snames.dat/inx`, `fnames.dat/inx`, `nb_persons`, notes, and `particles.txt`. Uses `secure`/`iovalue` and atomic renames of temporary files.
+- `filesystem.py` — Safe file operations: directory creation with permissions, copy, remove, type/permission checks.
+- `secure.py` — Guardrails for file access: checks allowed paths and provides open wrappers (`open_in_bin`, `open_out_bin`, etc.).
 
-## Entrées/sorties
+## I/O
 
-- `iovalue.py` — Sérialisation binaire des valeurs: lecture (`input_value`) et écriture (`output`) d’entiers, chaînes, blocs, listes/dicts selon un protocole binaire. Fournit `SIZEOF_LONG` et `output_array_access` pour les tables indexées.
-- `output.py` — Pont vers la sortie configurée: écrit en‑têtes et corps via `conf.output_conf`.
-- `json_converter.py` — Conversions JSON pour l’échange et le débogage.
+- `iovalue.py` — Binary serialization of values: read (`input_value`) and write (`output`) integers, strings, blocks, lists/dicts via a simple binary protocol. Provides `SIZEOF_LONG` and `output_array_access` for indexed tables.
+- `output.py` — Bridge to configured output: writes headers and content via `conf.output_conf`.
+- `json_converter.py` — JSON conversions for interchange and debugging.
 
-## Événements et données
+## Events and Data
 
-- `event.py` — Comparaison/tri d’événements. Détermine l’ordre logique (naissance avant décès, etc.) et trie selon date puis type via `sort_events`.
-- `futil.py` — Fonctions de mapping d’événements/personnes/familles: remap de champs et transformation des noms (génériques) avec éventuelle conversion de dates.
-- `hasher.py` — Construction d’empreintes (SHA256) à partir des structures `gwdef`: feeders dédiés pour événements et champs.
-- `notes_links.py` — Gestion des notes et liens (association et nettoyage).
+- `event.py` — Event comparison and sort. Defines logical ordering (birth before death, etc.) and sorts by date then type via `sort_events`.
+- `futil.py` — Mapping functions for events/persons/families: field remapping and name transforms (generic) with date conversions when applicable.
+- `hasher.py` — Builds hashes (SHA256) from `gwdef` structures: dedicated feeders for events and fields.
+- `notes_links.py` — Notes and links handling (association and cleanup).
 
-## Utilitaires généraux
+## General Utilities
 
-- `util.py` — Fonctions variées pour UI et logique (traductions `transl`, helpers HTML, chemins `etc`, opérations sur listes/chaînes, formats pour événements). Sert de couche utilitaire transversale.
-- `mutil.py` — Utilitaires de chaînes; support de normalisation.
-- `loc.py` — Références de provenance pour messages/erreurs.
-- `lock.py` — Verrouillage basique de fichiers.
-- `collection.py`, `buff.py`, `pqueue.py`, `gutil.py` — Structures et utilitaires complémentaires (buffers, files de priorité, parcours/tri).
+- `util.py` — UI and logic helpers (translations via `transl`, HTML helpers, paths via `etc`, list/string ops, event formatting). Cross‑cutting utility layer.
+- `mutil.py` — String utilities; normalization support.
+- `loc.py` — Provenance references for messages/errors.
+- `lock.py` — Basic file locking.
+- `collection.py`, `buff.py`, `pqueue.py`, `gutil.py` — Complementary structures/utilities (buffers, priority queues, traversal/sort).
 
-## Différences, compatibilité et compression
+## Diff, Compatibility, Compression
 
-- `difference.py` — Diff de séquences (type Myers) pour comparer tableaux/structures.
-- `compat.py`, `geneweb_compat.py` — Aides de compatibilité avec formats GeneWeb et vieux schémas.
-- `my_gzip.py` — Lecture/écriture Gzip.
-- `my_unix.py` — Aides Unix (spécifiques plateforme).
+- `difference.py` — Myers‑style diff for comparing arrays/structures.
+- `compat.py`, `geneweb_compat.py` — Compatibility helpers with GeneWeb formats and legacy schemas.
+- `my_gzip.py` — Gzip read/write.
+- `my_unix.py` — Unix helpers (platform‑specific).
 
-## Couche web et daemon
+## Web Layer and Daemon
 
-- `wserver.py` — Squelette de serveur web et handlers génériques.
-- `wserver_util.py` — Utilitaires de réponse/rendu.
-- `modernProject/bin` — Scripts de démarrage et de routage (si présents dans le dépôt).
+- `wserver.py` — Web server skeleton and generic handlers.
+- `wserver_util.py` — Response/rendering utilities.
+- `modernProject/bin` — Startup/routing scripts (if present).
 
-## Affichage et UI
+## UI and Display
 
-- `templ.py` — Moteur de templates.
-- `ast.py` — AST de templates (nœuds et validations).
-- `progr_bar.py` — Affichage de progression.
+- `templ.py` — Template engine.
+- `ast.py` — Template AST (nodes and validations).
+- `progr_bar.py` — Progress display.
 
-## Notes de fonctionnement
+## Operational Notes
 
-- Ouverture de base: passer par `with_database(bname, k)` qui vérifie la version via les magic numbers et construit les accès disque.
-- Patches: chargés via `input_patches` (avec vérification du magic `MAGIC_PATCH`) et engagés par `commit_patches` en écrivant `patches` de manière atomique.
-- Synchro: `input_synchro` lit `synchro_patches` et renvoie une structure `SynchroPath` (vide en cas d’erreur).
-- Index nom/prénom: produits dans `outbase.py` (création des inx/dat) et consommés par `database.py` via `persons_of_surname`/`persons_of_first_name` selon la `BaseVersion`.
-- Fichiers: `secure` garantit les chemins, `filesystem` gère permissions/mouvements.
-- Sérialisation: `iovalue` encode/décode les structures selon un protocole binaire dédié.
+- Base opening: use `with_database(bname, k)` which verifies version via magic numbers and builds disk accessors.
+- Patches: loaded via `input_patches` (checks `MAGIC_PATCH`) and committed by `commit_patches` with atomic writes to `patches`.
+- Synchronization: `input_synchro` reads `synchro_patches` and returns `SynchroPath` (empty on error).
+- Name/firstname indexes: produced in `outbase.py` (inx/dat creation) and consumed in `database.py` via `persons_of_surname`/`persons_of_first_name` according to `BaseVersion`.
+- Files: `secure` ensures safe paths; `filesystem` handles permissions/moves.
+- Serialization: `iovalue` encodes/decodes structures using a dedicated binary protocol.
+
+## Usage Tips
+
+- Access bases via `with_database`; avoid raw file I/O without `secure`.
+- Normalize names and dates consistently (`name`, `mutil`, `date`).
+- Use indexes (`StringPersonIndex`) for efficient lookups.
+- Keep core (base/logic) separated from UI/web modules to avoid tight coupling.
+
+---
+
+This guide intentionally remains concise and reflects observed behavior in code. For details, refer to docstrings and unit tests.

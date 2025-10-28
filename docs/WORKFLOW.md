@@ -1,56 +1,56 @@
-# Guide d’organisation et de flux de travail
+# Workflow Guide
 
-Ce document résume notre manière de travailler, les bonnes pratiques adoptées et le pipeline qui sécurise nos livraisons.
+This document summarizes how we work, the practices we follow, and the pipeline that secures our deliveries.
 
-## Principes clés
+## Key Principles
 
-- Gestion du projet via GitHub Project (tasks, priorisation, assignations).
-- Flux de contribution: issue → branche → PR → review (≥1 approbation) → merge.
-- Push direct sur `main` bloqué (sauf exception admin pour urgences contrôlées).
-- CI/CD systématique sur chaque PR et sur `main`.
-- Couverture mesurée et publiée via Codecov, avec gate de merge si le seuil n’est pas atteint.
-- Dependabot surveille les dépendances et ouvre des PR de mise à jour automatiquement.
+- Project management via GitHub Projects (tasks, prioritization, assignments).
+- Contribution flow: issue → branch → PR → review (≥1 approval) → merge.
+- Direct pushes to `main` are restricted (admin exceptions for controlled emergencies).
+- CI runs on every PR and on `main`.
+- Code coverage is measured and published by Codecov as a PR comment;
+- Dependabot monitors dependencies and opens update PRs automatically.
 
-## Cycle de développement
+## Development Cycle
 
-1. Création de l’issue dans GitHub Project, description claire (objectif, critères d’acceptation, risques).
-2. Assignation de l’issue et création d’une branche dédiée.
-3. Développement et commits réguliers, petits et cohérents.
-4. Ouverture de la Pull Request, lien vers l’issue, description, checklist et captures/logs si pertinent.
-5. Revue par au moins une personne (lecture attentive, commentaires constructifs, suggestions).
-6. CI/CD exécute les tests, mesure la couverture, et bloque si le seuil minimal n’est pas respecté.
-7. Merge sur `main` quand les checks passent et la revue est validée.
+1. Create a GitHub issue with a clear description: module objective, coverage goal, and optional remarks if applicable (these can be risks, TODOs for later, or simple observations).
+2. Assign the issue and create a dedicated branch.
+3. Develop with regular, coherent commits.
+4. Open the Pull Request, link the issue, add a description, checklist, and screenshots/logs if relevant.
+5. Review by at least one person (careful reading, constructive comments, suggestions).
+6. CI runs tests and reports coverage. There is no automatic merge gate based on coverage; merges are blocked only if CI checks fail. Reviewers consider the Codecov report during approval.
+7. Merge to `main` when checks pass and the review is approved.
 
-## Règles de branchement et commits
+## Branching and Commit Rules
 
-- Nommage des branches: `feature/<issue-id>-court-intitulé`, `fix/<issue-id>-court-intitulé`, `chore/...`.
-- Messages de commit: clairs et orientés résultat (ex: “fix(database): corrige lecture des patches invalides”).
-- Une PR reste de taille raisonnable; découper quand nécessaire pour faciliter la revue.
+- Branch naming: prefer `impl/<topic>` that describes what you are working on. For examples, refer to past commits (ignoring those before the project restructuring). Commit messages add details like `fix`, `feat`, etc.
+- Commit messages: clear and outcome‑oriented (e.g., `fix(database): handle invalid patches`).
+- Keep PRs reasonably sized; split when necessary to ease review.
 
-## CI/CD et couverture
+## CI/CD and Coverage
 
-- Tests unitaires et d’intégration exécutés sur chaque PR.
-- Publication de la couverture via Codecov; seuil configurable côté dépôt.
-- Les merges sont bloqués si la couverture chute en dessous du seuil défini.
-- La pipeline doit rester rapide et fiable; un test flaky est soit stabilisé, soit temporairement isolé.
+- Unit tests run on every PR.
+- Coverage is published via a Codecov comment;
+- No automatic blockage in CI/CD based on coverage; merges are blocked only if the CI fails.
+- Keep the pipeline fast and reliable.
 
-## Sécurité des dépendances
+## Dependency Security
 
-- Dependabot surveille les versions et ouvre des PR automatiquement.
-- Les PR de mises à jour suivent le même cycle (tests, revue, merge).
-- En cas d’alerte de sécurité, prioriser la mise à jour et documenter l’impact.
+- Dependabot monitors versions and opens PRs automatically.
+- Update PRs follow the same cycle (tests, review, merge).
+- If a security alert arises, prioritize the update and document the impact.
 
-## Déploiement
+## Deployment
 
-- Cible: VPS
-- Déploiement orchestré depuis `main` après validation CI/CD.
+- Target: VPS.
+- Deployment is orchestrated from `main` after CI validation.
 
-## Bonnes pratiques de revue
+## Review Best Practices
 
-- Vérifier lisibilité, modularité, tests associés et impact sur la couverture.
-- Exiger au moins une validation; encourager les suggestions plutôt que les injonctions.
-- Documenter les décisions (dans la PR) pour tracer le pourquoi du changement.
+- Check readability, modularity, associated tests, and impact on coverage.
+- Require at least one approval; prefer suggestions over mandates.
+- Document decisions (in the PR) to record the rationale for changes.
 
-## En bref
+## In Short
 
-Un flux clair, une CI/CD stricte et des règles simples nous permettent de livrer vite et en confiance. Les outils (GitHub Project, Codecov, Dependabot) automatisent le suivi, la qualité et la sécurité, tandis que la revue par les pairs garantit la robustesse du code avant chaque merge.
+A clear flow, reliable CI, and simple rules allow us to ship quickly and confidently. Tools (GitHub Projects, Codecov, Dependabot) automate tracking, quality, and security, while peer review ensures robustness before every merge.
