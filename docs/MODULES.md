@@ -78,5 +78,3 @@ This document summarizes the implemented Python modules, their responsibilities,
 - Keep core (base/logic) separated from UI/web modules to avoid tight coupling.
 
 ---
-
-This guide intentionally remains concise and reflects observed behavior in code. For details, refer to docstrings and unit tests.
