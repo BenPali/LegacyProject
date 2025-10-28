@@ -4,7 +4,7 @@ from typing import Optional, List, Callable, TypeVar, Any
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from lib import config, driver, util, name, logs, sosa
+from lib import config, driver, util, name, logs, sosa, srcfile_display
 
 
 T = TypeVar('T')
@@ -143,12 +143,15 @@ def w_wizard(callback: Callable[[config.Config, Any], None],
     callback(conf, base)
 
 
-def w_person(none: Callable[[config.Config, Any], T],
+def w_person(none: Optional[Callable[[config.Config, Any], T]],
              callback: Callable[[config.Config, Any, driver.GenPerson], T],
              conf: config.Config, base: Any) -> T:
     p = util.find_person_in_env(conf, base, "")
     if p is None:
-        return none(conf, base)
+        if none:
+            return none(conf, base)
+        srcfile_display.print_welcome(conf, base)
+        return None
 
     return callback(conf, base, p)
 
@@ -215,12 +218,19 @@ def treat_request(conf: config.Config):
 
 
 def default_person_page(conf: config.Config):
+    if not conf.bname:
+        srcfile_display.propose_base(conf)
+        return
+
     i = util.p_getenv(conf.env, 'i')
     if i:
         handle_person_page(conf)
     else:
-        conf.output_conf.body("<html><body><h1>GeneWeb</h1>")
-        conf.output_conf.body("<p>Welcome to GeneWeb</p></body></html>")
+        def base_callback(c: config.Config, b: Any):
+            srcfile_display.print_welcome(c, b)
+
+        w_base(lambda c: srcfile_display.propose_base(c),
+               base_callback, conf, conf.bname)
 
 
 def handle_person_page(conf: config.Config):

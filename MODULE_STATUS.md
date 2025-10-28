@@ -1,13 +1,13 @@
 # OCaml to Python Migration Status
 
-## Overall Progress: 54/115 modules (47.0%)
+## Overall Progress: 55/115 modules (47.8%)
 
 **Final Target:** 115/115 modules (100%)
-**Remaining:** 65 modules needed
+**Remaining:** 60 modules needed
 
 ---
 
-## Completed Modules (50/115)
+## Completed Modules (55/115)
 
 | Module | Lines | Python File | Tests | Notes |
 |--------|-------|-------------|-------|-------|
@@ -57,6 +57,7 @@
 | robot | 182 | bin/robot.py | ✅ | Robot detection and rate limiting |
 | secure | 120 | secure.py | ✅ | Secure file access |
 | sosa | 24 | sosa.py | ✅ | Sosa numbering |
+| srcfileDisplay | 596 | srcfile_display.py | ✅ | Source file and welcome page display |
 | stats | 123 | stats.py | ✅ | Database statistics |
 | templ | 1543 | templ.py | ✅ | Template rendering |
 | title | 242 | title.py | ✅ | Nobility title processing |
@@ -327,5 +328,5 @@ Large specialized modules (lower priority):
 
 ---
 
-**Last Updated:** 2025-10-27
+**Last Updated:** 2025-10-28
 **Next Target:** Display modules (perso, famille, searchName) or database core (db_gc, check, checkData)
