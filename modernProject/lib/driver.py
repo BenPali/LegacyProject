@@ -193,7 +193,7 @@ def bname(base) -> str:
 
 def nb_of_persons(base) -> int:
     if hasattr(base, 'data') and hasattr(base.data, 'persons'):
-        return len(base.data.persons.arr)
+        return base.data.persons.len
     return 0
 
 
@@ -205,7 +205,7 @@ def nb_of_real_persons(base) -> int:
 
 def nb_of_families(base) -> int:
     if hasattr(base, 'data') and hasattr(base.data, 'families'):
-        return len(base.data.families.arr)
+        return base.data.families.len
     return 0
 
 
