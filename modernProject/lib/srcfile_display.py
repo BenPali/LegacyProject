@@ -37,6 +37,7 @@ def list_databases(base_dir: str = ".") -> List[str]:
 def propose_base(conf: config.Config):
     conf.output_conf.status(200)
     conf.output_conf.header("Content-type: text/html; charset=utf-8")
+    conf.output_conf.header("")
 
     conf.output_conf.body("<html><head><title>GeneWeb - Select Database</title>")
     conf.output_conf.body("<style>")
@@ -85,17 +86,45 @@ def print_welcome(conf: config.Config, base: Any):
     except:
         conf.output_conf.status(200)
         conf.output_conf.header("Content-type: text/html; charset=utf-8")
+        conf.output_conf.header("")
 
         conf.output_conf.body("<html><head><title>GeneWeb</title>")
         conf.output_conf.body("<style>")
         conf.output_conf.body("body { font-family: sans-serif; margin: 40px; }")
         conf.output_conf.body("h1 { color: #2f6400; }")
+        conf.output_conf.body("h2 { color: #2f6400; margin-top: 30px; }")
         conf.output_conf.body("p { font-size: 18px; line-height: 1.6; }")
+        conf.output_conf.body("ul { list-style: none; padding: 0; }")
+        conf.output_conf.body("li { margin: 10px 0; }")
+        conf.output_conf.body("a { color: #2f6400; text-decoration: none; font-size: 18px; }")
+        conf.output_conf.body("a:hover { text-decoration: underline; }")
         conf.output_conf.body("</style>")
         conf.output_conf.body("</head><body>")
         conf.output_conf.body("<h1>Welcome to GeneWeb</h1>")
         conf.output_conf.body(f"<p>Database: <strong>{conf.bname}</strong></p>")
-        conf.output_conf.body("<p>Explore your genealogical data.</p>")
+
+        nb_persons = driver.nb_of_persons(base)
+        conf.output_conf.body(f"<p>Total persons: {nb_persons}</p>")
+
+        conf.output_conf.body("<h2>All Persons</h2>")
+        conf.output_conf.body("<ul>")
+
+        for i in range(nb_persons):
+            p = driver.poi(base, i)
+            first_name = driver.p_first_name(base, p)
+            surname = driver.p_surname(base, p)
+
+            if isinstance(first_name, bytes):
+                first_name = first_name.decode('utf-8', errors='replace')
+            if isinstance(surname, bytes):
+                surname = surname.decode('utf-8', errors='replace')
+
+            full_name = f"{first_name} {surname}".strip()
+
+            if full_name:
+                conf.output_conf.body(f"<li><a href='?b={conf.bname}&i={i}'>{full_name}</a></li>")
+
+        conf.output_conf.body("</ul>")
         conf.output_conf.body("</body></html>")
 
 
