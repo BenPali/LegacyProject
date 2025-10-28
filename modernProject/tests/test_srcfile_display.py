@@ -172,7 +172,7 @@ def test_print_welcome_fallback():
     output = ''.join(output_buffer)
     assert "Welcome to GeneWeb" in output
     assert "test_database" in output
-    assert "Explore your genealogical data" in output
+    assert "Total persons: 0" in output
 
 
 def test_count_returns_counter():

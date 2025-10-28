@@ -8,6 +8,8 @@ archive/
 # C extensions
 *.so
 
+*.gwb/
+
 # Distribution / packaging
 .Python
 build/
