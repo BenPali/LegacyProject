@@ -1,5 +1,5 @@
 from typing import Optional, Tuple, Callable, List, Set
-from modernProject.lib import buff
+from lib import buff
 
 def find_language_code_end(text: str, start: int = 0) -> Optional[int]:
     position = start

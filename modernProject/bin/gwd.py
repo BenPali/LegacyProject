@@ -630,7 +630,7 @@ def handle_connection(conn, addr):
 
         bname = base_env.get('b', '')
 
-        from . import request
+        from bin import request
 
         conf = config.Config(
             output_conf=output_conf,

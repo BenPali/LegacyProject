@@ -1,10 +1,11 @@
 import sys
+import os
 from pathlib import Path
 from typing import Optional, List, Callable, TypeVar, Any
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from lib import config, driver, util, name, logs, sosa, srcfile_display
+from lib import config, database, driver, util, name, logs, sosa, srcfile_display, secure
 
 
 T = TypeVar('T')
@@ -121,8 +122,12 @@ def w_base(none: Callable[[config.Config], T],
         return none(conf)
 
     try:
-        base = driver.open_base(base_name)
-        return callback(conf, base)
+        full_path = os.path.join(secure.base_dir(), base_name)
+        return database.with_database(
+            full_path,
+            lambda base: callback(conf, base),
+            read_only=True
+        )
     except Exception as e:
         logs.syslog(logs.LOG_ERR, f"Failed to open base {base_name}: {e}")
         return none(conf)
@@ -177,7 +182,7 @@ def only_special_env(env: List[tuple[str, Any]]) -> bool:
 
 def treat_request(conf: config.Config):
     if 'robots.txt' in conf.command or 'robots' in conf.request:
-        from . import gwd
+        from bin import gwd
         gwd.robots_txt(conf)
         return
 
