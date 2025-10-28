@@ -66,3 +66,121 @@ def compare_fnames_i(base_data, is1: int, is2: int) -> int:
     if is1 == is2:
         return 0
     return compare_fnames(base_data.strings.get(is1), base_data.strings.get(is2))
+
+
+def person_to_gen_person(dsk_person, strings_get, iper):
+    from lib.gwdef import GenPerson
+    if isinstance(dsk_person, GenPerson):
+        return dsk_person
+    if isinstance(dsk_person, dict):
+        return GenPerson(**dsk_person)
+    if isinstance(dsk_person, (list, tuple)) and len(dsk_person) >= 34:
+        return GenPerson(
+            first_name=dsk_person[0],
+            surname=dsk_person[1],
+            occ=dsk_person[2],
+            image=dsk_person[3],
+            public_name=dsk_person[4],
+            qualifiers=dsk_person[5],
+            aliases=dsk_person[6],
+            first_names_aliases=dsk_person[7],
+            surnames_aliases=dsk_person[8],
+            titles=dsk_person[9],
+            rparents=dsk_person[10],
+            related=dsk_person[11],
+            occupation=dsk_person[12],
+            sex=dsk_person[13],
+            access=dsk_person[14],
+            birth=dsk_person[15],
+            birth_place=dsk_person[16],
+            birth_note=dsk_person[17],
+            birth_src=dsk_person[18],
+            baptism=dsk_person[19],
+            baptism_place=dsk_person[20],
+            baptism_note=dsk_person[21],
+            baptism_src=dsk_person[22],
+            death=dsk_person[23],
+            death_place=dsk_person[24],
+            death_note=dsk_person[25],
+            death_src=dsk_person[26],
+            burial=dsk_person[27],
+            burial_place=dsk_person[28],
+            burial_note=dsk_person[29],
+            burial_src=dsk_person[30],
+            pevents=dsk_person[31],
+            notes=dsk_person[32],
+            psources=dsk_person[33],
+            key_index=iper
+        )
+    return dsk_person
+
+
+def ascend_to_gen_ascend(dsk_ascend):
+    from lib.gwdef import GenAscend
+    if isinstance(dsk_ascend, GenAscend):
+        return dsk_ascend
+    if isinstance(dsk_ascend, dict):
+        return GenAscend(**dsk_ascend)
+    if isinstance(dsk_ascend, (list, tuple)) and len(dsk_ascend) >= 2:
+        return GenAscend(
+            parents=dsk_ascend[0],
+            consang=dsk_ascend[1]
+        )
+    return dsk_ascend
+
+
+def union_to_gen_union(dsk_union):
+    from lib.gwdef import GenUnion
+    if isinstance(dsk_union, GenUnion):
+        return dsk_union
+    if isinstance(dsk_union, dict):
+        return GenUnion(**dsk_union)
+    if isinstance(dsk_union, (list, tuple)) and len(dsk_union) >= 1:
+        return GenUnion(family=dsk_union[0])
+    return dsk_union
+
+
+def family_to_gen_family(dsk_family, strings_get, ifam):
+    from lib.gwdef import GenFamily
+    if isinstance(dsk_family, GenFamily):
+        return dsk_family
+    if isinstance(dsk_family, dict):
+        return GenFamily(**dsk_family)
+    if isinstance(dsk_family, (list, tuple)) and len(dsk_family) >= 11:
+        return GenFamily(
+            marriage=dsk_family[0],
+            marriage_place=dsk_family[1],
+            marriage_note=dsk_family[2],
+            marriage_src=dsk_family[3],
+            witnesses=dsk_family[4],
+            relation=dsk_family[5],
+            divorce=dsk_family[6],
+            fevents=dsk_family[7],
+            comment=dsk_family[8],
+            origin_file=dsk_family[9],
+            fsources=dsk_family[10],
+            fam_index=ifam
+        )
+    return dsk_family
+
+
+def couple_to_gen_couple(dsk_couple):
+    from lib.adef import Couple
+    if isinstance(dsk_couple, Couple):
+        return dsk_couple
+    if isinstance(dsk_couple, dict):
+        return Couple(**dsk_couple)
+    if isinstance(dsk_couple, (list, tuple)) and len(dsk_couple) >= 2:
+        return Couple(father=dsk_couple[0], mother=dsk_couple[1])
+    return dsk_couple
+
+
+def descend_to_gen_descend(dsk_descend):
+    from lib.gwdef import GenDescend
+    if isinstance(dsk_descend, GenDescend):
+        return dsk_descend
+    if isinstance(dsk_descend, dict):
+        return GenDescend(**dsk_descend)
+    if isinstance(dsk_descend, (list, tuple)) and len(dsk_descend) >= 1:
+        return GenDescend(children=dsk_descend[0])
+    return dsk_descend
