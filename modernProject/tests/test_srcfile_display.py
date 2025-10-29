@@ -315,3 +315,127 @@ def test_get_date_formatting():
     parts = date_str.split('/')
     assert len(parts) == 3
     assert all(part.isdigit() for part in parts)
+
+
+def test_convert_ged_if_needed_no_files():
+    with tempfile.TemporaryDirectory() as tmpdir:
+        result = srcfile_display.convert_ged_if_needed(tmpdir, "nonexistent")
+        assert result == False
+
+
+def test_convert_ged_if_needed_gwb_exists():
+    with tempfile.TemporaryDirectory() as tmpdir:
+        (Path(tmpdir) / "test.gwb").mkdir()
+        result = srcfile_display.convert_ged_if_needed(tmpdir, "test")
+        assert result == True
+
+
+def test_convert_ged_if_needed_with_ged():
+    with tempfile.TemporaryDirectory() as tmpdir:
+        ged_file = Path(tmpdir) / "test.ged"
+        ged_file.write_text("0 HEAD\n1 SOUR Test\n0 TRLR\n")
+        result = srcfile_display.convert_ged_if_needed(tmpdir, "test")
+        assert isinstance(result, bool)
+
+
+def test_list_databases_with_ged():
+    with tempfile.TemporaryDirectory() as tmpdir:
+        (Path(tmpdir) / "test1.ged").touch()
+        (Path(tmpdir) / "test2.ged").touch()
+        databases = srcfile_display.list_databases(tmpdir)
+        assert "test1" in databases
+        assert "test2" in databases
+
+
+def test_list_databases_mixed():
+    with tempfile.TemporaryDirectory() as tmpdir:
+        (Path(tmpdir) / "db1.gwb").mkdir()
+        (Path(tmpdir) / "db2.ged").touch()
+        databases = srcfile_display.list_databases(tmpdir)
+        assert "db1" in databases
+        assert "db2" in databases
+        assert len(databases) == 2
+
+
+def test_print_welcome_with_people():
+    output_buffer = []
+
+    output_conf = config.OutputConf(
+        status=lambda x: None,
+        header=lambda x: None,
+        body=lambda b: output_buffer.append(b),
+        flush=lambda: None
+    )
+
+    conf = config.Config(
+        output_conf=output_conf,
+        bname="testbase"
+    )
+
+    class MockPerson:
+        first_name = b"John"
+        surname = b"Doe"
+
+    class MockBase:
+        pass
+
+    mock_base = MockBase()
+
+    def mock_nb_of_persons(base):
+        return 2
+
+    def mock_poi(base, i):
+        return MockPerson()
+
+    def mock_p_first_name(base, p):
+        return p.first_name
+
+    def mock_p_surname(base, p):
+        return p.surname
+
+    import lib.driver as driver_module
+    old_nb = driver_module.nb_of_persons
+    old_poi = driver_module.poi
+    old_pfn = driver_module.p_first_name
+    old_psn = driver_module.p_surname
+
+    try:
+        driver_module.nb_of_persons = mock_nb_of_persons
+        driver_module.poi = mock_poi
+        driver_module.p_first_name = mock_p_first_name
+        driver_module.p_surname = mock_p_surname
+
+        srcfile_display.print_welcome(conf, mock_base)
+
+        output = ''.join(output_buffer)
+        assert "Welcome to GeneWeb" in output
+        assert "testbase" in output
+        assert "Total persons: 2" in output
+        assert "John Doe" in output
+
+    finally:
+        driver_module.nb_of_persons = old_nb
+        driver_module.poi = old_poi
+        driver_module.p_first_name = old_pfn
+        driver_module.p_surname = old_psn
+
+
+def test_propose_base_upload_form():
+    output_buffer = []
+
+    output_conf = config.OutputConf(
+        status=lambda x: None,
+        header=lambda x: None,
+        body=lambda b: output_buffer.append(b),
+        flush=lambda: None
+    )
+
+    conf = config.Config(output_conf=output_conf)
+
+    srcfile_display.propose_base(conf)
+
+    output = ''.join(output_buffer)
+    assert "Upload GEDCOM File:" in output
+    assert "multipart/form-data" in output
+    assert "name='gedcom'" in output
+    assert "type='file'" in output
