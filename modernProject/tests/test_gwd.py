@@ -995,7 +995,7 @@ def test_conf_and_connection_not_implemented():
 
 def test_chop_extension():
     assert gwd.chop_extension("file.txt") == "file"
-    assert gwd.chop_extension("archive.tar.gz") == "archive.tar"
+    assert gwd.chop_extension("file.tar.gz") == "file.tar"
     assert gwd.chop_extension("nofileextension") == "nofileextension"
     assert gwd.chop_extension(".bashrc") == ""
     assert gwd.chop_extension("") == ""
@@ -1105,3 +1105,69 @@ def test_digest_authorization_not_implemented():
 def test_authorization_not_implemented():
     with pytest.raises(NotImplementedError):
         gwd.authorization(MagicMock(), "request", "auth_header")
+
+
+def test_refuse_log():
+    with (
+        patch('bin.gwd.logs.syslog') as mock_syslog,
+        patch('bin.gwd.http') as mock_http,
+        patch('bin.gwd.copy_file') as mock_copy_file,
+        patch('lib.config.Config') as mock_config_class,
+        patch('lib.config.OutputConf') as mock_output_conf_class
+    ):
+        mock_output_conf = MagicMock()
+        mock_output_conf_class.return_value = mock_output_conf
+        mock_config = MagicMock()
+        mock_config_class.return_value = mock_config
+        mock_config.output_conf = mock_output_conf
+
+        from_addr = "192.168.1.1"
+        gwd.refuse_log(mock_config, from_addr)
+
+        mock_syslog.assert_called_once_with(gwd.logs.LOG_NOTICE, f"Excluded: {from_addr}")
+        mock_http.assert_called_once_with(mock_config, 403)
+        mock_output_conf.header.assert_called_once_with("Content-type: text/html")
+        mock_output_conf.body.assert_called_once_with("Your access has been disconnected by administrator.\n")
+        mock_copy_file.assert_called_once_with(mock_config, "refuse")
+
+
+def test_only_log():
+    with (
+        patch('bin.gwd.logs.syslog') as mock_syslog,
+        patch('bin.gwd.http') as mock_http,
+        patch('lib.config.Config') as mock_config_class,
+        patch('lib.config.OutputConf') as mock_output_conf_class
+    ):
+        mock_output_conf = MagicMock()
+        mock_output_conf_class.return_value = mock_output_conf
+        mock_config = MagicMock()
+        mock_config_class.return_value = mock_config
+        mock_config.output_conf = mock_output_conf
+
+        from_addr = "192.168.1.2"
+        gwd.only_log(mock_config, from_addr)
+
+        mock_syslog.assert_called_once_with(gwd.logs.LOG_NOTICE, f"Connection refused from {from_addr}")
+        mock_http.assert_called_once_with(mock_config, 200)
+        mock_output_conf.header.assert_called_once_with("Content-type: text/html; charset=iso-8859-1")
+        mock_output_conf.body.assert_any_call("<head><title>Invalid access</title></head>\n")
+        mock_output_conf.body.assert_any_call("<body><h1>Invalid access</h1></body>\n")
+
+
+def test_refuse_auth():
+    with (
+        patch('bin.gwd.logs.syslog') as mock_syslog,
+        patch('lib.util.unauthorized') as mock_unauthorized,
+        patch('lib.config.Config') as mock_config_class
+    ):
+        mock_config = MagicMock()
+        mock_config_class.return_value = mock_config
+
+        from_addr = "192.168.1.3"
+        auth = "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ=="
+        auth_type = "Basic"
+        gwd.refuse_auth(mock_config, from_addr, auth, auth_type)
+
+        mock_syslog.assert_called_once_with(gwd.logs.LOG_NOTICE,
+                                            f"Access failed --- From: {from_addr} --- Basic realm: {auth_type} --- Response: {auth}")
+        mock_unauthorized.assert_called_once_with(mock_config, auth_type)
