@@ -65,3 +65,6 @@ class Config:
     base_dir: str = '.'
     hide_private_names: bool = False
     cgi: bool = False
+    method: str = 'GET'
+    headers: Dict[str, str] = field(default_factory=dict)
+    body_data: bytes = b''

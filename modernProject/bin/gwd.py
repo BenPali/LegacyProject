@@ -618,6 +618,18 @@ def handle_connection(conn, addr):
         method, path, version = parse_request_line(lines[0])
         headers = parse_headers(lines[1:])
 
+        body_data = b''
+        if method == 'POST':
+            header_end = request_data.find(b'\r\n\r\n')
+            if header_end != -1:
+                body_data = request_data[header_end + 4:]
+                content_length = int(headers.get('content-length', 0))
+                while len(body_data) < content_length:
+                    chunk = conn.recv(4096)
+                    if not chunk:
+                        break
+                    body_data += chunk
+
         path_parts = path.split('?')
         script_name = path_parts[0]
         query_string = path_parts[1] if len(path_parts) > 1 else ''
@@ -630,7 +642,7 @@ def handle_connection(conn, addr):
 
         bname = base_env.get('b', '')
 
-        from . import request
+        from bin import request
 
         conf = config.Config(
             output_conf=output_conf,
@@ -638,7 +650,10 @@ def handle_connection(conn, addr):
             env=base_env,
             bname=bname,
             command=script_name,
-            request=path
+            request=path,
+            method=method,
+            headers=headers,
+            body_data=body_data
         )
 
         response_buffer = []
@@ -738,16 +753,29 @@ def geneweb_cgi(secret_salt: str, addr: str, script: str, query: str):
 
 
 def main():
-    global selected_port, daemon, debug
+    global selected_port, daemon, debug, selected_addr
 
     if len(sys.argv) > 1:
-        for i, arg in enumerate(sys.argv[1:], 1):
+        i = 1
+        while i < len(sys.argv):
+            arg = sys.argv[i]
             if arg == '-p' and i + 1 < len(sys.argv):
                 selected_port = int(sys.argv[i + 1])
+                i += 2
+            elif arg == '-wd' and i + 1 < len(sys.argv):
+                secure.set_base_dir(sys.argv[i + 1])
+                i += 2
+            elif arg == '-addr' and i + 1 < len(sys.argv):
+                selected_addr = sys.argv[i + 1]
+                i += 2
             elif arg == '-daemon':
                 daemon = True
+                i += 1
             elif arg == '-debug':
                 debug = True
+                i += 1
+            else:
+                i += 1
 
     cgi = os.environ.get('GATEWAY_INTERFACE')
     if cgi:

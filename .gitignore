@@ -8,6 +8,9 @@ archive/
 # C extensions
 *.so
 
+*.gwb/
+geneweb_databases/*.gwb/
+
 # Distribution / packaging
 .Python
 build/
