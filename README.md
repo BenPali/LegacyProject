@@ -49,3 +49,13 @@ Docker deployment:
   docker-stop      - Stop Docker container
   docker-logs      - Show Docker logs
   ```
+
+## Documentation
+
+You can find more detailed documentation in the `docs` folder:
+
+*   [`WORKFLOW.md`](./docs/WORKFLOW.md)
+*   [`DEPLOYMENT.md`](./docs/DEPLOYMENT.md)
+*   [`MODULES.md`](./docs/MODULES.md)
+
+This README is purposefully concise to improve clarity
