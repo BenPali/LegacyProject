@@ -10,8 +10,6 @@ services:
     restart: unless-stopped
     ports:
       - "2317:2317"
-    volumes:
-      - ./geneweb_databases:/data
     environment:
       - PYTHONUNBUFFERED=1
       - TZ=UTC
