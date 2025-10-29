@@ -23,4 +23,27 @@ For a lighter run, you can start Geneweb through the daemon with:
 make start-daemon
 ```
 
-In order to view all available make commands, refer to `make help` for details.
+In order to view all available make commands, refer to `make help` for details:
+
+```bash
+Available targets:
+  all              - Default target, runs tests
+  test             - Run all modernProject tests
+  test-modern      - Run all modernProject tests
+  coverage         - Run tests with coverage report
+  clean            - Remove test artifacts
+  fclean           - Remove all generated files
+  re               - Clean and run all tests
+
+Daemon management:
+  start-daemon     - Start GeneWeb daemon on port 2317
+  stop-daemon      - Stop GeneWeb daemon
+  restart-daemon   - Restart GeneWeb daemon
+  status-daemon    - Show daemon status
+
+Docker deployment:
+  docker-build     - Build Docker image
+  docker-run       - Run GeneWeb in Docker
+  docker-stop      - Stop Docker container
+  docker-logs      - Show Docker logs
+  ```
