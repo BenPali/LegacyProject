@@ -17,7 +17,8 @@ RUN pip install --no-cache-dir pytest pytest-cov
 RUN useradd -m -u 1000 geneweb && \
     chown -R geneweb:geneweb /app && \
     mkdir -p /data && \
-    chown geneweb:geneweb /data
+    chown -R geneweb:geneweb /data \ 
+    echo "done"
 
 USER geneweb
 
@@ -28,7 +29,5 @@ ENV PYTHONUNBUFFERED=1
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD python -c "import socket; s=socket.socket(); s.connect(('127.0.0.1', 2317)); s.close()" || exit 1
-
-VOLUME /data
 
 CMD ["python", "-m", "bin.gwd", "-p", "2317", "-wd", "/data", "-addr", "0.0.0.0"]
