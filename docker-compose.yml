@@ -1,13 +1,15 @@
+version: '3.8'
+
 services:
   geneweb:
     build:
       context: .
       dockerfile: Dockerfile
     image: geneweb-python:latest
-    container_name: geneweb-daemon
+    container_name: geneweb
     restart: unless-stopped
     ports:
-      - "0.0.0.0:2317:2317"
+      - "2317:2317"
     volumes:
       - ./geneweb_databases:/data
     environment:
@@ -19,12 +21,3 @@ services:
       timeout: 10s
       retries: 3
       start_period: 5s
-    networks:
-      - geneweb-network
-
-networks:
-  geneweb-network:
-    driver: bridge
-
-volumes:
-  geneweb-data:
