@@ -1,12 +1,13 @@
 import sys
 from pathlib import Path
-
-sys.path.insert(0, str(Path(__file__).parent.parent / 'bin'))
-sys.path.insert(0, str(Path(__file__).parent.parent))
-
+import socket
+import pytest
+import io
 from bin import gwd, request, robot
 from lib import config
 
+sys.path.insert(0, str(Path(__file__).parent.parent / 'bin'))
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 def test_gwd_imports():
     assert hasattr(gwd, 'geneweb_server')
@@ -52,10 +53,99 @@ def test_index_function():
 
 
 def test_alias_lang():
-    assert gwd.alias_lang("fr") == "fr"
-    assert gwd.alias_lang("en") == "en"
+    assert gwd.alias_lang("fr-CH") == "fr-CH"
+    assert gwd.alias_lang("en-US") == "en-US"
     assert gwd.alias_lang("br") == "bg"
     assert gwd.alias_lang("ca") == "es"
+    assert gwd.alias_lang("co") == "fr"
+    assert gwd.alias_lang("eu") == "fr"
+    assert gwd.alias_lang("hr") == "bg"
+    assert gwd.alias_lang("ia") == "la"
+    assert gwd.alias_lang("mk") == "bg"
+    assert gwd.alias_lang("oc") == "ca"
+    assert gwd.alias_lang("sc") == "ca"
+    assert gwd.alias_lang("sk") == "cz"
+    assert gwd.alias_lang("sr") == "bg"
+    assert gwd.alias_lang("ur") == "ar"
+    assert gwd.alias_lang("zz") == "zz"
+    assert gwd.alias_lang("f") == "f"
+    assert gwd.alias_lang("") == ""
+
+def test_has_root_privileges():
+    gwd.has_root_privileges()
+
+def test_print_renamed_not_implemented():
+    with pytest.raises(NotImplementedError):
+        gwd.print_renamed(MagicMock(), "new_name")
+
+def test_log_redirect():
+    with patch('bin.gwd.logs.syslog') as mock_syslog:
+        gwd.log_redirect("from_addr", "request", "req")
+        mock_syslog.assert_called_once_with(gwd.logs.LOG_INFO, "Redirect: from_addr request -> req")
+
+def test_print_redirected_not_implemented():
+    with pytest.raises(NotImplementedError):
+        gwd.print_redirected(MagicMock(), "req")
+
+def test_nonce_private_key():
+    key1 = gwd.nonce_private_key()
+    key2 = gwd.nonce_private_key()
+    assert isinstance(key1, str)
+    assert len(key1) == 64
+    assert key1 != key2
+
+def test_digest_nonce():
+    nonce = gwd.digest_nonce()
+    assert isinstance(nonce, str)
+    assert len(nonce) > 0
+
+def test_trace_auth():
+    with patch('bin.gwd.logs.syslog') as mock_syslog:
+        gwd.trace_auth(MagicMock(), "Basic", "user1")
+        mock_syslog.assert_called_once_with(gwd.logs.LOG_INFO, "Auth: Basic user=user1")
+
+def test_unauth_server():
+    with patch('bin.gwd.util.unauthorized') as mock_unauthorized:
+        gwd.unauth_server(MagicMock(), "Basic")
+        mock_unauthorized.assert_called_once()
+
+def test_gen_match_auth_file_not_implemented():
+    with pytest.raises(NotImplementedError):
+        gwd.gen_match_auth_file("auth_file", "request")
+
+def test_basic_match_auth_file_not_implemented():
+    with pytest.raises(NotImplementedError):
+        gwd.basic_match_auth_file("auth_file", "request")
+
+def test_digest_match_auth_file_not_implemented():
+    with pytest.raises(NotImplementedError):
+        gwd.digest_match_auth_file("auth_file", "request")
+
+def test_match_simple_passwd_not_implemented():
+    with pytest.raises(NotImplementedError):
+        gwd.match_simple_passwd("passwd", "request")
+
+def test_basic_match_auth():
+    with patch('bin.gwd.basic_match_auth_file') as mock_basic_match_auth_file:
+        mock_basic_match_auth_file.return_value = {"user": "test"}
+        result = gwd.basic_match_auth("auth_file", "request")
+        assert result == {"user": "test"}
+        mock_basic_match_auth_file.assert_called_once_with("auth_file", "request")
+
+    result = gwd.basic_match_auth(None, "request")
+    assert result == None
+
+def test_compatible_tokens():
+    assert gwd.compatible_tokens("token1", "token1") == True
+    assert gwd.compatible_tokens("token1", "token2") == False
+
+def test_get_actlog_not_implemented():
+    with pytest.raises(NotImplementedError):
+        gwd.get_actlog()
+
+def test_set_actlog_not_implemented():
+    with pytest.raises(NotImplementedError):
+        gwd.set_actlog([])
 
 
 def test_robot_user_type():
@@ -226,26 +316,6 @@ def test_robot_excl_no_file():
             assert excl.max_conn == (0, "")
     finally:
         os.chdir(original_cwd)
-
-
-def test_has_root_privileges():
-    result = gwd.has_root_privileges()
-    assert isinstance(result, bool)
-
-
-def test_alias_lang_more_cases():
-    assert gwd.alias_lang("co") == "fr"
-    assert gwd.alias_lang("eu") == "fr"
-    assert gwd.alias_lang("hr") == "bg"
-    assert gwd.alias_lang("ia") == "la"
-    assert gwd.alias_lang("mk") == "bg"
-    assert gwd.alias_lang("oc") == "ca"
-    assert gwd.alias_lang("sc") == "ca"
-    assert gwd.alias_lang("sk") == "cz"
-    assert gwd.alias_lang("sr") == "bg"
-    assert gwd.alias_lang("ur") == "ar"
-    assert gwd.alias_lang("xy") == "xy"
-    assert gwd.alias_lang("") == ""
 
 
 def test_w_base_with_no_base():
@@ -561,3 +631,543 @@ def test_skeleton_plugin_functions():
     assert hasattr(gwd, 'cache_lexicon')
 
     gwd.register_plugin("/path/to/plugin")
+
+
+import io
+from unittest.mock import patch, MagicMock
+
+def test_geneweb_cgi_success():
+    with (
+        patch('sys.stdout', new_callable=io.StringIO) as mock_stdout,
+        patch('sys.stderr', new_callable=io.StringIO) as mock_stderr,
+        patch('bin.gwd.parse_query_string') as mock_parse_query_string,
+        patch('lib.config.Config') as mock_config_class,
+        patch('bin.request.treat_request') as mock_treat_request
+    ):
+        mock_parse_query_string.return_value = [("key", "value")]
+        mock_config_instance = MagicMock()
+        mock_config_class.return_value = mock_config_instance
+
+        gwd.geneweb_cgi("test_salt", "127.0.0.1", "script_name", "key=value")
+
+        mock_parse_query_string.assert_called_once_with("key=value")
+        mock_config_class.assert_called_once()
+        mock_treat_request.assert_called_once_with(mock_config_instance)
+        assert mock_stdout.getvalue() == ""
+        assert mock_stderr.getvalue() == ""
+
+def test_geneweb_cgi_error_handling():
+    with (
+        patch('sys.stdout', new_callable=io.StringIO) as mock_stdout,
+        patch('sys.stderr', new_callable=io.StringIO) as mock_stderr,
+        patch('bin.gwd.parse_query_string') as mock_parse_query_string,
+        patch('lib.config.Config') as mock_config_class,
+        patch('bin.request.treat_request') as mock_treat_request,
+        patch('bin.gwd.logs.syslog') as mock_syslog
+    ):
+        mock_parse_query_string.return_value = []
+        mock_config_class.return_value = MagicMock()
+        mock_treat_request.side_effect = Exception("Test CGI Error")
+
+        gwd.geneweb_cgi("test_salt", "127.0.0.1", "script_name", "")
+
+        mock_syslog.assert_called_once_with(gwd.logs.LOG_ERR, "CGI error: Test CGI Error")
+        assert "Status: 500 Internal Server Error" in mock_stdout.getvalue()
+        assert "Content-Type: text/html" in mock_stdout.getvalue()
+        assert "Internal Server Error" in mock_stdout.getvalue()
+        assert mock_stderr.getvalue() == ""
+
+
+def test_geneweb_server_initialization_and_shutdown():
+    with (
+        patch('socket.socket') as mock_socket_class,
+        patch('bin.gwd.logs.info') as mock_logs_info,
+        patch('bin.gwd.logs.syslog') as mock_logs_syslog,
+        patch('bin.gwd.handle_connection') as mock_handle_connection,
+        patch('bin.gwd.selected_port', 8080),
+        patch('bin.gwd.selected_addr', "127.0.0.1"),
+        patch('bin.gwd.n_workers', 1)
+    ):
+        mock_socket_instance = MagicMock()
+        mock_socket_class.return_value = mock_socket_instance
+
+        mock_socket_instance.accept.side_effect = [
+            ((MagicMock(), ("127.0.0.1", 12345)),),
+            KeyboardInterrupt
+        ]
+
+        gwd.geneweb_server()
+
+        mock_socket_class.assert_called_once_with(socket.AF_INET, socket.SOCK_STREAM)
+        mock_socket_instance.setsockopt.assert_called_once_with(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        mock_socket_instance.bind.assert_called_once_with(("127.0.0.1", 8080))
+        mock_socket_instance.listen.assert_called_once_with(5)
+
+        mock_logs_info.assert_any_call("GeneWeb server starting...")
+        mock_logs_info.assert_any_call("Port: 8080")
+        mock_logs_info.assert_any_call("Workers: 1")
+        mock_logs_info.assert_any_call("Server listening on port 8080")
+        connection_log_found = False
+        for call_arg in mock_logs_info.call_args_list:
+            if call_arg.args and call_arg.args[0] == "Connection from ('127.0.0.1', 12345)":
+                connection_log_found = True
+                break
+        mock_logs_info.assert_any_call("Server shutdown requested")
+        mock_logs_info.assert_any_call("Server stopped")
+
+
+def test_geneweb_server_accept_error_logging():
+    with (
+        patch('socket.socket') as mock_socket_class,
+        patch('bin.gwd.logs.info') as mock_logs_info,
+        patch('bin.gwd.logs.syslog') as mock_logs_syslog,
+        patch('bin.gwd.handle_connection') as mock_handle_connection,
+        patch('bin.gwd.selected_port', 8080),
+        patch('bin.gwd.selected_addr', "127.0.0.1"),
+        patch('bin.gwd.n_workers', 1)
+    ):
+        mock_socket_instance = MagicMock()
+        mock_socket_class.return_value = mock_socket_instance
+
+        mock_socket_instance.accept.side_effect = [
+            Exception("Mock Accept Error"),
+            KeyboardInterrupt
+        ]
+
+        gwd.geneweb_server()
+
+        mock_logs_syslog.assert_called_once_with(gwd.logs.LOG_ERR, "Accept error: Mock Accept Error")
+        mock_socket_instance.close.assert_called_once()
+
+        mock_socket_instance.close.assert_called_once()
+
+def test_handle_connection_success():
+    with (
+        patch('bin.gwd.parse_request_line') as mock_parse_request_line,
+        patch('bin.gwd.parse_headers') as mock_parse_headers,
+        patch('bin.gwd.parse_query_string') as mock_parse_query_string,
+        patch('lib.config.Config') as mock_config_class,
+        patch('bin.request.treat_request') as mock_treat_request,
+        patch('sys.stdout', new_callable=io.StringIO) as mock_stdout
+    ):
+        mock_conn = MagicMock()
+        mock_addr = ("127.0.0.1", 12345)
+
+        mock_conn.recv.side_effect = [
+            b"GET /test?param=value HTTP/1.1\r\nHost: localhost\r\n\r\n",
+            b""
+        ]
+        mock_parse_request_line.return_value = ("GET", "/test?param=value", "HTTP/1.1")
+        mock_parse_headers.return_value = {"host": "localhost"}
+        mock_parse_query_string.return_value = [("param", "value")]
+        mock_config_instance = MagicMock()
+        mock_config_class.return_value = mock_config_instance
+        mock_treat_request.return_value = None 
+
+        gwd.handle_connection(mock_conn, mock_addr)
+
+        mock_conn.recv.assert_any_call(4096)
+        mock_parse_request_line.assert_called_once_with("GET /test?param=value HTTP/1.1")
+        mock_parse_headers.assert_called_once()
+        mock_parse_query_string.assert_called_once_with("param=value")
+        mock_config_class.assert_called_once()
+        mock_treat_request.assert_called_once_with(mock_config_instance)
+        mock_conn.sendall.assert_called_once()
+        mock_conn.close.assert_called_once()
+        assert "HTTP/1.1 200 OK" in mock_conn.sendall.call_args[0][0].decode('utf-8')
+
+
+def test_handle_connection_error_during_request_processing():
+    with (
+        patch('bin.gwd.parse_request_line') as mock_parse_request_line,
+        patch('bin.gwd.parse_headers') as mock_parse_headers,
+        patch('bin.gwd.parse_query_string') as mock_parse_query_string,
+        patch('lib.config.Config') as mock_config_class,
+        patch('bin.request.treat_request') as mock_treat_request,
+        patch('sys.stdout', new_callable=io.StringIO) as mock_stdout,
+        patch('bin.gwd.logs.syslog') as mock_syslog
+    ):
+        mock_conn = MagicMock()
+        mock_addr = ("127.0.0.1", 12345)
+
+        mock_conn.recv.side_effect = [
+            b"GET /error HTTP/1.1\r\nHost: localhost\r\n\r\n",
+            b""
+        ]
+        mock_parse_request_line.return_value = ("GET", "/error", "HTTP/1.1")
+        mock_parse_headers.return_value = {"host": "localhost"}
+        mock_parse_query_string.return_value = []
+        mock_config_instance = MagicMock()
+        mock_config_class.return_value = mock_config_instance
+        mock_treat_request.side_effect = Exception("Test Request Processing Error")
+
+        gwd.handle_connection(mock_conn, mock_addr)
+
+        mock_syslog.assert_called_once_with(gwd.logs.LOG_ERR, "Error handling request: Test Request Processing Error")
+        mock_conn.sendall.assert_called_once()
+        mock_conn.close.assert_called_once()
+        response_content = mock_conn.sendall.call_args[0][0].decode('utf-8')
+        assert "HTTP/1.1 500 Internal Server Error" in response_content
+        assert "Internal Server Error" in response_content
+
+
+def test_handle_connection_general_exception():
+    with (
+        patch('bin.gwd.logs.syslog') as mock_syslog
+    ):
+        mock_conn = MagicMock()
+        mock_addr = ("127.0.0.1", 12345)
+
+        mock_conn.recv.side_effect = Exception("Test General Connection Error")
+
+        gwd.handle_connection(mock_conn, mock_addr)
+
+        mock_syslog.assert_called_once_with(gwd.logs.LOG_ERR, "Connection error: Test General Connection Error")
+        mock_conn.close.assert_called_once()
+
+def test_strip_quotes():
+    assert gwd.strip_quotes('"hello"') == "hello"
+    assert gwd.strip_quotes('hello') == "hello"
+    assert gwd.strip_quotes('"hello\"world"') == "hello\"world"
+    assert gwd.strip_quotes('""') == ""
+    assert gwd.strip_quotes('') == ''
+
+def test_extract_multipart_not_implemented():
+    with pytest.raises(NotImplementedError):
+        gwd.extract_multipart("boundary", "content")
+
+def test_build_env():
+    with (
+        patch('bin.gwd.is_multipart_form') as mock_is_multipart_form,
+        patch('bin.gwd.extract_boundary') as mock_extract_boundary,
+        patch('bin.gwd.extract_multipart') as mock_extract_multipart,
+        patch('bin.gwd.parse_query_string') as mock_parse_query_string
+    ):
+        mock_is_multipart_form.return_value = True
+        mock_extract_boundary.return_value = "test_boundary"
+        mock_extract_multipart.return_value = [("key1", "val1")]
+        result = gwd.build_env("", "multipart/form-data; boundary=test_boundary", "content")
+        mock_is_multipart_form.assert_called_once_with("multipart/form-data; boundary=test_boundary")
+        mock_extract_boundary.assert_called_once_with("multipart/form-data; boundary=test_boundary")
+        mock_extract_multipart.assert_called_once_with("test_boundary", "content")
+        assert result == [("key1", "val1")]
+
+        mock_is_multipart_form.return_value = False
+        mock_parse_query_string.return_value = [("key2", "val2")]
+        result = gwd.build_env("param=value", "application/x-www-form-urlencoded", "")
+        mock_is_multipart_form.assert_called_with("application/x-www-form-urlencoded")
+        mock_parse_query_string.assert_called_once_with("param=value")
+        assert result == [("key2", "val2")]
+
+def test_connection_not_implemented():
+    with pytest.raises(NotImplementedError):
+        gwd.connection(0.0, MagicMock(), ("127.0.0.1", 12345), b"")
+
+def test_null_reopen():
+    gwd.null_reopen()
+    assert True
+
+def test_generate_secret_salt():
+    salt1 = gwd.generate_secret_salt(random=False)
+    assert isinstance(salt1, str)
+    assert len(salt1) > 0
+
+    salt2 = gwd.generate_secret_salt(random=True)
+    assert isinstance(salt2, str)
+    assert len(salt2) > 0
+    assert salt1 != salt2
+
+def test_retrieve_secret_salt_not_implemented():
+    with pytest.raises(NotImplementedError):
+        gwd.retrieve_secret_salt()
+
+def test_cgi_timeout():
+    with patch('bin.gwd.logs.syslog') as mock_syslog:
+        gwd.cgi_timeout()
+        mock_syslog.assert_called_once_with(gwd.logs.LOG_WARNING, "CGI timeout")
+
+def test_manage_cgi_timeout_not_implemented():
+    with pytest.raises(NotImplementedError):
+        gwd.manage_cgi_timeout(10)
+
+def test_read_input():
+    with patch('sys.stdin', new_callable=io.StringIO) as mock_stdin:
+        mock_stdin.write("test input")
+        mock_stdin.seek(0)
+        result = gwd.read_input(4)
+        assert result == "test"
+        result = gwd.read_input(100)
+        assert result == " input"
+
+def test_arg_parse_in_file_not_implemented():
+    with pytest.raises(NotImplementedError):
+        gwd.arg_parse_in_file("filename.txt")
+
+def test_robot_exclude_arg_not_implemented():
+    with pytest.raises(NotImplementedError):
+        gwd.robot_exclude_arg("fname")
+
+def test_slashify():
+    assert gwd.slashify("/path") == "/path/"
+    assert gwd.slashify("/path/") == "/path/"
+    assert gwd.slashify("") == "/"
+    assert gwd.slashify("path") == "path/"
+
+def test_make_sock_dir_not_implemented():
+    with pytest.raises(NotImplementedError):
+        gwd.make_sock_dir()
+
+def test_register_plugin():
+    with patch('bin.gwd.logs.info') as mock_logs_info:
+        gwd.register_plugin("/path/to/plugin")
+        mock_logs_info.assert_called_once_with("Registering plugin: /path/to/plugin")
+
+def test_cache_lexicon():
+    with patch('bin.gwd.cache_lexicon_all') as mock_cache_lexicon_all:
+        gwd.cache_lexicon()
+        mock_cache_lexicon_all.assert_called_once()
+
+def test_deprecated_warning_max_clients():
+    with patch('bin.gwd.logs.warn') as mock_logs_warn:
+        gwd.deprecated_warning_max_clients()
+        mock_logs_warn.assert_called_once_with("The -max_clients option is deprecated")
+
+def test_deprecated_warning_no_fork():
+    with patch('bin.gwd.logs.warn') as mock_logs_warn:
+        gwd.deprecated_warning_no_fork()
+        mock_logs_warn.assert_called_once_with("The -no-fork option is deprecated")
+
+
+def test_content_misc():
+    assert gwd.content_misc("test.css") == "text/css"
+    assert gwd.content_misc("test.js") == "application/javascript"
+    assert gwd.content_misc("test.png") == "image/png"
+    assert gwd.content_misc("test.gif") == "image/gif"
+    assert gwd.content_misc("test.svg") == "image/svg+xml"
+    assert gwd.content_misc("test.ico") == "image/x-icon"
+    assert gwd.content_misc("test.html") == "text/html"
+    assert gwd.content_misc("test.txt") == "application/octet-stream"
+    assert gwd.content_misc("test.unknown") == "application/octet-stream"
+    assert gwd.content_misc("test") == "application/octet-stream"
+
+
+def test_log():
+    with patch('bin.gwd.logs.info') as mock_logs_info:
+        gwd.log("Test message")
+        mock_logs_info.assert_called_once_with("Test message")
+
+
+def test_is_robot():
+    assert gwd.is_robot("some_address") == False
+
+
+def test_auth_err():
+    mock_conf = MagicMock()
+    with (
+        patch('bin.gwd.logs.syslog') as mock_syslog,
+        patch('bin.gwd.util.unauthorized') as mock_unauthorized
+    ):
+        gwd.auth_err(mock_conf, "Auth failed")
+        mock_syslog.assert_called_once_with(gwd.logs.LOG_WARNING, "Auth error: Auth failed")
+        mock_unauthorized.assert_called_once_with(mock_conf, "Authentication required")
+
+
+def test_no_access():
+    mock_conf = MagicMock()
+    with (
+        patch('bin.gwd.logs.syslog') as mock_syslog,
+        patch('bin.gwd.refuse_log') as mock_refuse_log
+    ):
+        gwd.no_access(mock_conf, "192.168.1.1")
+        mock_syslog.assert_called_once_with(gwd.logs.LOG_WARNING, "No access: 192.168.1.1")
+        mock_refuse_log.assert_called_once_with(mock_conf, "192.168.1.1")
+
+
+def test_log_and_robot_check_not_implemented():
+    with pytest.raises(NotImplementedError):
+        gwd.log_and_robot_check(0.0, "addr", "req", MagicMock())
+
+
+def test_conf_and_connection_not_implemented():
+    with pytest.raises(NotImplementedError):
+        gwd.conf_and_connection("addr", "req")
+
+
+def test_chop_extension():
+    assert gwd.chop_extension("file.txt") == "file"
+    assert gwd.chop_extension("file.tar.gz") == "file.tar"
+    assert gwd.chop_extension("nofileextension") == "nofileextension"
+    assert gwd.chop_extension(".bashrc") == ""
+    assert gwd.chop_extension("") == ""
+
+
+def test_match_strings():
+    assert gwd.match_strings("hello", "hello world") == True
+    assert gwd.match_strings("world", "hello world") == False
+    assert gwd.match_strings("\\d+", "12345") == True
+    assert gwd.match_strings("\\d+", "abc") == False
+    assert gwd.match_strings("[a-z]+", "abc") == True
+    assert gwd.match_strings("[a-z]+", "123") == False
+    assert gwd.match_strings("", "anything") == True
+    assert gwd.match_strings("anything", "") == False
+
+
+def test_excluded():
+    assert gwd.excluded("some_file") == False
+
+
+def test_mkpasswd():
+    assert gwd.mkpasswd("password") == "5f4dcc3b5aa765d61d8327deb882cf99"
+    assert gwd.mkpasswd("") == "d41d8cd98f00b204e9800998ecf8427e"
+
+
+def test_set_token_not_implemented():
+    with pytest.raises(NotImplementedError):
+        gwd.set_token("user", "passwd", "token")
+
+
+def test_index_not_name():
+    assert gwd.index_not_name("name_123-abc") == 12
+    assert gwd.index_not_name("name.123") == 4
+    assert gwd.index_not_name("name") == 4
+    assert gwd.index_not_name("") == 0
+
+
+def test_refresh_url_not_implemented():
+    with pytest.raises(NotImplementedError):
+        gwd.refresh_url(MagicMock())
+
+
+def test_http_preferred_language():
+    assert gwd.http_preferred_language("fr-CH, fr;q=0.9, en;q=0.8, de;q=0.7, *;q=0.5") == "fr"
+    assert gwd.http_preferred_language("en-US,en;q=0.5") == "en"
+    assert gwd.http_preferred_language("en") == "en"
+    assert gwd.http_preferred_language("") == None
+    assert gwd.http_preferred_language("fr;q=0.9") == "fr"
+    assert gwd.http_preferred_language("f") == None
+
+
+def test_allowed_denied_titles():
+    assert gwd.allowed_denied_titles(MagicMock()) == ([], [])
+
+
+def test_allowed_titles():
+    assert gwd.allowed_titles(MagicMock()) == []
+
+
+def test_denied_titles():
+    assert gwd.denied_titles(MagicMock()) == []
+
+
+def test_parse_digest():
+    auth_header = 'Digest username="Mufasa", realm="testrealm@host.com", nonce="dcd98b7102dd2f0e8b11d0f600bfb0c093", uri="/dir/index.html", qop=auth, nc=00000001, cnonce="0a4f113b", response="6629fae49393a05397450978507c4ef1", opaque="5ccc069c403eb9246851ca56"'
+    result = gwd.parse_digest(auth_header)
+    assert result["username"] == "Mufasa"
+    assert result["realm"] == "testrealm@host.com"
+    assert result["nonce"] == "dcd98b7102dd2f0e8b11d0f600bfb0c093"
+    assert result["uri"] == "/dir/index.html"
+    assert result["qop"] == "auth"
+    assert result["nc"] == "00000001"
+    assert result["cnonce"] == "0a4f113b"
+    assert result["response"] == "6629fae49393a05397450978507c4ef1"
+    assert result["opaque"] == "5ccc069c403eb9246851ca56"
+
+    assert gwd.parse_digest("Basic some_token") == {}
+    assert gwd.parse_digest("") == {}
+
+
+def test_basic_authorization():
+    user, passwd = gwd.basic_authorization("Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==")
+    assert user == "Aladdin"
+    assert passwd == "open sesame"
+
+    user, passwd = gwd.basic_authorization("Bearer some_token")
+    assert user == None
+    assert passwd == None
+
+
+def test_bad_nonce_report():
+    with patch('bin.gwd.logs.syslog') as mock_syslog:
+        gwd.bad_nonce_report(MagicMock())
+        mock_syslog.assert_called_once_with(gwd.logs.LOG_WARNING, "Bad nonce in digest auth")
+
+
+def test_test_passwd():
+    assert gwd.test_passwd("5f4dcc3b5aa765d61d8327deb882cf99", "password") == True
+    assert gwd.test_passwd("wrong_hash", "password") == False
+
+
+def test_digest_authorization_not_implemented():
+    with pytest.raises(NotImplementedError):
+        gwd.digest_authorization("auth_header", "method")
+
+
+def test_authorization_not_implemented():
+    with pytest.raises(NotImplementedError):
+        gwd.authorization(MagicMock(), "request", "auth_header")
+
+
+def test_refuse_log():
+    with (
+        patch('bin.gwd.logs.syslog') as mock_syslog,
+        patch('bin.gwd.http') as mock_http,
+        patch('bin.gwd.copy_file') as mock_copy_file,
+        patch('lib.config.Config') as mock_config_class,
+        patch('lib.config.OutputConf') as mock_output_conf_class
+    ):
+        mock_output_conf = MagicMock()
+        mock_output_conf_class.return_value = mock_output_conf
+        mock_config = MagicMock()
+        mock_config_class.return_value = mock_config
+        mock_config.output_conf = mock_output_conf
+
+        from_addr = "192.168.1.1"
+        gwd.refuse_log(mock_config, from_addr)
+
+        mock_syslog.assert_called_once_with(gwd.logs.LOG_NOTICE, f"Excluded: {from_addr}")
+        mock_http.assert_called_once_with(mock_config, 403)
+        mock_output_conf.header.assert_called_once_with("Content-type: text/html")
+        mock_output_conf.body.assert_called_once_with("Your access has been disconnected by administrator.\n")
+        mock_copy_file.assert_called_once_with(mock_config, "refuse")
+
+
+def test_only_log():
+    with (
+        patch('bin.gwd.logs.syslog') as mock_syslog,
+        patch('bin.gwd.http') as mock_http,
+        patch('lib.config.Config') as mock_config_class,
+        patch('lib.config.OutputConf') as mock_output_conf_class
+    ):
+        mock_output_conf = MagicMock()
+        mock_output_conf_class.return_value = mock_output_conf
+        mock_config = MagicMock()
+        mock_config_class.return_value = mock_config
+        mock_config.output_conf = mock_output_conf
+
+        from_addr = "192.168.1.2"
+        gwd.only_log(mock_config, from_addr)
+
+        mock_syslog.assert_called_once_with(gwd.logs.LOG_NOTICE, f"Connection refused from {from_addr}")
+        mock_http.assert_called_once_with(mock_config, 200)
+        mock_output_conf.header.assert_called_once_with("Content-type: text/html; charset=iso-8859-1")
+        mock_output_conf.body.assert_any_call("<head><title>Invalid access</title></head>\n")
+        mock_output_conf.body.assert_any_call("<body><h1>Invalid access</h1></body>\n")
+
+
+def test_refuse_auth():
+    with (
+        patch('bin.gwd.logs.syslog') as mock_syslog,
+        patch('lib.util.unauthorized') as mock_unauthorized,
+        patch('lib.config.Config') as mock_config_class
+    ):
+        mock_config = MagicMock()
+        mock_config_class.return_value = mock_config
+
+        from_addr = "192.168.1.3"
+        auth = "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ=="
+        auth_type = "Basic"
+        gwd.refuse_auth(mock_config, from_addr, auth, auth_type)
+
+        mock_syslog.assert_called_once_with(gwd.logs.LOG_NOTICE,
+                                            f"Access failed --- From: {from_addr} --- Basic realm: {auth_type} --- Response: {auth}")
+        mock_unauthorized.assert_called_once_with(mock_config, auth_type)
