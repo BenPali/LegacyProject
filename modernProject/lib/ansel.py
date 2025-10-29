@@ -285,3 +285,8 @@ def to_iso_8859_1(s: str) -> str:
             result.append(mapping.get(code, chr(code)))
         i += 1
     return ''.join(result)
+
+
+def ansel_to_utf8(s: str) -> str:
+    iso_str = to_iso_8859_1(s)
+    return iso_str
