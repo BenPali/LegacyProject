@@ -1,8 +1,8 @@
 import pytest
 from types import SimpleNamespace
-from modernProject.lib import title
-from modernProject.lib.adef import Precision, Dmy, CdateGregorian, DateGreg, Calendar
-from modernProject.lib.gwdef import NotDead, DeathWithReason, DeathReason
+from lib import title
+from lib.adef import Precision, Dmy, CdateGregorian, DateGreg, Calendar
+from lib.gwdef import NotDead, DeathWithReason, DeathReason
 
 
 def test_date_search_enum():
@@ -19,11 +19,11 @@ def test_date_interval_no_dates(monkeypatch):
         return p.iper
 
     def mock_get_birth(p):
-        from modernProject.lib.adef import CdateNone
+        from lib.adef import CdateNone
         return CdateNone()
 
     def mock_get_baptism(p):
-        from modernProject.lib.adef import CdateNone
+        from lib.adef import CdateNone
         return CdateNone()
 
     def mock_get_death(p):
@@ -38,14 +38,14 @@ def test_date_interval_no_dates(monkeypatch):
     def mock_dmy_of_death(death):
         return None
 
-    monkeypatch.setattr("modernProject.lib.title.driver.poi", mock_poi)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_iper", mock_get_iper)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_birth", mock_get_birth)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_baptism", mock_get_baptism)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_death", mock_get_death)
-    monkeypatch.setattr("modernProject.lib.title.driver.nobtitles", mock_nobtitles)
-    monkeypatch.setattr("modernProject.lib.title.date_mod.cdate_to_dmy_opt", mock_cdate_to_dmy_opt)
-    monkeypatch.setattr("modernProject.lib.title.date_mod.dmy_of_death", mock_dmy_of_death)
+    monkeypatch.setattr("lib.title.driver.poi", mock_poi)
+    monkeypatch.setattr("lib.title.driver.get_iper", mock_get_iper)
+    monkeypatch.setattr("lib.title.driver.get_birth", mock_get_birth)
+    monkeypatch.setattr("lib.title.driver.get_baptism", mock_get_baptism)
+    monkeypatch.setattr("lib.title.driver.get_death", mock_get_death)
+    monkeypatch.setattr("lib.title.driver.nobtitles", mock_nobtitles)
+    monkeypatch.setattr("lib.title.date_mod.cdate_to_dmy_opt", mock_cdate_to_dmy_opt)
+    monkeypatch.setattr("lib.title.date_mod.dmy_of_death", mock_dmy_of_death)
 
     conf = SimpleNamespace(allowed_titles=[], denied_titles=[], today=Dmy(1, 1, 2000, Precision.SURE, 0))
     base = SimpleNamespace()
@@ -66,7 +66,7 @@ def test_date_interval_with_birth(monkeypatch):
         return CdateGregorian(123456)
 
     def mock_get_baptism(p):
-        from modernProject.lib.adef import CdateNone
+        from lib.adef import CdateNone
         return CdateNone()
 
     def mock_get_death(p):
@@ -80,13 +80,13 @@ def test_date_interval_with_birth(monkeypatch):
             return Dmy(15, 6, 1990, Precision.SURE, 0)
         return None
 
-    monkeypatch.setattr("modernProject.lib.title.driver.poi", mock_poi)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_iper", mock_get_iper)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_birth", mock_get_birth)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_baptism", mock_get_baptism)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_death", mock_get_death)
-    monkeypatch.setattr("modernProject.lib.title.driver.nobtitles", mock_nobtitles)
-    monkeypatch.setattr("modernProject.lib.title.date_mod.cdate_to_dmy_opt", mock_cdate_to_dmy_opt)
+    monkeypatch.setattr("lib.title.driver.poi", mock_poi)
+    monkeypatch.setattr("lib.title.driver.get_iper", mock_get_iper)
+    monkeypatch.setattr("lib.title.driver.get_birth", mock_get_birth)
+    monkeypatch.setattr("lib.title.driver.get_baptism", mock_get_baptism)
+    monkeypatch.setattr("lib.title.driver.get_death", mock_get_death)
+    monkeypatch.setattr("lib.title.driver.nobtitles", mock_nobtitles)
+    monkeypatch.setattr("lib.title.date_mod.cdate_to_dmy_opt", mock_cdate_to_dmy_opt)
 
     conf = SimpleNamespace(allowed_titles=[], denied_titles=[], today=Dmy(1, 1, 2000, Precision.SURE, 0))
     base = SimpleNamespace()
@@ -120,11 +120,11 @@ def test_compare_title_order_same_nth(monkeypatch):
         return 0
 
     def mock_get_birth(p):
-        from modernProject.lib.adef import CdateNone
+        from lib.adef import CdateNone
         return CdateNone()
 
     def mock_get_baptism(p):
-        from modernProject.lib.adef import CdateNone
+        from lib.adef import CdateNone
         return CdateNone()
 
     def mock_get_death(p):
@@ -145,16 +145,16 @@ def test_compare_title_order_same_nth(monkeypatch):
     def mock_get_family(p):
         return []
 
-    monkeypatch.setattr("modernProject.lib.title.driver.poi", mock_poi)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_iper", mock_get_iper)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_birth", mock_get_birth)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_baptism", mock_get_baptism)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_death", mock_get_death)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_family", mock_get_family)
-    monkeypatch.setattr("modernProject.lib.title.date_mod.od_of_cdate", mock_od_of_cdate)
-    monkeypatch.setattr("modernProject.lib.title.date_mod.cdate_to_dmy_opt", mock_cdate_to_dmy_opt)
-    monkeypatch.setattr("modernProject.lib.title.date_mod.dmy_of_death", mock_dmy_of_death)
-    monkeypatch.setattr("modernProject.lib.title.driver.nobtitles", mock_nobtitles)
+    monkeypatch.setattr("lib.title.driver.poi", mock_poi)
+    monkeypatch.setattr("lib.title.driver.get_iper", mock_get_iper)
+    monkeypatch.setattr("lib.title.driver.get_birth", mock_get_birth)
+    monkeypatch.setattr("lib.title.driver.get_baptism", mock_get_baptism)
+    monkeypatch.setattr("lib.title.driver.get_death", mock_get_death)
+    monkeypatch.setattr("lib.title.driver.get_family", mock_get_family)
+    monkeypatch.setattr("lib.title.date_mod.od_of_cdate", mock_od_of_cdate)
+    monkeypatch.setattr("lib.title.date_mod.cdate_to_dmy_opt", mock_cdate_to_dmy_opt)
+    monkeypatch.setattr("lib.title.date_mod.dmy_of_death", mock_dmy_of_death)
+    monkeypatch.setattr("lib.title.driver.nobtitles", mock_nobtitles)
 
     t1 = SimpleNamespace(t_nth=1, t_date_start=None, t_date_end=None)
     t2 = SimpleNamespace(t_nth=1, t_date_start=None, t_date_end=None)
@@ -184,10 +184,10 @@ def test_select_title_place_absolute(monkeypatch):
         mapping = {10: "Duke", 11: "Count", 20: "London", 21: "Paris"}
         return mapping.get(istr, "")
 
-    monkeypatch.setattr("modernProject.lib.title.driver.ipers", mock_ipers)
-    monkeypatch.setattr("modernProject.lib.title.driver.poi", mock_poi)
-    monkeypatch.setattr("modernProject.lib.title.driver.nobtitles", mock_nobtitles)
-    monkeypatch.setattr("modernProject.lib.title.driver.sou", mock_sou)
+    monkeypatch.setattr("lib.title.driver.ipers", mock_ipers)
+    monkeypatch.setattr("lib.title.driver.poi", mock_poi)
+    monkeypatch.setattr("lib.title.driver.nobtitles", mock_nobtitles)
+    monkeypatch.setattr("lib.title.driver.sou", mock_sou)
 
     conf = SimpleNamespace(allowed_titles=[], denied_titles=[])
     base = SimpleNamespace()
@@ -214,10 +214,10 @@ def test_select_title_place_not_absolute(monkeypatch):
         mapping = {10: "Duke", 11: "Count", 20: "London", 21: "Paris"}
         return mapping.get(istr, "")
 
-    monkeypatch.setattr("modernProject.lib.title.driver.ipers", mock_ipers)
-    monkeypatch.setattr("modernProject.lib.title.driver.poi", mock_poi)
-    monkeypatch.setattr("modernProject.lib.title.driver.nobtitles", mock_nobtitles)
-    monkeypatch.setattr("modernProject.lib.title.driver.sou", mock_sou)
+    monkeypatch.setattr("lib.title.driver.ipers", mock_ipers)
+    monkeypatch.setattr("lib.title.driver.poi", mock_poi)
+    monkeypatch.setattr("lib.title.driver.nobtitles", mock_nobtitles)
+    monkeypatch.setattr("lib.title.driver.sou", mock_sou)
 
     conf = SimpleNamespace(allowed_titles=[], denied_titles=[])
     base = SimpleNamespace()
@@ -243,10 +243,10 @@ def test_select_all_with_place(monkeypatch):
         mapping = {10: "Duke", 11: "Count", 20: "London", 21: "Paris"}
         return mapping.get(istr, "")
 
-    monkeypatch.setattr("modernProject.lib.title.driver.ipers", mock_ipers)
-    monkeypatch.setattr("modernProject.lib.title.driver.poi", mock_poi)
-    monkeypatch.setattr("modernProject.lib.title.driver.nobtitles", mock_nobtitles)
-    monkeypatch.setattr("modernProject.lib.title.driver.sou", mock_sou)
+    monkeypatch.setattr("lib.title.driver.ipers", mock_ipers)
+    monkeypatch.setattr("lib.title.driver.poi", mock_poi)
+    monkeypatch.setattr("lib.title.driver.nobtitles", mock_nobtitles)
+    monkeypatch.setattr("lib.title.driver.sou", mock_sou)
 
     conf = SimpleNamespace(allowed_titles=[], denied_titles=[])
     base = SimpleNamespace()
@@ -271,10 +271,10 @@ def test_select_title_absolute(monkeypatch):
         mapping = {10: "Duke", 20: "London", 21: "Paris"}
         return mapping.get(istr, "")
 
-    monkeypatch.setattr("modernProject.lib.title.driver.ipers", mock_ipers)
-    monkeypatch.setattr("modernProject.lib.title.driver.poi", mock_poi)
-    monkeypatch.setattr("modernProject.lib.title.driver.nobtitles", mock_nobtitles)
-    monkeypatch.setattr("modernProject.lib.title.driver.sou", mock_sou)
+    monkeypatch.setattr("lib.title.driver.ipers", mock_ipers)
+    monkeypatch.setattr("lib.title.driver.poi", mock_poi)
+    monkeypatch.setattr("lib.title.driver.nobtitles", mock_nobtitles)
+    monkeypatch.setattr("lib.title.driver.sou", mock_sou)
 
     conf = SimpleNamespace(allowed_titles=[], denied_titles=[])
     base = SimpleNamespace()
@@ -299,10 +299,10 @@ def test_select_title_not_absolute(monkeypatch):
         mapping = {10: "Duke", 20: "London"}
         return mapping.get(istr, "")
 
-    monkeypatch.setattr("modernProject.lib.title.driver.ipers", mock_ipers)
-    monkeypatch.setattr("modernProject.lib.title.driver.poi", mock_poi)
-    monkeypatch.setattr("modernProject.lib.title.driver.nobtitles", mock_nobtitles)
-    monkeypatch.setattr("modernProject.lib.title.driver.sou", mock_sou)
+    monkeypatch.setattr("lib.title.driver.ipers", mock_ipers)
+    monkeypatch.setattr("lib.title.driver.poi", mock_poi)
+    monkeypatch.setattr("lib.title.driver.nobtitles", mock_nobtitles)
+    monkeypatch.setattr("lib.title.driver.sou", mock_sou)
 
     conf = SimpleNamespace(allowed_titles=[], denied_titles=[])
     base = SimpleNamespace()
@@ -328,10 +328,10 @@ def test_select_place(monkeypatch):
         mapping = {10: "Duke", 11: "Count", 20: "London"}
         return mapping.get(istr, "")
 
-    monkeypatch.setattr("modernProject.lib.title.driver.ipers", mock_ipers)
-    monkeypatch.setattr("modernProject.lib.title.driver.poi", mock_poi)
-    monkeypatch.setattr("modernProject.lib.title.driver.nobtitles", mock_nobtitles)
-    monkeypatch.setattr("modernProject.lib.title.driver.sou", mock_sou)
+    monkeypatch.setattr("lib.title.driver.ipers", mock_ipers)
+    monkeypatch.setattr("lib.title.driver.poi", mock_poi)
+    monkeypatch.setattr("lib.title.driver.nobtitles", mock_nobtitles)
+    monkeypatch.setattr("lib.title.driver.sou", mock_sou)
 
     conf = SimpleNamespace(allowed_titles=[], denied_titles=[])
     base = SimpleNamespace()
@@ -358,10 +358,10 @@ def test_select_all(monkeypatch):
         mapping = {20: "London", 21: "Paris"}
         return mapping.get(istr, "")
 
-    monkeypatch.setattr("modernProject.lib.title.driver.ipers", mock_ipers)
-    monkeypatch.setattr("modernProject.lib.title.driver.poi", mock_poi)
-    monkeypatch.setattr("modernProject.lib.title.driver.nobtitles", mock_nobtitles)
-    monkeypatch.setattr("modernProject.lib.title.driver.sou", mock_sou)
+    monkeypatch.setattr("lib.title.driver.ipers", mock_ipers)
+    monkeypatch.setattr("lib.title.driver.poi", mock_poi)
+    monkeypatch.setattr("lib.title.driver.nobtitles", mock_nobtitles)
+    monkeypatch.setattr("lib.title.driver.sou", mock_sou)
 
     conf = SimpleNamespace(allowed_titles=[], denied_titles=[])
     base = SimpleNamespace()
@@ -383,10 +383,10 @@ def test_select_all_with_counter(monkeypatch):
     def mock_sou(base, istr):
         return "Duke"
 
-    monkeypatch.setattr("modernProject.lib.title.driver.ipers", mock_ipers)
-    monkeypatch.setattr("modernProject.lib.title.driver.poi", mock_poi)
-    monkeypatch.setattr("modernProject.lib.title.driver.nobtitles", mock_nobtitles)
-    monkeypatch.setattr("modernProject.lib.title.driver.sou", mock_sou)
+    monkeypatch.setattr("lib.title.driver.ipers", mock_ipers)
+    monkeypatch.setattr("lib.title.driver.poi", mock_poi)
+    monkeypatch.setattr("lib.title.driver.nobtitles", mock_nobtitles)
+    monkeypatch.setattr("lib.title.driver.sou", mock_sou)
 
     conf = SimpleNamespace(allowed_titles=[], denied_titles=[])
     base = SimpleNamespace()
@@ -413,10 +413,10 @@ def test_select_all_titles(monkeypatch):
         mapping = {10: "Duke", 11: "Count"}
         return mapping.get(istr, "")
 
-    monkeypatch.setattr("modernProject.lib.title.driver.ipers", mock_ipers)
-    monkeypatch.setattr("modernProject.lib.title.driver.poi", mock_poi)
-    monkeypatch.setattr("modernProject.lib.title.driver.nobtitles", mock_nobtitles)
-    monkeypatch.setattr("modernProject.lib.title.driver.sou", mock_sou)
+    monkeypatch.setattr("lib.title.driver.ipers", mock_ipers)
+    monkeypatch.setattr("lib.title.driver.poi", mock_poi)
+    monkeypatch.setattr("lib.title.driver.nobtitles", mock_nobtitles)
+    monkeypatch.setattr("lib.title.driver.sou", mock_sou)
 
     conf = SimpleNamespace(allowed_titles=[], denied_titles=[])
     base = SimpleNamespace()
@@ -441,10 +441,10 @@ def test_select_all_places(monkeypatch):
         mapping = {20: "London", 21: "Paris"}
         return mapping.get(istr, "")
 
-    monkeypatch.setattr("modernProject.lib.title.driver.ipers", mock_ipers)
-    monkeypatch.setattr("modernProject.lib.title.driver.poi", mock_poi)
-    monkeypatch.setattr("modernProject.lib.title.driver.nobtitles", mock_nobtitles)
-    monkeypatch.setattr("modernProject.lib.title.driver.sou", mock_sou)
+    monkeypatch.setattr("lib.title.driver.ipers", mock_ipers)
+    monkeypatch.setattr("lib.title.driver.poi", mock_poi)
+    monkeypatch.setattr("lib.title.driver.nobtitles", mock_nobtitles)
+    monkeypatch.setattr("lib.title.driver.sou", mock_sou)
 
     conf = SimpleNamespace(allowed_titles=[], denied_titles=[])
     base = SimpleNamespace()
@@ -463,7 +463,7 @@ def test_date_interval_with_baptism(monkeypatch):
         return p.iper
 
     def mock_get_birth(p):
-        from modernProject.lib.adef import CdateNone
+        from lib.adef import CdateNone
         return CdateNone()
 
     def mock_get_baptism(p):
@@ -480,13 +480,13 @@ def test_date_interval_with_baptism(monkeypatch):
             return Dmy(10, 5, 1985, Precision.SURE, 0)
         return None
 
-    monkeypatch.setattr("modernProject.lib.title.driver.poi", mock_poi)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_iper", mock_get_iper)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_birth", mock_get_birth)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_baptism", mock_get_baptism)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_death", mock_get_death)
-    monkeypatch.setattr("modernProject.lib.title.driver.nobtitles", mock_nobtitles)
-    monkeypatch.setattr("modernProject.lib.title.date_mod.cdate_to_dmy_opt", mock_cdate_to_dmy_opt)
+    monkeypatch.setattr("lib.title.driver.poi", mock_poi)
+    monkeypatch.setattr("lib.title.driver.get_iper", mock_get_iper)
+    monkeypatch.setattr("lib.title.driver.get_birth", mock_get_birth)
+    monkeypatch.setattr("lib.title.driver.get_baptism", mock_get_baptism)
+    monkeypatch.setattr("lib.title.driver.get_death", mock_get_death)
+    monkeypatch.setattr("lib.title.driver.nobtitles", mock_nobtitles)
+    monkeypatch.setattr("lib.title.date_mod.cdate_to_dmy_opt", mock_cdate_to_dmy_opt)
 
     conf = SimpleNamespace(allowed_titles=[], denied_titles=[], today=Dmy(1, 1, 2000, Precision.SURE, 0))
     base = SimpleNamespace()
@@ -507,11 +507,11 @@ def test_date_interval_with_not_dead(monkeypatch):
         return p.iper
 
     def mock_get_birth(p):
-        from modernProject.lib.adef import CdateNone
+        from lib.adef import CdateNone
         return CdateNone()
 
     def mock_get_baptism(p):
-        from modernProject.lib.adef import CdateNone
+        from lib.adef import CdateNone
         return CdateNone()
 
     def mock_get_death(p):
@@ -526,14 +526,14 @@ def test_date_interval_with_not_dead(monkeypatch):
     def mock_dmy_of_death(death):
         return None
 
-    monkeypatch.setattr("modernProject.lib.title.driver.poi", mock_poi)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_iper", mock_get_iper)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_birth", mock_get_birth)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_baptism", mock_get_baptism)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_death", mock_get_death)
-    monkeypatch.setattr("modernProject.lib.title.driver.nobtitles", mock_nobtitles)
-    monkeypatch.setattr("modernProject.lib.title.date_mod.cdate_to_dmy_opt", mock_cdate_to_dmy_opt)
-    monkeypatch.setattr("modernProject.lib.title.date_mod.dmy_of_death", mock_dmy_of_death)
+    monkeypatch.setattr("lib.title.driver.poi", mock_poi)
+    monkeypatch.setattr("lib.title.driver.get_iper", mock_get_iper)
+    monkeypatch.setattr("lib.title.driver.get_birth", mock_get_birth)
+    monkeypatch.setattr("lib.title.driver.get_baptism", mock_get_baptism)
+    monkeypatch.setattr("lib.title.driver.get_death", mock_get_death)
+    monkeypatch.setattr("lib.title.driver.nobtitles", mock_nobtitles)
+    monkeypatch.setattr("lib.title.date_mod.cdate_to_dmy_opt", mock_cdate_to_dmy_opt)
+    monkeypatch.setattr("lib.title.date_mod.dmy_of_death", mock_dmy_of_death)
 
     conf = SimpleNamespace(allowed_titles=[], denied_titles=[], today=Dmy(1, 1, 2025, Precision.SURE, 0))
     base = SimpleNamespace()
@@ -553,11 +553,11 @@ def test_date_interval_with_titles(monkeypatch):
         return p.iper
 
     def mock_get_birth(p):
-        from modernProject.lib.adef import CdateNone
+        from lib.adef import CdateNone
         return CdateNone()
 
     def mock_get_baptism(p):
-        from modernProject.lib.adef import CdateNone
+        from lib.adef import CdateNone
         return CdateNone()
 
     def mock_get_death(p):
@@ -576,13 +576,13 @@ def test_date_interval_with_titles(monkeypatch):
                 return Dmy(31, 12, 1920, Precision.SURE, 0)
         return None
 
-    monkeypatch.setattr("modernProject.lib.title.driver.poi", mock_poi)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_iper", mock_get_iper)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_birth", mock_get_birth)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_baptism", mock_get_baptism)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_death", mock_get_death)
-    monkeypatch.setattr("modernProject.lib.title.driver.nobtitles", mock_nobtitles)
-    monkeypatch.setattr("modernProject.lib.title.date_mod.cdate_to_dmy_opt", mock_cdate_to_dmy_opt)
+    monkeypatch.setattr("lib.title.driver.poi", mock_poi)
+    monkeypatch.setattr("lib.title.driver.get_iper", mock_get_iper)
+    monkeypatch.setattr("lib.title.driver.get_birth", mock_get_birth)
+    monkeypatch.setattr("lib.title.driver.get_baptism", mock_get_baptism)
+    monkeypatch.setattr("lib.title.driver.get_death", mock_get_death)
+    monkeypatch.setattr("lib.title.driver.nobtitles", mock_nobtitles)
+    monkeypatch.setattr("lib.title.date_mod.cdate_to_dmy_opt", mock_cdate_to_dmy_opt)
 
     conf = SimpleNamespace(allowed_titles=[], denied_titles=[], today=Dmy(1, 1, 2000, Precision.SURE, 0))
     base = SimpleNamespace()
@@ -609,7 +609,7 @@ def test_date_interval_add_spouse(monkeypatch):
             return CdateGregorian(101)
 
     def mock_get_baptism(p):
-        from modernProject.lib.adef import CdateNone
+        from lib.adef import CdateNone
         return CdateNone()
 
     def mock_get_death(p):
@@ -643,18 +643,18 @@ def test_date_interval_add_spouse(monkeypatch):
     def mock_get_spouse(iper, fam):
         return 2
 
-    monkeypatch.setattr("modernProject.lib.title.driver.poi", mock_poi)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_iper", mock_get_iper)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_birth", mock_get_birth)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_baptism", mock_get_baptism)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_death", mock_get_death)
-    monkeypatch.setattr("modernProject.lib.title.driver.nobtitles", mock_nobtitles)
-    monkeypatch.setattr("modernProject.lib.title.date_mod.cdate_to_dmy_opt", mock_cdate_to_dmy_opt)
-    monkeypatch.setattr("modernProject.lib.title.date_mod.dmy_of_death", mock_dmy_of_death)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_family", mock_get_family)
-    monkeypatch.setattr("modernProject.lib.title.driver.foi", mock_foi)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_marriage", mock_get_marriage)
-    monkeypatch.setattr("modernProject.lib.title.gutil.spouse", mock_get_spouse)
+    monkeypatch.setattr("lib.title.driver.poi", mock_poi)
+    monkeypatch.setattr("lib.title.driver.get_iper", mock_get_iper)
+    monkeypatch.setattr("lib.title.driver.get_birth", mock_get_birth)
+    monkeypatch.setattr("lib.title.driver.get_baptism", mock_get_baptism)
+    monkeypatch.setattr("lib.title.driver.get_death", mock_get_death)
+    monkeypatch.setattr("lib.title.driver.nobtitles", mock_nobtitles)
+    monkeypatch.setattr("lib.title.date_mod.cdate_to_dmy_opt", mock_cdate_to_dmy_opt)
+    monkeypatch.setattr("lib.title.date_mod.dmy_of_death", mock_dmy_of_death)
+    monkeypatch.setattr("lib.title.driver.get_family", mock_get_family)
+    monkeypatch.setattr("lib.title.driver.foi", mock_foi)
+    monkeypatch.setattr("lib.title.driver.get_marriage", mock_get_marriage)
+    monkeypatch.setattr("lib.title.gutil.spouse", mock_get_spouse)
 
     conf = SimpleNamespace(allowed_titles=[], denied_titles=[], today=Dmy(1, 1, 2000, Precision.SURE, 0))
     base = SimpleNamespace()
@@ -682,7 +682,7 @@ def test_date_interval_add_children(monkeypatch):
         return CdateGregorian(101)
 
     def mock_get_baptism(p):
-        from modernProject.lib.adef import CdateNone
+        from lib.adef import CdateNone
         return CdateNone()
 
     def mock_get_death(p):
@@ -711,7 +711,7 @@ def test_date_interval_add_children(monkeypatch):
         return SimpleNamespace(ifam=ifam)
 
     def mock_get_marriage(fam):
-        from modernProject.lib.adef import CdateNone
+        from lib.adef import CdateNone
         return CdateNone()
 
     def mock_get_spouse(iper, fam):
@@ -720,19 +720,19 @@ def test_date_interval_add_children(monkeypatch):
     def mock_get_children(fam):
         return [3]
 
-    monkeypatch.setattr("modernProject.lib.title.driver.poi", mock_poi)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_iper", mock_get_iper)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_birth", mock_get_birth)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_baptism", mock_get_baptism)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_death", mock_get_death)
-    monkeypatch.setattr("modernProject.lib.title.driver.nobtitles", mock_nobtitles)
-    monkeypatch.setattr("modernProject.lib.title.date_mod.cdate_to_dmy_opt", mock_cdate_to_dmy_opt)
-    monkeypatch.setattr("modernProject.lib.title.date_mod.dmy_of_death", mock_dmy_of_death)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_family", mock_get_family)
-    monkeypatch.setattr("modernProject.lib.title.driver.foi", mock_foi)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_marriage", mock_get_marriage)
-    monkeypatch.setattr("modernProject.lib.title.gutil.spouse", mock_get_spouse)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_children", mock_get_children)
+    monkeypatch.setattr("lib.title.driver.poi", mock_poi)
+    monkeypatch.setattr("lib.title.driver.get_iper", mock_get_iper)
+    monkeypatch.setattr("lib.title.driver.get_birth", mock_get_birth)
+    monkeypatch.setattr("lib.title.driver.get_baptism", mock_get_baptism)
+    monkeypatch.setattr("lib.title.driver.get_death", mock_get_death)
+    monkeypatch.setattr("lib.title.driver.nobtitles", mock_nobtitles)
+    monkeypatch.setattr("lib.title.date_mod.cdate_to_dmy_opt", mock_cdate_to_dmy_opt)
+    monkeypatch.setattr("lib.title.date_mod.dmy_of_death", mock_dmy_of_death)
+    monkeypatch.setattr("lib.title.driver.get_family", mock_get_family)
+    monkeypatch.setattr("lib.title.driver.foi", mock_foi)
+    monkeypatch.setattr("lib.title.driver.get_marriage", mock_get_marriage)
+    monkeypatch.setattr("lib.title.gutil.spouse", mock_get_spouse)
+    monkeypatch.setattr("lib.title.driver.get_children", mock_get_children)
 
     conf = SimpleNamespace(allowed_titles=[], denied_titles=[], today=Dmy(1, 1, 2000, Precision.SURE, 0))
     base = SimpleNamespace()
@@ -747,7 +747,7 @@ def test_date_interval_add_children(monkeypatch):
 
 def test_compare_title_dates_with_start_dates(monkeypatch):
     def mock_get_birth(p):
-        from modernProject.lib.adef import CdateNone
+        from lib.adef import CdateNone
         return CdateNone()
 
     def mock_get_death(p):
@@ -768,10 +768,10 @@ def test_compare_title_dates_with_start_dates(monkeypatch):
             return 1
         return 0
 
-    monkeypatch.setattr("modernProject.lib.title.driver.get_birth", mock_get_birth)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_death", mock_get_death)
-    monkeypatch.setattr("modernProject.lib.title.date_mod.od_of_cdate", mock_od_of_cdate)
-    monkeypatch.setattr("modernProject.lib.title.date_mod.compare_dmy", mock_compare_dmy)
+    monkeypatch.setattr("lib.title.driver.get_birth", mock_get_birth)
+    monkeypatch.setattr("lib.title.driver.get_death", mock_get_death)
+    monkeypatch.setattr("lib.title.date_mod.od_of_cdate", mock_od_of_cdate)
+    monkeypatch.setattr("lib.title.date_mod.compare_dmy", mock_compare_dmy)
 
     conf = SimpleNamespace()
     base = SimpleNamespace()
@@ -786,7 +786,7 @@ def test_compare_title_dates_with_start_dates(monkeypatch):
 
 def test_compare_title_dates_with_equal_starts(monkeypatch):
     def mock_get_birth(p):
-        from modernProject.lib.adef import CdateNone
+        from lib.adef import CdateNone
         return CdateNone()
 
     def mock_get_death(p):
@@ -812,11 +812,11 @@ def test_compare_title_dates_with_equal_starts(monkeypatch):
     def mock_compare_date(d1, d2):
         return mock_compare_dmy(d1.dmy, d2.dmy)
 
-    monkeypatch.setattr("modernProject.lib.title.driver.get_birth", mock_get_birth)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_death", mock_get_death)
-    monkeypatch.setattr("modernProject.lib.title.date_mod.od_of_cdate", mock_od_of_cdate)
-    monkeypatch.setattr("modernProject.lib.title.date_mod.compare_dmy", mock_compare_dmy)
-    monkeypatch.setattr("modernProject.lib.title.date_mod.compare_date", mock_compare_date)
+    monkeypatch.setattr("lib.title.driver.get_birth", mock_get_birth)
+    monkeypatch.setattr("lib.title.driver.get_death", mock_get_death)
+    monkeypatch.setattr("lib.title.date_mod.od_of_cdate", mock_od_of_cdate)
+    monkeypatch.setattr("lib.title.date_mod.compare_dmy", mock_compare_dmy)
+    monkeypatch.setattr("lib.title.date_mod.compare_date", mock_compare_date)
 
     conf = SimpleNamespace()
     base = SimpleNamespace()
@@ -831,7 +831,7 @@ def test_compare_title_dates_with_equal_starts(monkeypatch):
 
 def test_compare_title_dates_with_end_dates(monkeypatch):
     def mock_get_birth(p):
-        from modernProject.lib.adef import CdateNone
+        from lib.adef import CdateNone
         return CdateNone()
 
     def mock_get_death(p):
@@ -852,10 +852,10 @@ def test_compare_title_dates_with_end_dates(monkeypatch):
             return 1
         return 0
 
-    monkeypatch.setattr("modernProject.lib.title.driver.get_birth", mock_get_birth)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_death", mock_get_death)
-    monkeypatch.setattr("modernProject.lib.title.date_mod.od_of_cdate", mock_od_of_cdate)
-    monkeypatch.setattr("modernProject.lib.title.date_mod.compare_date", mock_compare_date)
+    monkeypatch.setattr("lib.title.driver.get_birth", mock_get_birth)
+    monkeypatch.setattr("lib.title.driver.get_death", mock_get_death)
+    monkeypatch.setattr("lib.title.date_mod.od_of_cdate", mock_od_of_cdate)
+    monkeypatch.setattr("lib.title.date_mod.compare_date", mock_compare_date)
 
     conf = SimpleNamespace()
     base = SimpleNamespace()
@@ -870,7 +870,7 @@ def test_compare_title_dates_with_end_dates(monkeypatch):
 
 def test_compare_title_dates_death_before_start(monkeypatch):
     def mock_get_birth(p):
-        from modernProject.lib.adef import CdateNone
+        from lib.adef import CdateNone
         return CdateNone()
 
     def mock_get_death(p):
@@ -896,11 +896,11 @@ def test_compare_title_dates_death_before_start(monkeypatch):
             return 1
         return 0
 
-    monkeypatch.setattr("modernProject.lib.title.driver.get_birth", mock_get_birth)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_death", mock_get_death)
-    monkeypatch.setattr("modernProject.lib.title.date_mod.od_of_cdate", mock_od_of_cdate)
-    monkeypatch.setattr("modernProject.lib.title.date_mod.date_of_cdate", mock_date_of_cdate)
-    monkeypatch.setattr("modernProject.lib.title.date_mod.compare_date", mock_compare_date)
+    monkeypatch.setattr("lib.title.driver.get_birth", mock_get_birth)
+    monkeypatch.setattr("lib.title.driver.get_death", mock_get_death)
+    monkeypatch.setattr("lib.title.date_mod.od_of_cdate", mock_od_of_cdate)
+    monkeypatch.setattr("lib.title.date_mod.date_of_cdate", mock_date_of_cdate)
+    monkeypatch.setattr("lib.title.date_mod.compare_date", mock_compare_date)
 
     conf = SimpleNamespace()
     base = SimpleNamespace()
@@ -915,7 +915,7 @@ def test_compare_title_dates_death_before_start(monkeypatch):
 
 def test_compare_title_dates_start_after_death(monkeypatch):
     def mock_get_birth(p):
-        from modernProject.lib.adef import CdateNone
+        from lib.adef import CdateNone
         return CdateNone()
 
     def mock_get_death(p):
@@ -941,11 +941,11 @@ def test_compare_title_dates_start_after_death(monkeypatch):
             return 1
         return 0
 
-    monkeypatch.setattr("modernProject.lib.title.driver.get_birth", mock_get_birth)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_death", mock_get_death)
-    monkeypatch.setattr("modernProject.lib.title.date_mod.od_of_cdate", mock_od_of_cdate)
-    monkeypatch.setattr("modernProject.lib.title.date_mod.date_of_cdate", mock_date_of_cdate)
-    monkeypatch.setattr("modernProject.lib.title.date_mod.compare_date", mock_compare_date)
+    monkeypatch.setattr("lib.title.driver.get_birth", mock_get_birth)
+    monkeypatch.setattr("lib.title.driver.get_death", mock_get_death)
+    monkeypatch.setattr("lib.title.date_mod.od_of_cdate", mock_od_of_cdate)
+    monkeypatch.setattr("lib.title.date_mod.date_of_cdate", mock_date_of_cdate)
+    monkeypatch.setattr("lib.title.date_mod.compare_date", mock_compare_date)
 
     conf = SimpleNamespace()
     base = SimpleNamespace()
@@ -970,11 +970,11 @@ def test_compare_title_dates_intervals_no_overlap(monkeypatch):
             return CdateGregorian(100)
         elif p.iper == 2:
             return CdateGregorian(200)
-        from modernProject.lib.adef import CdateNone
+        from lib.adef import CdateNone
         return CdateNone()
 
     def mock_get_baptism(p):
-        from modernProject.lib.adef import CdateNone
+        from lib.adef import CdateNone
         return CdateNone()
 
     def mock_get_death(p):
@@ -1017,17 +1017,17 @@ def test_compare_title_dates_intervals_no_overlap(monkeypatch):
             return 1
         return 0
 
-    monkeypatch.setattr("modernProject.lib.title.driver.poi", mock_poi)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_iper", mock_get_iper)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_birth", mock_get_birth)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_baptism", mock_get_baptism)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_death", mock_get_death)
-    monkeypatch.setattr("modernProject.lib.title.driver.nobtitles", mock_nobtitles)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_family", mock_get_family)
-    monkeypatch.setattr("modernProject.lib.title.date_mod.od_of_cdate", mock_od_of_cdate)
-    monkeypatch.setattr("modernProject.lib.title.date_mod.cdate_to_dmy_opt", mock_cdate_to_dmy_opt)
-    monkeypatch.setattr("modernProject.lib.title.date_mod.dmy_of_death", mock_dmy_of_death)
-    monkeypatch.setattr("modernProject.lib.title.date_mod.compare_dmy", mock_compare_dmy)
+    monkeypatch.setattr("lib.title.driver.poi", mock_poi)
+    monkeypatch.setattr("lib.title.driver.get_iper", mock_get_iper)
+    monkeypatch.setattr("lib.title.driver.get_birth", mock_get_birth)
+    monkeypatch.setattr("lib.title.driver.get_baptism", mock_get_baptism)
+    monkeypatch.setattr("lib.title.driver.get_death", mock_get_death)
+    monkeypatch.setattr("lib.title.driver.nobtitles", mock_nobtitles)
+    monkeypatch.setattr("lib.title.driver.get_family", mock_get_family)
+    monkeypatch.setattr("lib.title.date_mod.od_of_cdate", mock_od_of_cdate)
+    monkeypatch.setattr("lib.title.date_mod.cdate_to_dmy_opt", mock_cdate_to_dmy_opt)
+    monkeypatch.setattr("lib.title.date_mod.dmy_of_death", mock_dmy_of_death)
+    monkeypatch.setattr("lib.title.date_mod.compare_dmy", mock_compare_dmy)
 
     conf = SimpleNamespace(allowed_titles=[], denied_titles=[], today=Dmy(1, 1, 2000, Precision.SURE, 0))
     base = SimpleNamespace()
@@ -1048,11 +1048,11 @@ def test_compare_title_order_zero_nth(monkeypatch):
         return 0
 
     def mock_get_birth(p):
-        from modernProject.lib.adef import CdateNone
+        from lib.adef import CdateNone
         return CdateNone()
 
     def mock_get_baptism(p):
-        from modernProject.lib.adef import CdateNone
+        from lib.adef import CdateNone
         return CdateNone()
 
     def mock_get_death(p):
@@ -1073,16 +1073,16 @@ def test_compare_title_order_zero_nth(monkeypatch):
     def mock_get_family(p):
         return []
 
-    monkeypatch.setattr("modernProject.lib.title.driver.poi", mock_poi)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_iper", mock_get_iper)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_birth", mock_get_birth)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_baptism", mock_get_baptism)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_death", mock_get_death)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_family", mock_get_family)
-    monkeypatch.setattr("modernProject.lib.title.date_mod.od_of_cdate", mock_od_of_cdate)
-    monkeypatch.setattr("modernProject.lib.title.date_mod.cdate_to_dmy_opt", mock_cdate_to_dmy_opt)
-    monkeypatch.setattr("modernProject.lib.title.date_mod.dmy_of_death", mock_dmy_of_death)
-    monkeypatch.setattr("modernProject.lib.title.driver.nobtitles", mock_nobtitles)
+    monkeypatch.setattr("lib.title.driver.poi", mock_poi)
+    monkeypatch.setattr("lib.title.driver.get_iper", mock_get_iper)
+    monkeypatch.setattr("lib.title.driver.get_birth", mock_get_birth)
+    monkeypatch.setattr("lib.title.driver.get_baptism", mock_get_baptism)
+    monkeypatch.setattr("lib.title.driver.get_death", mock_get_death)
+    monkeypatch.setattr("lib.title.driver.get_family", mock_get_family)
+    monkeypatch.setattr("lib.title.date_mod.od_of_cdate", mock_od_of_cdate)
+    monkeypatch.setattr("lib.title.date_mod.cdate_to_dmy_opt", mock_cdate_to_dmy_opt)
+    monkeypatch.setattr("lib.title.date_mod.dmy_of_death", mock_dmy_of_death)
+    monkeypatch.setattr("lib.title.driver.nobtitles", mock_nobtitles)
 
     t1 = SimpleNamespace(t_nth=0, t_date_start=None, t_date_end=None)
     t2 = SimpleNamespace(t_nth=5, t_date_start=None, t_date_end=None)
@@ -1098,7 +1098,7 @@ def test_compare_title_order_zero_nth(monkeypatch):
 
 def test_compare_title_dates_equal_starts_no_end2(monkeypatch):
     def mock_get_birth(p):
-        from modernProject.lib.adef import CdateNone
+        from lib.adef import CdateNone
         return CdateNone()
 
     def mock_get_death(p):
@@ -1119,10 +1119,10 @@ def test_compare_title_dates_equal_starts_no_end2(monkeypatch):
             return 1
         return 0
 
-    monkeypatch.setattr("modernProject.lib.title.driver.get_birth", mock_get_birth)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_death", mock_get_death)
-    monkeypatch.setattr("modernProject.lib.title.date_mod.od_of_cdate", mock_od_of_cdate)
-    monkeypatch.setattr("modernProject.lib.title.date_mod.compare_dmy", mock_compare_dmy)
+    monkeypatch.setattr("lib.title.driver.get_birth", mock_get_birth)
+    monkeypatch.setattr("lib.title.driver.get_death", mock_get_death)
+    monkeypatch.setattr("lib.title.date_mod.od_of_cdate", mock_od_of_cdate)
+    monkeypatch.setattr("lib.title.date_mod.compare_dmy", mock_compare_dmy)
 
     conf = SimpleNamespace()
     base = SimpleNamespace()
@@ -1151,11 +1151,11 @@ def test_compare_title_dates_intervals_spouse_overlap(monkeypatch):
             return CdateGregorian(110)
         elif p.iper == 4:
             return CdateGregorian(210)
-        from modernProject.lib.adef import CdateNone
+        from lib.adef import CdateNone
         return CdateNone()
 
     def mock_get_baptism(p):
-        from modernProject.lib.adef import CdateNone
+        from lib.adef import CdateNone
         return CdateNone()
 
     def mock_get_death(p):
@@ -1175,7 +1175,7 @@ def test_compare_title_dates_intervals_spouse_overlap(monkeypatch):
         return SimpleNamespace(ifam=ifam)
 
     def mock_get_marriage(fam):
-        from modernProject.lib.adef import CdateNone
+        from lib.adef import CdateNone
         return CdateNone()
 
     def mock_spouse(iper, fam):
@@ -1210,20 +1210,20 @@ def test_compare_title_dates_intervals_spouse_overlap(monkeypatch):
             return 1
         return 0
 
-    monkeypatch.setattr("modernProject.lib.title.driver.poi", mock_poi)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_iper", mock_get_iper)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_birth", mock_get_birth)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_baptism", mock_get_baptism)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_death", mock_get_death)
-    monkeypatch.setattr("modernProject.lib.title.driver.nobtitles", mock_nobtitles)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_family", mock_get_family)
-    monkeypatch.setattr("modernProject.lib.title.driver.foi", mock_foi)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_marriage", mock_get_marriage)
-    monkeypatch.setattr("modernProject.lib.title.gutil.spouse", mock_spouse)
-    monkeypatch.setattr("modernProject.lib.title.date_mod.od_of_cdate", mock_od_of_cdate)
-    monkeypatch.setattr("modernProject.lib.title.date_mod.cdate_to_dmy_opt", mock_cdate_to_dmy_opt)
-    monkeypatch.setattr("modernProject.lib.title.date_mod.dmy_of_death", mock_dmy_of_death)
-    monkeypatch.setattr("modernProject.lib.title.date_mod.compare_dmy", mock_compare_dmy)
+    monkeypatch.setattr("lib.title.driver.poi", mock_poi)
+    monkeypatch.setattr("lib.title.driver.get_iper", mock_get_iper)
+    monkeypatch.setattr("lib.title.driver.get_birth", mock_get_birth)
+    monkeypatch.setattr("lib.title.driver.get_baptism", mock_get_baptism)
+    monkeypatch.setattr("lib.title.driver.get_death", mock_get_death)
+    monkeypatch.setattr("lib.title.driver.nobtitles", mock_nobtitles)
+    monkeypatch.setattr("lib.title.driver.get_family", mock_get_family)
+    monkeypatch.setattr("lib.title.driver.foi", mock_foi)
+    monkeypatch.setattr("lib.title.driver.get_marriage", mock_get_marriage)
+    monkeypatch.setattr("lib.title.gutil.spouse", mock_spouse)
+    monkeypatch.setattr("lib.title.date_mod.od_of_cdate", mock_od_of_cdate)
+    monkeypatch.setattr("lib.title.date_mod.cdate_to_dmy_opt", mock_cdate_to_dmy_opt)
+    monkeypatch.setattr("lib.title.date_mod.dmy_of_death", mock_dmy_of_death)
+    monkeypatch.setattr("lib.title.date_mod.compare_dmy", mock_compare_dmy)
 
     conf = SimpleNamespace(allowed_titles=[], denied_titles=[], today=Dmy(1, 1, 2000, Precision.SURE, 0))
     base = SimpleNamespace()
@@ -1248,11 +1248,11 @@ def test_compare_title_dates_intervals_children_overlap(monkeypatch):
             return CdateGregorian(100)
         elif p.iper in [2, 4, 6]:
             return CdateGregorian(200)
-        from modernProject.lib.adef import CdateNone
+        from lib.adef import CdateNone
         return CdateNone()
 
     def mock_get_baptism(p):
-        from modernProject.lib.adef import CdateNone
+        from lib.adef import CdateNone
         return CdateNone()
 
     def mock_get_death(p):
@@ -1270,7 +1270,7 @@ def test_compare_title_dates_intervals_children_overlap(monkeypatch):
         return SimpleNamespace(ifam=ifam)
 
     def mock_get_marriage(fam):
-        from modernProject.lib.adef import CdateNone
+        from lib.adef import CdateNone
         return CdateNone()
 
     def mock_spouse(iper, fam):
@@ -1306,21 +1306,21 @@ def test_compare_title_dates_intervals_children_overlap(monkeypatch):
             return 1
         return 0
 
-    monkeypatch.setattr("modernProject.lib.title.driver.poi", mock_poi)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_iper", mock_get_iper)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_birth", mock_get_birth)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_baptism", mock_get_baptism)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_death", mock_get_death)
-    monkeypatch.setattr("modernProject.lib.title.driver.nobtitles", mock_nobtitles)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_family", mock_get_family)
-    monkeypatch.setattr("modernProject.lib.title.driver.foi", mock_foi)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_marriage", mock_get_marriage)
-    monkeypatch.setattr("modernProject.lib.title.gutil.spouse", mock_spouse)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_children", mock_get_children)
-    monkeypatch.setattr("modernProject.lib.title.date_mod.od_of_cdate", mock_od_of_cdate)
-    monkeypatch.setattr("modernProject.lib.title.date_mod.cdate_to_dmy_opt", mock_cdate_to_dmy_opt)
-    monkeypatch.setattr("modernProject.lib.title.date_mod.dmy_of_death", mock_dmy_of_death)
-    monkeypatch.setattr("modernProject.lib.title.date_mod.compare_dmy", mock_compare_dmy)
+    monkeypatch.setattr("lib.title.driver.poi", mock_poi)
+    monkeypatch.setattr("lib.title.driver.get_iper", mock_get_iper)
+    monkeypatch.setattr("lib.title.driver.get_birth", mock_get_birth)
+    monkeypatch.setattr("lib.title.driver.get_baptism", mock_get_baptism)
+    monkeypatch.setattr("lib.title.driver.get_death", mock_get_death)
+    monkeypatch.setattr("lib.title.driver.nobtitles", mock_nobtitles)
+    monkeypatch.setattr("lib.title.driver.get_family", mock_get_family)
+    monkeypatch.setattr("lib.title.driver.foi", mock_foi)
+    monkeypatch.setattr("lib.title.driver.get_marriage", mock_get_marriage)
+    monkeypatch.setattr("lib.title.gutil.spouse", mock_spouse)
+    monkeypatch.setattr("lib.title.driver.get_children", mock_get_children)
+    monkeypatch.setattr("lib.title.date_mod.od_of_cdate", mock_od_of_cdate)
+    monkeypatch.setattr("lib.title.date_mod.cdate_to_dmy_opt", mock_cdate_to_dmy_opt)
+    monkeypatch.setattr("lib.title.date_mod.dmy_of_death", mock_dmy_of_death)
+    monkeypatch.setattr("lib.title.date_mod.compare_dmy", mock_compare_dmy)
 
     conf = SimpleNamespace(allowed_titles=[], denied_titles=[], today=Dmy(1, 1, 2000, Precision.SURE, 0))
     base = SimpleNamespace()
@@ -1343,11 +1343,11 @@ def test_compare_title_dates_one_interval_children_none(monkeypatch):
     def mock_get_birth(p):
         if p.iper == 1:
             return CdateGregorian(100)
-        from modernProject.lib.adef import CdateNone
+        from lib.adef import CdateNone
         return CdateNone()
 
     def mock_get_baptism(p):
-        from modernProject.lib.adef import CdateNone
+        from lib.adef import CdateNone
         return CdateNone()
 
     def mock_get_death(p):
@@ -1365,7 +1365,7 @@ def test_compare_title_dates_one_interval_children_none(monkeypatch):
         return SimpleNamespace(ifam=ifam)
 
     def mock_get_marriage(fam):
-        from modernProject.lib.adef import CdateNone
+        from lib.adef import CdateNone
         return CdateNone()
 
     def mock_spouse(iper, fam):
@@ -1393,21 +1393,21 @@ def test_compare_title_dates_one_interval_children_none(monkeypatch):
             return 1
         return 0
 
-    monkeypatch.setattr("modernProject.lib.title.driver.poi", mock_poi)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_iper", mock_get_iper)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_birth", mock_get_birth)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_baptism", mock_get_baptism)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_death", mock_get_death)
-    monkeypatch.setattr("modernProject.lib.title.driver.nobtitles", mock_nobtitles)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_family", mock_get_family)
-    monkeypatch.setattr("modernProject.lib.title.driver.foi", mock_foi)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_marriage", mock_get_marriage)
-    monkeypatch.setattr("modernProject.lib.title.gutil.spouse", mock_spouse)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_children", mock_get_children)
-    monkeypatch.setattr("modernProject.lib.title.date_mod.od_of_cdate", mock_od_of_cdate)
-    monkeypatch.setattr("modernProject.lib.title.date_mod.cdate_to_dmy_opt", mock_cdate_to_dmy_opt)
-    monkeypatch.setattr("modernProject.lib.title.date_mod.dmy_of_death", mock_dmy_of_death)
-    monkeypatch.setattr("modernProject.lib.title.date_mod.compare_dmy", mock_compare_dmy)
+    monkeypatch.setattr("lib.title.driver.poi", mock_poi)
+    monkeypatch.setattr("lib.title.driver.get_iper", mock_get_iper)
+    monkeypatch.setattr("lib.title.driver.get_birth", mock_get_birth)
+    monkeypatch.setattr("lib.title.driver.get_baptism", mock_get_baptism)
+    monkeypatch.setattr("lib.title.driver.get_death", mock_get_death)
+    monkeypatch.setattr("lib.title.driver.nobtitles", mock_nobtitles)
+    monkeypatch.setattr("lib.title.driver.get_family", mock_get_family)
+    monkeypatch.setattr("lib.title.driver.foi", mock_foi)
+    monkeypatch.setattr("lib.title.driver.get_marriage", mock_get_marriage)
+    monkeypatch.setattr("lib.title.gutil.spouse", mock_spouse)
+    monkeypatch.setattr("lib.title.driver.get_children", mock_get_children)
+    monkeypatch.setattr("lib.title.date_mod.od_of_cdate", mock_od_of_cdate)
+    monkeypatch.setattr("lib.title.date_mod.cdate_to_dmy_opt", mock_cdate_to_dmy_opt)
+    monkeypatch.setattr("lib.title.date_mod.dmy_of_death", mock_dmy_of_death)
+    monkeypatch.setattr("lib.title.date_mod.compare_dmy", mock_compare_dmy)
 
     conf = SimpleNamespace(allowed_titles=[], denied_titles=[], today=Dmy(1, 1, 2000, Precision.SURE, 0))
     base = SimpleNamespace()
@@ -1458,11 +1458,11 @@ def test_compare_title_dates_interval_self_branches(monkeypatch):
             return CdateGregorian(100)
         elif p.iper == 2:
             return CdateGregorian(200)
-        from modernProject.lib.adef import CdateNone
+        from lib.adef import CdateNone
         return CdateNone()
 
     def mock_get_baptism(p):
-        from modernProject.lib.adef import CdateNone
+        from lib.adef import CdateNone
         return CdateNone()
 
     def mock_get_death(p):
@@ -1509,17 +1509,17 @@ def test_compare_title_dates_interval_self_branches(monkeypatch):
             return 1
         return 0
 
-    monkeypatch.setattr("modernProject.lib.title.driver.poi", mock_poi)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_iper", mock_get_iper)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_birth", mock_get_birth)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_baptism", mock_get_baptism)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_death", mock_get_death)
-    monkeypatch.setattr("modernProject.lib.title.driver.nobtitles", mock_nobtitles)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_family", mock_get_family)
-    monkeypatch.setattr("modernProject.lib.title.date_mod.od_of_cdate", mock_od_of_cdate)
-    monkeypatch.setattr("modernProject.lib.title.date_mod.cdate_to_dmy_opt", mock_cdate_to_dmy_opt)
-    monkeypatch.setattr("modernProject.lib.title.date_mod.dmy_of_death", mock_dmy_of_death)
-    monkeypatch.setattr("modernProject.lib.title.date_mod.compare_dmy", mock_compare_dmy)
+    monkeypatch.setattr("lib.title.driver.poi", mock_poi)
+    monkeypatch.setattr("lib.title.driver.get_iper", mock_get_iper)
+    monkeypatch.setattr("lib.title.driver.get_birth", mock_get_birth)
+    monkeypatch.setattr("lib.title.driver.get_baptism", mock_get_baptism)
+    monkeypatch.setattr("lib.title.driver.get_death", mock_get_death)
+    monkeypatch.setattr("lib.title.driver.nobtitles", mock_nobtitles)
+    monkeypatch.setattr("lib.title.driver.get_family", mock_get_family)
+    monkeypatch.setattr("lib.title.date_mod.od_of_cdate", mock_od_of_cdate)
+    monkeypatch.setattr("lib.title.date_mod.cdate_to_dmy_opt", mock_cdate_to_dmy_opt)
+    monkeypatch.setattr("lib.title.date_mod.dmy_of_death", mock_dmy_of_death)
+    monkeypatch.setattr("lib.title.date_mod.compare_dmy", mock_compare_dmy)
 
     conf = SimpleNamespace(allowed_titles=[], denied_titles=[], today=Dmy(1, 1, 2000, Precision.SURE, 0))
     base = SimpleNamespace()
@@ -1544,11 +1544,11 @@ def test_compare_title_dates_interval_reverse(monkeypatch):
             return CdateGregorian(200)
         elif p.iper == 2:
             return CdateGregorian(100)
-        from modernProject.lib.adef import CdateNone
+        from lib.adef import CdateNone
         return CdateNone()
 
     def mock_get_baptism(p):
-        from modernProject.lib.adef import CdateNone
+        from lib.adef import CdateNone
         return CdateNone()
 
     def mock_get_death(p):
@@ -1591,17 +1591,17 @@ def test_compare_title_dates_interval_reverse(monkeypatch):
             return 1
         return 0
 
-    monkeypatch.setattr("modernProject.lib.title.driver.poi", mock_poi)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_iper", mock_get_iper)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_birth", mock_get_birth)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_baptism", mock_get_baptism)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_death", mock_get_death)
-    monkeypatch.setattr("modernProject.lib.title.driver.nobtitles", mock_nobtitles)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_family", mock_get_family)
-    monkeypatch.setattr("modernProject.lib.title.date_mod.od_of_cdate", mock_od_of_cdate)
-    monkeypatch.setattr("modernProject.lib.title.date_mod.cdate_to_dmy_opt", mock_cdate_to_dmy_opt)
-    monkeypatch.setattr("modernProject.lib.title.date_mod.dmy_of_death", mock_dmy_of_death)
-    monkeypatch.setattr("modernProject.lib.title.date_mod.compare_dmy", mock_compare_dmy)
+    monkeypatch.setattr("lib.title.driver.poi", mock_poi)
+    monkeypatch.setattr("lib.title.driver.get_iper", mock_get_iper)
+    monkeypatch.setattr("lib.title.driver.get_birth", mock_get_birth)
+    monkeypatch.setattr("lib.title.driver.get_baptism", mock_get_baptism)
+    monkeypatch.setattr("lib.title.driver.get_death", mock_get_death)
+    monkeypatch.setattr("lib.title.driver.nobtitles", mock_nobtitles)
+    monkeypatch.setattr("lib.title.driver.get_family", mock_get_family)
+    monkeypatch.setattr("lib.title.date_mod.od_of_cdate", mock_od_of_cdate)
+    monkeypatch.setattr("lib.title.date_mod.cdate_to_dmy_opt", mock_cdate_to_dmy_opt)
+    monkeypatch.setattr("lib.title.date_mod.dmy_of_death", mock_dmy_of_death)
+    monkeypatch.setattr("lib.title.date_mod.compare_dmy", mock_compare_dmy)
 
     conf = SimpleNamespace(allowed_titles=[], denied_titles=[], today=Dmy(1, 1, 2000, Precision.SURE, 0))
     base = SimpleNamespace()
@@ -1624,11 +1624,11 @@ def test_compare_title_dates_second_child_has_none(monkeypatch):
     def mock_get_birth(p):
         if p.iper == 2:
             return CdateGregorian(100)
-        from modernProject.lib.adef import CdateNone
+        from lib.adef import CdateNone
         return CdateNone()
 
     def mock_get_baptism(p):
-        from modernProject.lib.adef import CdateNone
+        from lib.adef import CdateNone
         return CdateNone()
 
     def mock_get_death(p):
@@ -1646,7 +1646,7 @@ def test_compare_title_dates_second_child_has_none(monkeypatch):
         return SimpleNamespace(ifam=ifam)
 
     def mock_get_marriage(fam):
-        from modernProject.lib.adef import CdateNone
+        from lib.adef import CdateNone
         return CdateNone()
 
     def mock_spouse(iper, fam):
@@ -1674,21 +1674,21 @@ def test_compare_title_dates_second_child_has_none(monkeypatch):
             return 1
         return 0
 
-    monkeypatch.setattr("modernProject.lib.title.driver.poi", mock_poi)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_iper", mock_get_iper)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_birth", mock_get_birth)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_baptism", mock_get_baptism)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_death", mock_get_death)
-    monkeypatch.setattr("modernProject.lib.title.driver.nobtitles", mock_nobtitles)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_family", mock_get_family)
-    monkeypatch.setattr("modernProject.lib.title.driver.foi", mock_foi)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_marriage", mock_get_marriage)
-    monkeypatch.setattr("modernProject.lib.title.gutil.spouse", mock_spouse)
-    monkeypatch.setattr("modernProject.lib.title.driver.get_children", mock_get_children)
-    monkeypatch.setattr("modernProject.lib.title.date_mod.od_of_cdate", mock_od_of_cdate)
-    monkeypatch.setattr("modernProject.lib.title.date_mod.cdate_to_dmy_opt", mock_cdate_to_dmy_opt)
-    monkeypatch.setattr("modernProject.lib.title.date_mod.dmy_of_death", mock_dmy_of_death)
-    monkeypatch.setattr("modernProject.lib.title.date_mod.compare_dmy", mock_compare_dmy)
+    monkeypatch.setattr("lib.title.driver.poi", mock_poi)
+    monkeypatch.setattr("lib.title.driver.get_iper", mock_get_iper)
+    monkeypatch.setattr("lib.title.driver.get_birth", mock_get_birth)
+    monkeypatch.setattr("lib.title.driver.get_baptism", mock_get_baptism)
+    monkeypatch.setattr("lib.title.driver.get_death", mock_get_death)
+    monkeypatch.setattr("lib.title.driver.nobtitles", mock_nobtitles)
+    monkeypatch.setattr("lib.title.driver.get_family", mock_get_family)
+    monkeypatch.setattr("lib.title.driver.foi", mock_foi)
+    monkeypatch.setattr("lib.title.driver.get_marriage", mock_get_marriage)
+    monkeypatch.setattr("lib.title.gutil.spouse", mock_spouse)
+    monkeypatch.setattr("lib.title.driver.get_children", mock_get_children)
+    monkeypatch.setattr("lib.title.date_mod.od_of_cdate", mock_od_of_cdate)
+    monkeypatch.setattr("lib.title.date_mod.cdate_to_dmy_opt", mock_cdate_to_dmy_opt)
+    monkeypatch.setattr("lib.title.date_mod.dmy_of_death", mock_dmy_of_death)
+    monkeypatch.setattr("lib.title.date_mod.compare_dmy", mock_compare_dmy)
 
     conf = SimpleNamespace(allowed_titles=[], denied_titles=[], today=Dmy(1, 1, 2000, Precision.SURE, 0))
     base = SimpleNamespace()

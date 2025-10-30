@@ -6,7 +6,7 @@ from typing import Optional, List, Tuple, Any, Dict
 from pathlib import Path
 from dataclasses import dataclass
 
-from lib import driver, adef, gwdef, config as config_module, date, name, mutil
+from lib import driver, adef, gwdef, config as config_module, date, name, mutil, gutil, secure
 
 
 @dataclass
@@ -99,7 +99,10 @@ def is_hide_names(conf: config_module.Config, p: driver.GenPerson) -> bool:
     return conf.hide_names or p.access == gwdef.Access.PRIVATE
 
 
-def is_hidden(p: driver.GenPerson) -> bool:
+def is_hidden(p) -> bool:
+    if isinstance(p, driver.Person):
+        p._ensure_loaded()
+        return p.gen_person.surname == ''
     return p.surname == ''
 
 
@@ -878,6 +881,37 @@ def find_person_in_env(conf: config_module.Config, base: Any, suff: str) -> Opti
                 return pget_opt(conf, base, driver.get_iper(person))
 
     return None
+
+
+def default_sosa_ref(conf: config_module.Config, base: Any) -> Optional[driver.GenPerson]:
+    for key, value in conf.base_env:
+        if key == "default_sosa_ref":
+            if value == "":
+                return None
+            ipl = gutil.person_ht_find_all(base, value)
+            if len(ipl) == 1:
+                ip = ipl[0]
+                p = pget_opt(conf, base, ip)
+                if p and not is_hidden(p):
+                    return p
+            return None
+    return None
+
+
+def find_sosa_ref(conf: config_module.Config, base: Any) -> Optional[driver.GenPerson]:
+    p = find_person_in_env(conf, base, "z")
+    if p:
+        return p
+    return default_sosa_ref(conf, base)
+
+
+def search_in_assets(filename: str) -> str:
+    asset_dirs = secure.assets()
+    for asset_dir in asset_dirs:
+        full_path = os.path.join(asset_dir, filename)
+        if os.path.exists(full_path):
+            return full_path
+    return filename
 
 
 def p_getenv(env: Dict[str, str], key: str) -> str:

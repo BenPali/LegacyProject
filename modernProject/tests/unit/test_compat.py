@@ -1,5 +1,5 @@
 import pytest
-from modernProject.lib.compat import list_equal
+from lib.compat import list_equal
 
 
 def test_list_equal_empty_lists():

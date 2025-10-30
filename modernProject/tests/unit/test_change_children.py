@@ -1,6 +1,6 @@
 import pytest
 from types import SimpleNamespace
-from modernProject.lib import change_children
+from lib import change_children
 
 
 def test_digest_children(monkeypatch):
@@ -29,11 +29,11 @@ def test_digest_children(monkeypatch):
             return "Smith"
         return ""
 
-    monkeypatch.setattr("modernProject.lib.change_children.driver.poi", mock_poi)
-    monkeypatch.setattr("modernProject.lib.change_children.driver.get_first_name", mock_get_first_name)
-    monkeypatch.setattr("modernProject.lib.change_children.driver.get_surname", mock_get_surname)
-    monkeypatch.setattr("modernProject.lib.change_children.driver.get_occ", mock_get_occ)
-    monkeypatch.setattr("modernProject.lib.change_children.driver.sou", mock_sou)
+    monkeypatch.setattr("lib.change_children.driver.poi", mock_poi)
+    monkeypatch.setattr("lib.change_children.driver.get_first_name", mock_get_first_name)
+    monkeypatch.setattr("lib.change_children.driver.get_surname", mock_get_surname)
+    monkeypatch.setattr("lib.change_children.driver.get_occ", mock_get_occ)
+    monkeypatch.setattr("lib.change_children.driver.sou", mock_sou)
 
     base = SimpleNamespace()
     ipl = [0, 1]
@@ -82,11 +82,11 @@ def test_check_conflict_no_conflict(monkeypatch):
     def mock_get_occ(p):
         return 0
 
-    monkeypatch.setattr("modernProject.lib.change_children.driver.poi", mock_poi)
-    monkeypatch.setattr("modernProject.lib.change_children.driver.get_iper", mock_get_iper)
-    monkeypatch.setattr("modernProject.lib.change_children.driver.p_first_name", mock_p_first_name)
-    monkeypatch.setattr("modernProject.lib.change_children.driver.p_surname", mock_p_surname)
-    monkeypatch.setattr("modernProject.lib.change_children.driver.get_occ", mock_get_occ)
+    monkeypatch.setattr("lib.change_children.driver.poi", mock_poi)
+    monkeypatch.setattr("lib.change_children.driver.get_iper", mock_get_iper)
+    monkeypatch.setattr("lib.change_children.driver.p_first_name", mock_p_first_name)
+    monkeypatch.setattr("lib.change_children.driver.p_surname", mock_p_surname)
+    monkeypatch.setattr("lib.change_children.driver.get_occ", mock_get_occ)
 
     base = SimpleNamespace()
     p = SimpleNamespace(iper=0)
@@ -111,11 +111,11 @@ def test_check_conflict_with_conflict(monkeypatch):
     def mock_get_occ(p):
         return 0
 
-    monkeypatch.setattr("modernProject.lib.change_children.driver.poi", mock_poi)
-    monkeypatch.setattr("modernProject.lib.change_children.driver.get_iper", mock_get_iper)
-    monkeypatch.setattr("modernProject.lib.change_children.driver.p_first_name", mock_p_first_name)
-    monkeypatch.setattr("modernProject.lib.change_children.driver.p_surname", mock_p_surname)
-    monkeypatch.setattr("modernProject.lib.change_children.driver.get_occ", mock_get_occ)
+    monkeypatch.setattr("lib.change_children.driver.poi", mock_poi)
+    monkeypatch.setattr("lib.change_children.driver.get_iper", mock_get_iper)
+    monkeypatch.setattr("lib.change_children.driver.p_first_name", mock_p_first_name)
+    monkeypatch.setattr("lib.change_children.driver.p_surname", mock_p_surname)
+    monkeypatch.setattr("lib.change_children.driver.get_occ", mock_get_occ)
 
     base = SimpleNamespace()
     p = SimpleNamespace(iper=0)
@@ -141,11 +141,11 @@ def test_change_child_no_change(monkeypatch):
     def mock_get_occ(p):
         return 0
 
-    monkeypatch.setattr("modernProject.lib.change_children.driver.poi", mock_poi)
-    monkeypatch.setattr("modernProject.lib.change_children.driver.get_iper", mock_get_iper)
-    monkeypatch.setattr("modernProject.lib.change_children.driver.p_first_name", mock_p_first_name)
-    monkeypatch.setattr("modernProject.lib.change_children.driver.p_surname", mock_p_surname)
-    monkeypatch.setattr("modernProject.lib.change_children.driver.get_occ", mock_get_occ)
+    monkeypatch.setattr("lib.change_children.driver.poi", mock_poi)
+    monkeypatch.setattr("lib.change_children.driver.get_iper", mock_get_iper)
+    monkeypatch.setattr("lib.change_children.driver.p_first_name", mock_p_first_name)
+    monkeypatch.setattr("lib.change_children.driver.p_surname", mock_p_surname)
+    monkeypatch.setattr("lib.change_children.driver.get_occ", mock_get_occ)
 
     conf = SimpleNamespace(env={})
     base = SimpleNamespace()
@@ -184,15 +184,15 @@ def test_change_child_with_change(monkeypatch):
     def mock_patch_person(base, ip, gen_p):
         patched.append((ip, gen_p))
 
-    monkeypatch.setattr("modernProject.lib.change_children.driver.poi", mock_poi)
-    monkeypatch.setattr("modernProject.lib.change_children.driver.get_iper", mock_get_iper)
-    monkeypatch.setattr("modernProject.lib.change_children.driver.p_first_name", mock_p_first_name)
-    monkeypatch.setattr("modernProject.lib.change_children.driver.p_surname", mock_p_surname)
-    monkeypatch.setattr("modernProject.lib.change_children.driver.get_occ", mock_get_occ)
-    monkeypatch.setattr("modernProject.lib.change_children.gutil.person_ht_find_all", mock_person_ht_find_all)
-    monkeypatch.setattr("modernProject.lib.change_children.driver.insert_string", mock_insert_string)
-    monkeypatch.setattr("modernProject.lib.change_children.driver.gen_person_of_person", mock_gen_person_of_person)
-    monkeypatch.setattr("modernProject.lib.change_children.driver.patch_person", mock_patch_person)
+    monkeypatch.setattr("lib.change_children.driver.poi", mock_poi)
+    monkeypatch.setattr("lib.change_children.driver.get_iper", mock_get_iper)
+    monkeypatch.setattr("lib.change_children.driver.p_first_name", mock_p_first_name)
+    monkeypatch.setattr("lib.change_children.driver.p_surname", mock_p_surname)
+    monkeypatch.setattr("lib.change_children.driver.get_occ", mock_get_occ)
+    monkeypatch.setattr("lib.change_children.gutil.person_ht_find_all", mock_person_ht_find_all)
+    monkeypatch.setattr("lib.change_children.driver.insert_string", mock_insert_string)
+    monkeypatch.setattr("lib.change_children.driver.gen_person_of_person", mock_gen_person_of_person)
+    monkeypatch.setattr("lib.change_children.driver.patch_person", mock_patch_person)
 
     conf = SimpleNamespace(env={"c5_first_name": "Jane"})
     base = SimpleNamespace()
@@ -221,11 +221,11 @@ def test_change_child_first_name_missing(monkeypatch):
     def mock_get_occ(p):
         return 0
 
-    monkeypatch.setattr("modernProject.lib.change_children.driver.poi", mock_poi)
-    monkeypatch.setattr("modernProject.lib.change_children.driver.get_iper", mock_get_iper)
-    monkeypatch.setattr("modernProject.lib.change_children.driver.p_first_name", mock_p_first_name)
-    monkeypatch.setattr("modernProject.lib.change_children.driver.p_surname", mock_p_surname)
-    monkeypatch.setattr("modernProject.lib.change_children.driver.get_occ", mock_get_occ)
+    monkeypatch.setattr("lib.change_children.driver.poi", mock_poi)
+    monkeypatch.setattr("lib.change_children.driver.get_iper", mock_get_iper)
+    monkeypatch.setattr("lib.change_children.driver.p_first_name", mock_p_first_name)
+    monkeypatch.setattr("lib.change_children.driver.p_surname", mock_p_surname)
+    monkeypatch.setattr("lib.change_children.driver.get_occ", mock_get_occ)
 
     conf = SimpleNamespace(env={"c5_first_name": ""})
     base = SimpleNamespace()
@@ -264,15 +264,15 @@ def test_change_child_surname_change(monkeypatch):
     def mock_patch_person(base, ip, gen_p):
         patched.append((ip, gen_p))
 
-    monkeypatch.setattr("modernProject.lib.change_children.driver.poi", mock_poi)
-    monkeypatch.setattr("modernProject.lib.change_children.driver.get_iper", mock_get_iper)
-    monkeypatch.setattr("modernProject.lib.change_children.driver.p_first_name", mock_p_first_name)
-    monkeypatch.setattr("modernProject.lib.change_children.driver.p_surname", mock_p_surname)
-    monkeypatch.setattr("modernProject.lib.change_children.driver.get_occ", mock_get_occ)
-    monkeypatch.setattr("modernProject.lib.change_children.gutil.person_ht_find_all", mock_person_ht_find_all)
-    monkeypatch.setattr("modernProject.lib.change_children.driver.insert_string", mock_insert_string)
-    monkeypatch.setattr("modernProject.lib.change_children.driver.gen_person_of_person", mock_gen_person_of_person)
-    monkeypatch.setattr("modernProject.lib.change_children.driver.patch_person", mock_patch_person)
+    monkeypatch.setattr("lib.change_children.driver.poi", mock_poi)
+    monkeypatch.setattr("lib.change_children.driver.get_iper", mock_get_iper)
+    monkeypatch.setattr("lib.change_children.driver.p_first_name", mock_p_first_name)
+    monkeypatch.setattr("lib.change_children.driver.p_surname", mock_p_surname)
+    monkeypatch.setattr("lib.change_children.driver.get_occ", mock_get_occ)
+    monkeypatch.setattr("lib.change_children.gutil.person_ht_find_all", mock_person_ht_find_all)
+    monkeypatch.setattr("lib.change_children.driver.insert_string", mock_insert_string)
+    monkeypatch.setattr("lib.change_children.driver.gen_person_of_person", mock_gen_person_of_person)
+    monkeypatch.setattr("lib.change_children.driver.patch_person", mock_patch_person)
 
     conf = SimpleNamespace(env={"c5_surname": "Smith"})
     base = SimpleNamespace()
@@ -312,15 +312,15 @@ def test_change_child_surname_empty_uses_parent(monkeypatch):
     def mock_patch_person(base, ip, gen_p):
         patched.append((ip, gen_p))
 
-    monkeypatch.setattr("modernProject.lib.change_children.driver.poi", mock_poi)
-    monkeypatch.setattr("modernProject.lib.change_children.driver.get_iper", mock_get_iper)
-    monkeypatch.setattr("modernProject.lib.change_children.driver.p_first_name", mock_p_first_name)
-    monkeypatch.setattr("modernProject.lib.change_children.driver.p_surname", mock_p_surname)
-    monkeypatch.setattr("modernProject.lib.change_children.driver.get_occ", mock_get_occ)
-    monkeypatch.setattr("modernProject.lib.change_children.gutil.person_ht_find_all", mock_person_ht_find_all)
-    monkeypatch.setattr("modernProject.lib.change_children.driver.insert_string", mock_insert_string)
-    monkeypatch.setattr("modernProject.lib.change_children.driver.gen_person_of_person", mock_gen_person_of_person)
-    monkeypatch.setattr("modernProject.lib.change_children.driver.patch_person", mock_patch_person)
+    monkeypatch.setattr("lib.change_children.driver.poi", mock_poi)
+    monkeypatch.setattr("lib.change_children.driver.get_iper", mock_get_iper)
+    monkeypatch.setattr("lib.change_children.driver.p_first_name", mock_p_first_name)
+    monkeypatch.setattr("lib.change_children.driver.p_surname", mock_p_surname)
+    monkeypatch.setattr("lib.change_children.driver.get_occ", mock_get_occ)
+    monkeypatch.setattr("lib.change_children.gutil.person_ht_find_all", mock_person_ht_find_all)
+    monkeypatch.setattr("lib.change_children.driver.insert_string", mock_insert_string)
+    monkeypatch.setattr("lib.change_children.driver.gen_person_of_person", mock_gen_person_of_person)
+    monkeypatch.setattr("lib.change_children.driver.patch_person", mock_patch_person)
 
     conf = SimpleNamespace(env={"c5_surname": ""})
     base = SimpleNamespace()
@@ -360,15 +360,15 @@ def test_change_child_occ_change(monkeypatch):
     def mock_patch_person(base, ip, gen_p):
         patched.append((ip, gen_p))
 
-    monkeypatch.setattr("modernProject.lib.change_children.driver.poi", mock_poi)
-    monkeypatch.setattr("modernProject.lib.change_children.driver.get_iper", mock_get_iper)
-    monkeypatch.setattr("modernProject.lib.change_children.driver.p_first_name", mock_p_first_name)
-    monkeypatch.setattr("modernProject.lib.change_children.driver.p_surname", mock_p_surname)
-    monkeypatch.setattr("modernProject.lib.change_children.driver.get_occ", mock_get_occ)
-    monkeypatch.setattr("modernProject.lib.change_children.gutil.person_ht_find_all", mock_person_ht_find_all)
-    monkeypatch.setattr("modernProject.lib.change_children.driver.insert_string", mock_insert_string)
-    monkeypatch.setattr("modernProject.lib.change_children.driver.gen_person_of_person", mock_gen_person_of_person)
-    monkeypatch.setattr("modernProject.lib.change_children.driver.patch_person", mock_patch_person)
+    monkeypatch.setattr("lib.change_children.driver.poi", mock_poi)
+    monkeypatch.setattr("lib.change_children.driver.get_iper", mock_get_iper)
+    monkeypatch.setattr("lib.change_children.driver.p_first_name", mock_p_first_name)
+    monkeypatch.setattr("lib.change_children.driver.p_surname", mock_p_surname)
+    monkeypatch.setattr("lib.change_children.driver.get_occ", mock_get_occ)
+    monkeypatch.setattr("lib.change_children.gutil.person_ht_find_all", mock_person_ht_find_all)
+    monkeypatch.setattr("lib.change_children.driver.insert_string", mock_insert_string)
+    monkeypatch.setattr("lib.change_children.driver.gen_person_of_person", mock_gen_person_of_person)
+    monkeypatch.setattr("lib.change_children.driver.patch_person", mock_patch_person)
 
     conf = SimpleNamespace(env={"c5_occ": "2"})
     base = SimpleNamespace()
@@ -408,15 +408,15 @@ def test_change_children_multiple(monkeypatch):
     def mock_patch_person(base, ip, gen_p):
         patched.append((ip, gen_p))
 
-    monkeypatch.setattr("modernProject.lib.change_children.driver.poi", mock_poi)
-    monkeypatch.setattr("modernProject.lib.change_children.driver.get_iper", mock_get_iper)
-    monkeypatch.setattr("modernProject.lib.change_children.driver.p_first_name", mock_p_first_name)
-    monkeypatch.setattr("modernProject.lib.change_children.driver.p_surname", mock_p_surname)
-    monkeypatch.setattr("modernProject.lib.change_children.driver.get_occ", mock_get_occ)
-    monkeypatch.setattr("modernProject.lib.change_children.gutil.person_ht_find_all", mock_person_ht_find_all)
-    monkeypatch.setattr("modernProject.lib.change_children.driver.insert_string", mock_insert_string)
-    monkeypatch.setattr("modernProject.lib.change_children.driver.gen_person_of_person", mock_gen_person_of_person)
-    monkeypatch.setattr("modernProject.lib.change_children.driver.patch_person", mock_patch_person)
+    monkeypatch.setattr("lib.change_children.driver.poi", mock_poi)
+    monkeypatch.setattr("lib.change_children.driver.get_iper", mock_get_iper)
+    monkeypatch.setattr("lib.change_children.driver.p_first_name", mock_p_first_name)
+    monkeypatch.setattr("lib.change_children.driver.p_surname", mock_p_surname)
+    monkeypatch.setattr("lib.change_children.driver.get_occ", mock_get_occ)
+    monkeypatch.setattr("lib.change_children.gutil.person_ht_find_all", mock_person_ht_find_all)
+    monkeypatch.setattr("lib.change_children.driver.insert_string", mock_insert_string)
+    monkeypatch.setattr("lib.change_children.driver.gen_person_of_person", mock_gen_person_of_person)
+    monkeypatch.setattr("lib.change_children.driver.patch_person", mock_patch_person)
 
     conf = SimpleNamespace(env={
         "c1_first_name": "NewChild1",

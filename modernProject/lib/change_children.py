@@ -1,5 +1,5 @@
 from typing import List, Tuple, Optional
-from modernProject.lib import driver, mutil, name, gutil
+from lib import driver, mutil, name, gutil
 
 
 class ChangeChildrenConflict(Exception):

@@ -1,5 +1,5 @@
 import pytest
-from modernProject.lib.wserver_util import pp_exception, format_exception
+from lib.wserver_util import pp_exception, format_exception
 
 
 def test_pp_exception_basic():

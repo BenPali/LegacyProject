@@ -1,7 +1,7 @@
 import pytest
 from types import SimpleNamespace
-from modernProject.lib import birth_death, gwdef, date as date_mod, pqueue
-from modernProject.lib.adef import Precision, Calendar, Dmy
+from lib import birth_death, gwdef, date as date_mod, pqueue
+from lib.adef import Precision, Calendar, Dmy
 
 
 def test_get_k_from_env():
@@ -180,9 +180,9 @@ def test_select_person_latest(monkeypatch):
     def mock_poi(base, i):
         return SimpleNamespace(name=f"p{i}", iper=i)
 
-    monkeypatch.setattr("modernProject.lib.birth_death.driver.nb_of_persons", mock_nb_of_persons)
-    monkeypatch.setattr("modernProject.lib.birth_death.driver.ipers", mock_ipers)
-    monkeypatch.setattr("modernProject.lib.birth_death.driver.poi", mock_poi)
+    monkeypatch.setattr("lib.birth_death.driver.nb_of_persons", mock_nb_of_persons)
+    monkeypatch.setattr("lib.birth_death.driver.ipers", mock_ipers)
+    monkeypatch.setattr("lib.birth_death.driver.poi", mock_poi)
 
     def get_date(p):
         year = 1990 if p.iper == 0 else 1995
@@ -208,9 +208,9 @@ def test_select_person_oldest(monkeypatch):
     def mock_poi(base, i):
         return SimpleNamespace(name=f"p{i}", iper=i)
 
-    monkeypatch.setattr("modernProject.lib.birth_death.driver.nb_of_persons", mock_nb_of_persons)
-    monkeypatch.setattr("modernProject.lib.birth_death.driver.ipers", mock_ipers)
-    monkeypatch.setattr("modernProject.lib.birth_death.driver.poi", mock_poi)
+    monkeypatch.setattr("lib.birth_death.driver.nb_of_persons", mock_nb_of_persons)
+    monkeypatch.setattr("lib.birth_death.driver.ipers", mock_ipers)
+    monkeypatch.setattr("lib.birth_death.driver.poi", mock_poi)
 
     def get_date(p):
         year = 1990 if p.iper == 0 else 1995
@@ -236,9 +236,9 @@ def test_select_family_latest(monkeypatch):
     def mock_foi(base, i):
         return SimpleNamespace(name=f"f{i}", ifam=i)
 
-    monkeypatch.setattr("modernProject.lib.birth_death.driver.nb_of_families", mock_nb_of_families)
-    monkeypatch.setattr("modernProject.lib.birth_death.driver.ifams", mock_ifams)
-    monkeypatch.setattr("modernProject.lib.birth_death.driver.foi", mock_foi)
+    monkeypatch.setattr("lib.birth_death.driver.nb_of_families", mock_nb_of_families)
+    monkeypatch.setattr("lib.birth_death.driver.ifams", mock_ifams)
+    monkeypatch.setattr("lib.birth_death.driver.foi", mock_foi)
 
     def get_date(f):
         year = 1990 if f.ifam == 0 else 1995
@@ -264,9 +264,9 @@ def test_select_family_oldest(monkeypatch):
     def mock_foi(base, i):
         return SimpleNamespace(name=f"f{i}", ifam=i)
 
-    monkeypatch.setattr("modernProject.lib.birth_death.driver.nb_of_families", mock_nb_of_families)
-    monkeypatch.setattr("modernProject.lib.birth_death.driver.ifams", mock_ifams)
-    monkeypatch.setattr("modernProject.lib.birth_death.driver.foi", mock_foi)
+    monkeypatch.setattr("lib.birth_death.driver.nb_of_families", mock_nb_of_families)
+    monkeypatch.setattr("lib.birth_death.driver.ifams", mock_ifams)
+    monkeypatch.setattr("lib.birth_death.driver.foi", mock_foi)
 
     def get_date(f):
         year = 1990 if f.ifam == 0 else 1995
@@ -284,7 +284,7 @@ def test_select_family_oldest(monkeypatch):
 
 def test_death_date(monkeypatch):
     def mock_get_death(p):
-        from modernProject.lib.adef import CdateGregorian
+        from lib.adef import CdateGregorian
         return gwdef.DeathWithReason(gwdef.DeathReason.KILLED, CdateGregorian(123456))
 
     def mock_date_of_death(death):
@@ -292,8 +292,8 @@ def test_death_date(monkeypatch):
             return SimpleNamespace(year=2000)
         return None
 
-    monkeypatch.setattr("modernProject.lib.birth_death.driver.get_death", mock_get_death)
-    monkeypatch.setattr("modernProject.lib.birth_death.date_mod.date_of_death", mock_date_of_death)
+    monkeypatch.setattr("lib.birth_death.driver.get_death", mock_get_death)
+    monkeypatch.setattr("lib.birth_death.date_mod.date_of_death", mock_date_of_death)
 
     p = SimpleNamespace()
     result = birth_death.death_date(p)
@@ -307,8 +307,8 @@ def test_death_date_none(monkeypatch):
     def mock_date_of_death(death):
         return None
 
-    monkeypatch.setattr("modernProject.lib.birth_death.driver.get_death", mock_get_death)
-    monkeypatch.setattr("modernProject.lib.birth_death.date_mod.date_of_death", mock_date_of_death)
+    monkeypatch.setattr("lib.birth_death.driver.get_death", mock_get_death)
+    monkeypatch.setattr("lib.birth_death.date_mod.date_of_death", mock_date_of_death)
 
     p = SimpleNamespace()
     result = birth_death.death_date(p)
@@ -340,14 +340,14 @@ def test_make_population_pyramid_basic(monkeypatch):
     def mock_time_elapsed(d1, d2):
         return SimpleNamespace(year=30, month=0, day=0)
 
-    monkeypatch.setattr("modernProject.lib.birth_death.driver.ipers", mock_ipers)
-    monkeypatch.setattr("modernProject.lib.birth_death.driver.poi", mock_poi)
-    monkeypatch.setattr("modernProject.lib.birth_death.driver.get_sex", mock_get_sex)
-    monkeypatch.setattr("modernProject.lib.birth_death.driver.get_death", mock_get_death)
-    monkeypatch.setattr("modernProject.lib.birth_death.driver.get_birth", mock_get_birth)
-    monkeypatch.setattr("modernProject.lib.birth_death.date_mod.cdate_to_dmy_opt", mock_cdate_to_dmy_opt)
-    monkeypatch.setattr("modernProject.lib.birth_death.date_mod.compare_dmy", mock_compare_dmy)
-    monkeypatch.setattr("modernProject.lib.birth_death.date_mod.time_elapsed", mock_time_elapsed)
+    monkeypatch.setattr("lib.birth_death.driver.ipers", mock_ipers)
+    monkeypatch.setattr("lib.birth_death.driver.poi", mock_poi)
+    monkeypatch.setattr("lib.birth_death.driver.get_sex", mock_get_sex)
+    monkeypatch.setattr("lib.birth_death.driver.get_death", mock_get_death)
+    monkeypatch.setattr("lib.birth_death.driver.get_birth", mock_get_birth)
+    monkeypatch.setattr("lib.birth_death.date_mod.cdate_to_dmy_opt", mock_cdate_to_dmy_opt)
+    monkeypatch.setattr("lib.birth_death.date_mod.compare_dmy", mock_compare_dmy)
+    monkeypatch.setattr("lib.birth_death.date_mod.time_elapsed", mock_time_elapsed)
 
     conf = SimpleNamespace(env={}, base_env={})
     base = SimpleNamespace()
@@ -376,11 +376,11 @@ def test_make_population_pyramid_neuter(monkeypatch):
     def mock_get_birth(p):
         return SimpleNamespace()
 
-    monkeypatch.setattr("modernProject.lib.birth_death.driver.ipers", mock_ipers)
-    monkeypatch.setattr("modernProject.lib.birth_death.driver.poi", mock_poi)
-    monkeypatch.setattr("modernProject.lib.birth_death.driver.get_sex", mock_get_sex)
-    monkeypatch.setattr("modernProject.lib.birth_death.driver.get_death", mock_get_death)
-    monkeypatch.setattr("modernProject.lib.birth_death.driver.get_birth", mock_get_birth)
+    monkeypatch.setattr("lib.birth_death.driver.ipers", mock_ipers)
+    monkeypatch.setattr("lib.birth_death.driver.poi", mock_poi)
+    monkeypatch.setattr("lib.birth_death.driver.get_sex", mock_get_sex)
+    monkeypatch.setattr("lib.birth_death.driver.get_death", mock_get_death)
+    monkeypatch.setattr("lib.birth_death.driver.get_birth", mock_get_birth)
 
     conf = SimpleNamespace(env={}, base_env={})
     base = SimpleNamespace()
@@ -410,12 +410,12 @@ def test_make_population_pyramid_no_birth(monkeypatch):
     def mock_cdate_to_dmy_opt(cdate):
         return None
 
-    monkeypatch.setattr("modernProject.lib.birth_death.driver.ipers", mock_ipers)
-    monkeypatch.setattr("modernProject.lib.birth_death.driver.poi", mock_poi)
-    monkeypatch.setattr("modernProject.lib.birth_death.driver.get_sex", mock_get_sex)
-    monkeypatch.setattr("modernProject.lib.birth_death.driver.get_death", mock_get_death)
-    monkeypatch.setattr("modernProject.lib.birth_death.driver.get_birth", mock_get_birth)
-    monkeypatch.setattr("modernProject.lib.birth_death.date_mod.cdate_to_dmy_opt", mock_cdate_to_dmy_opt)
+    monkeypatch.setattr("lib.birth_death.driver.ipers", mock_ipers)
+    monkeypatch.setattr("lib.birth_death.driver.poi", mock_poi)
+    monkeypatch.setattr("lib.birth_death.driver.get_sex", mock_get_sex)
+    monkeypatch.setattr("lib.birth_death.driver.get_death", mock_get_death)
+    monkeypatch.setattr("lib.birth_death.driver.get_birth", mock_get_birth)
+    monkeypatch.setattr("lib.birth_death.date_mod.cdate_to_dmy_opt", mock_cdate_to_dmy_opt)
 
     conf = SimpleNamespace(env={}, base_env={})
     base = SimpleNamespace()
@@ -448,13 +448,13 @@ def test_make_population_pyramid_birth_after_at_date(monkeypatch):
     def mock_compare_dmy(d1, d2):
         return 1
 
-    monkeypatch.setattr("modernProject.lib.birth_death.driver.ipers", mock_ipers)
-    monkeypatch.setattr("modernProject.lib.birth_death.driver.poi", mock_poi)
-    monkeypatch.setattr("modernProject.lib.birth_death.driver.get_sex", mock_get_sex)
-    monkeypatch.setattr("modernProject.lib.birth_death.driver.get_death", mock_get_death)
-    monkeypatch.setattr("modernProject.lib.birth_death.driver.get_birth", mock_get_birth)
-    monkeypatch.setattr("modernProject.lib.birth_death.date_mod.cdate_to_dmy_opt", mock_cdate_to_dmy_opt)
-    monkeypatch.setattr("modernProject.lib.birth_death.date_mod.compare_dmy", mock_compare_dmy)
+    monkeypatch.setattr("lib.birth_death.driver.ipers", mock_ipers)
+    monkeypatch.setattr("lib.birth_death.driver.poi", mock_poi)
+    monkeypatch.setattr("lib.birth_death.driver.get_sex", mock_get_sex)
+    monkeypatch.setattr("lib.birth_death.driver.get_death", mock_get_death)
+    monkeypatch.setattr("lib.birth_death.driver.get_birth", mock_get_birth)
+    monkeypatch.setattr("lib.birth_death.date_mod.cdate_to_dmy_opt", mock_cdate_to_dmy_opt)
+    monkeypatch.setattr("lib.birth_death.date_mod.compare_dmy", mock_compare_dmy)
 
     conf = SimpleNamespace(env={}, base_env={})
     base = SimpleNamespace()
@@ -490,14 +490,14 @@ def test_make_population_pyramid_dont_know_if_dead_under_limit(monkeypatch):
     def mock_time_elapsed(d1, d2):
         return SimpleNamespace(year=30, month=0, day=0)
 
-    monkeypatch.setattr("modernProject.lib.birth_death.driver.ipers", mock_ipers)
-    monkeypatch.setattr("modernProject.lib.birth_death.driver.poi", mock_poi)
-    monkeypatch.setattr("modernProject.lib.birth_death.driver.get_sex", mock_get_sex)
-    monkeypatch.setattr("modernProject.lib.birth_death.driver.get_death", mock_get_death)
-    monkeypatch.setattr("modernProject.lib.birth_death.driver.get_birth", mock_get_birth)
-    monkeypatch.setattr("modernProject.lib.birth_death.date_mod.cdate_to_dmy_opt", mock_cdate_to_dmy_opt)
-    monkeypatch.setattr("modernProject.lib.birth_death.date_mod.compare_dmy", mock_compare_dmy)
-    monkeypatch.setattr("modernProject.lib.birth_death.date_mod.time_elapsed", mock_time_elapsed)
+    monkeypatch.setattr("lib.birth_death.driver.ipers", mock_ipers)
+    monkeypatch.setattr("lib.birth_death.driver.poi", mock_poi)
+    monkeypatch.setattr("lib.birth_death.driver.get_sex", mock_get_sex)
+    monkeypatch.setattr("lib.birth_death.driver.get_death", mock_get_death)
+    monkeypatch.setattr("lib.birth_death.driver.get_birth", mock_get_birth)
+    monkeypatch.setattr("lib.birth_death.date_mod.cdate_to_dmy_opt", mock_cdate_to_dmy_opt)
+    monkeypatch.setattr("lib.birth_death.date_mod.compare_dmy", mock_compare_dmy)
+    monkeypatch.setattr("lib.birth_death.date_mod.time_elapsed", mock_time_elapsed)
 
     conf = SimpleNamespace(env={}, base_env={})
     base = SimpleNamespace()
@@ -532,14 +532,14 @@ def test_make_population_pyramid_dont_know_if_dead_over_limit(monkeypatch):
     def mock_time_elapsed(d1, d2):
         return SimpleNamespace(year=200, month=0, day=0)
 
-    monkeypatch.setattr("modernProject.lib.birth_death.driver.ipers", mock_ipers)
-    monkeypatch.setattr("modernProject.lib.birth_death.driver.poi", mock_poi)
-    monkeypatch.setattr("modernProject.lib.birth_death.driver.get_sex", mock_get_sex)
-    monkeypatch.setattr("modernProject.lib.birth_death.driver.get_death", mock_get_death)
-    monkeypatch.setattr("modernProject.lib.birth_death.driver.get_birth", mock_get_birth)
-    monkeypatch.setattr("modernProject.lib.birth_death.date_mod.cdate_to_dmy_opt", mock_cdate_to_dmy_opt)
-    monkeypatch.setattr("modernProject.lib.birth_death.date_mod.compare_dmy", mock_compare_dmy)
-    monkeypatch.setattr("modernProject.lib.birth_death.date_mod.time_elapsed", mock_time_elapsed)
+    monkeypatch.setattr("lib.birth_death.driver.ipers", mock_ipers)
+    monkeypatch.setattr("lib.birth_death.driver.poi", mock_poi)
+    monkeypatch.setattr("lib.birth_death.driver.get_sex", mock_get_sex)
+    monkeypatch.setattr("lib.birth_death.driver.get_death", mock_get_death)
+    monkeypatch.setattr("lib.birth_death.driver.get_birth", mock_get_birth)
+    monkeypatch.setattr("lib.birth_death.date_mod.cdate_to_dmy_opt", mock_cdate_to_dmy_opt)
+    monkeypatch.setattr("lib.birth_death.date_mod.compare_dmy", mock_compare_dmy)
+    monkeypatch.setattr("lib.birth_death.date_mod.time_elapsed", mock_time_elapsed)
 
     conf = SimpleNamespace(env={}, base_env={})
     base = SimpleNamespace()
@@ -560,7 +560,7 @@ def test_make_population_pyramid_died_before_at_date(monkeypatch):
         return gwdef.Sex.MALE
 
     def mock_get_death(p):
-        from modernProject.lib.adef import CdateGregorian
+        from lib.adef import CdateGregorian
         return gwdef.DeathWithReason(gwdef.DeathReason.KILLED, CdateGregorian(123))
 
     def mock_get_birth(p):
@@ -582,15 +582,15 @@ def test_make_population_pyramid_died_before_at_date(monkeypatch):
             return Dmy(day=1, month=1, year=1990, prec=Precision.SURE, delta=0)
         return None
 
-    monkeypatch.setattr("modernProject.lib.birth_death.driver.ipers", mock_ipers)
-    monkeypatch.setattr("modernProject.lib.birth_death.driver.poi", mock_poi)
-    monkeypatch.setattr("modernProject.lib.birth_death.driver.get_sex", mock_get_sex)
-    monkeypatch.setattr("modernProject.lib.birth_death.driver.get_death", mock_get_death)
-    monkeypatch.setattr("modernProject.lib.birth_death.driver.get_birth", mock_get_birth)
-    monkeypatch.setattr("modernProject.lib.birth_death.date_mod.cdate_to_dmy_opt", mock_cdate_to_dmy_opt)
-    monkeypatch.setattr("modernProject.lib.birth_death.date_mod.compare_dmy", mock_compare_dmy)
-    monkeypatch.setattr("modernProject.lib.birth_death.date_mod.time_elapsed", mock_time_elapsed)
-    monkeypatch.setattr("modernProject.lib.birth_death.date_mod.dmy_of_death", mock_dmy_of_death)
+    monkeypatch.setattr("lib.birth_death.driver.ipers", mock_ipers)
+    monkeypatch.setattr("lib.birth_death.driver.poi", mock_poi)
+    monkeypatch.setattr("lib.birth_death.driver.get_sex", mock_get_sex)
+    monkeypatch.setattr("lib.birth_death.driver.get_death", mock_get_death)
+    monkeypatch.setattr("lib.birth_death.driver.get_birth", mock_get_birth)
+    monkeypatch.setattr("lib.birth_death.date_mod.cdate_to_dmy_opt", mock_cdate_to_dmy_opt)
+    monkeypatch.setattr("lib.birth_death.date_mod.compare_dmy", mock_compare_dmy)
+    monkeypatch.setattr("lib.birth_death.date_mod.time_elapsed", mock_time_elapsed)
+    monkeypatch.setattr("lib.birth_death.date_mod.dmy_of_death", mock_dmy_of_death)
 
     conf = SimpleNamespace(env={}, base_env={})
     base = SimpleNamespace()
@@ -611,7 +611,7 @@ def test_make_population_pyramid_died_after_at_date(monkeypatch):
         return gwdef.Sex.MALE
 
     def mock_get_death(p):
-        from modernProject.lib.adef import CdateGregorian
+        from lib.adef import CdateGregorian
         return gwdef.DeathWithReason(gwdef.DeathReason.KILLED, CdateGregorian(456))
 
     def mock_get_birth(p):
@@ -637,15 +637,15 @@ def test_make_population_pyramid_died_after_at_date(monkeypatch):
             return Dmy(day=1, month=1, year=2010, prec=Precision.SURE, delta=0)
         return None
 
-    monkeypatch.setattr("modernProject.lib.birth_death.driver.ipers", mock_ipers)
-    monkeypatch.setattr("modernProject.lib.birth_death.driver.poi", mock_poi)
-    monkeypatch.setattr("modernProject.lib.birth_death.driver.get_sex", mock_get_sex)
-    monkeypatch.setattr("modernProject.lib.birth_death.driver.get_death", mock_get_death)
-    monkeypatch.setattr("modernProject.lib.birth_death.driver.get_birth", mock_get_birth)
-    monkeypatch.setattr("modernProject.lib.birth_death.date_mod.cdate_to_dmy_opt", mock_cdate_to_dmy_opt)
-    monkeypatch.setattr("modernProject.lib.birth_death.date_mod.compare_dmy", mock_compare_dmy)
-    monkeypatch.setattr("modernProject.lib.birth_death.date_mod.time_elapsed", mock_time_elapsed)
-    monkeypatch.setattr("modernProject.lib.birth_death.date_mod.dmy_of_death", mock_dmy_of_death)
+    monkeypatch.setattr("lib.birth_death.driver.ipers", mock_ipers)
+    monkeypatch.setattr("lib.birth_death.driver.poi", mock_poi)
+    monkeypatch.setattr("lib.birth_death.driver.get_sex", mock_get_sex)
+    monkeypatch.setattr("lib.birth_death.driver.get_death", mock_get_death)
+    monkeypatch.setattr("lib.birth_death.driver.get_birth", mock_get_birth)
+    monkeypatch.setattr("lib.birth_death.date_mod.cdate_to_dmy_opt", mock_cdate_to_dmy_opt)
+    monkeypatch.setattr("lib.birth_death.date_mod.compare_dmy", mock_compare_dmy)
+    monkeypatch.setattr("lib.birth_death.date_mod.time_elapsed", mock_time_elapsed)
+    monkeypatch.setattr("lib.birth_death.date_mod.dmy_of_death", mock_dmy_of_death)
 
     conf = SimpleNamespace(env={}, base_env={})
     base = SimpleNamespace()

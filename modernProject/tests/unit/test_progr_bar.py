@@ -1,7 +1,7 @@
 import pytest
 import sys
 from io import StringIO
-from modernProject.lib.progr_bar import ProgressBar, with_bar
+from lib.progr_bar import ProgressBar, with_bar
 import time
 from unittest.mock import patch
 

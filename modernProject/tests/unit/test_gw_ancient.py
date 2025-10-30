@@ -1,5 +1,5 @@
 import pytest
-from modernProject.lib import gw_ancient
+from lib import gw_ancient
 
 
 def test_is_available():

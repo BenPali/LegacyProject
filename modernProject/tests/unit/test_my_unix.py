@@ -1,7 +1,7 @@
 import pytest
 import os
 import tempfile
-from modernProject.lib.my_unix import remove_dir
+from lib.my_unix import remove_dir
 
 
 def test_remove_dir_empty():

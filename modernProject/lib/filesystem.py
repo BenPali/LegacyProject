@@ -137,3 +137,8 @@ def copy_file(src: str, dst: str, perm: int = 0o640, overwrite: bool = True):
             shutil.copyfileobj(src_file, dst_file)
 
     os.chmod(dst, perm)
+
+
+def remove_dir(path: str):
+    if os.path.exists(path):
+        shutil.rmtree(path)

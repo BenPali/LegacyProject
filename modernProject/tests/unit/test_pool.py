@@ -1,5 +1,5 @@
 import pytest
-from modernProject.lib.pool import Pool
+from lib.pool import Pool
 
 
 def test_pool_creation():

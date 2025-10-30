@@ -1,5 +1,5 @@
 import pytest
-from modernProject.lib import translate
+from lib import translate
 
 def test_find_language_code_end_basic():
     assert translate.find_language_code_end("en:", 0) == 2

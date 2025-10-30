@@ -1,8 +1,8 @@
 from typing import List, Tuple, Optional, Callable, Any
 from enum import Enum, auto
 from types import SimpleNamespace
-from modernProject.lib import driver, name, date as date_mod, gutil
-from modernProject.lib.adef import Precision
+from lib import driver, name, date as date_mod, gutil
+from lib.adef import Precision
 
 
 class DateSearch(Enum):
@@ -50,7 +50,7 @@ def date_interval(conf, base, t: DateSearch, x) -> Optional[Tuple[Any, Any]]:
         if death_dmy is not None:
             set_date(death_dmy)
         else:
-            from modernProject.lib.gwdef import NotDead
+            from lib.gwdef import NotDead
             if isinstance(death, NotDead):
                 set_date(conf.today)
 
@@ -106,8 +106,8 @@ def compare_title_dates(conf, base, xt1: Tuple[Any, Any], xt2: Tuple[Any, Any]) 
     end2 = date_mod.od_of_cdate(t2.t_date_end)
     death2 = driver.get_death(x2)
 
-    from modernProject.lib.adef import DateGreg
-    from modernProject.lib.gwdef import DeathWithReason
+    from lib.adef import DateGreg
+    from lib.gwdef import DeathWithReason
 
     if start1 is not None and isinstance(start1, DateGreg):
         if start2 is not None and isinstance(start2, DateGreg):

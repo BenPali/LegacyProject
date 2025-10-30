@@ -1138,22 +1138,21 @@ def load_database(bname: str):
         load_database._loaded_bases = {}
 
     from lib import database
-    base = database.Database(bname)
-    load_database._loaded_bases[bname] = base
-    return base
+
+    def store_base(base):
+        load_database._loaded_bases[bname] = base
+        return base
+
+    return database.with_database(bname, store_base, read_only=True)
 
 
 def with_database(bname: str, continuation: Callable):
     if hasattr(load_database, '_loaded_bases') and bname in load_database._loaded_bases:
-        return continuation(load_database._loaded_bases[bname])
+        base = load_database._loaded_bases[bname]
+        return continuation(base)
 
     from lib import database
-    base = database.Database(bname)
-    try:
-        return continuation(base)
-    finally:
-        if hasattr(base, 'close'):
-            base.close()
+    return database.with_database(bname, continuation, read_only=False)
 
 
 def sync(base, scratch: bool = False):
@@ -1271,3 +1270,13 @@ def date_of_last_change(base) -> float:
     if hasattr(base, 'func') and hasattr(base.func, 'date_of_last_change'):
         return base.func.date_of_last_change()
     return 0.0
+
+
+def string_gen_person(base, p: GenPerson) -> GenPerson:
+    from lib import futil
+    return futil.map_person_ps(lambda x: x, lambda s: sou(base, s), p)
+
+
+def string_gen_family(base, f: GenFamily) -> GenFamily:
+    from lib import futil
+    return futil.map_family_ps(lambda x: x, lambda x: x, lambda s: sou(base, s), f)

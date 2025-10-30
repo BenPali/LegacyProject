@@ -1,5 +1,5 @@
 import pytest
-from modernProject.lib import difference
+from lib import difference
 
 
 def test_empty_arrays():
