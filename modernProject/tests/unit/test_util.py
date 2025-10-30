@@ -2631,3 +2631,284 @@ def test_ftransl_nth_zero():
     conf.lexicon = {}
     result = util.ftransl_nth(conf, 'word', 0)
     assert isinstance(result, str)
+
+
+class MockBase:
+    def __init__(self):
+        self.persons = {}
+
+    def poi(self, ip):
+        gen_person = self.persons.get(ip)
+        if gen_person:
+            from lib import driver
+            person_wrapper = driver.Person(base=self, index=ip)
+            person_wrapper.gen_person = gen_person
+            person_wrapper.gen_ascend = None
+            person_wrapper.gen_union = None
+            return person_wrapper
+        return None
+
+    def person_of_key(self, first_name, surname, occ):
+        for ip, person in self.persons.items():
+            if (person.first_name == first_name and
+                person.surname == surname and
+                person.occ == occ):
+                return ip
+        return None
+
+
+def test_default_sosa_ref_not_in_base_env():
+    conf = create_test_config()
+    conf.base_env = [('other_key', 'value')]
+    base = MockBase()
+    result = util.default_sosa_ref(conf, base)
+    assert result is None
+
+
+def test_default_sosa_ref_empty_value():
+    conf = create_test_config()
+    conf.base_env = [('default_sosa_ref', '')]
+    base = MockBase()
+    result = util.default_sosa_ref(conf, base)
+    assert result is None
+
+
+def test_default_sosa_ref_person_found():
+    from lib import gutil
+    conf = create_test_config()
+    conf.base_env = [('default_sosa_ref', 'John.0 Doe')]
+
+    base = MockBase()
+    person = create_test_person(first_name='John', surname='Doe', occ=0)
+    base.persons[1] = person
+
+    original_person_ht_find_all = gutil.person_ht_find_all
+    original_pget_opt = util.pget_opt
+
+    def mock_person_ht_find_all(base, key):
+        if key == 'John.0 Doe':
+            return [1]
+        return []
+
+    def mock_pget_opt(conf, base, ip):
+        return base.persons.get(ip)
+
+    try:
+        gutil.person_ht_find_all = mock_person_ht_find_all
+        util.pget_opt = mock_pget_opt
+        result = util.default_sosa_ref(conf, base)
+        assert result is not None
+        assert result.first_name == 'John'
+        assert result.surname == 'Doe'
+    finally:
+        gutil.person_ht_find_all = original_person_ht_find_all
+        util.pget_opt = original_pget_opt
+
+
+def test_default_sosa_ref_person_hidden():
+    from lib import gutil
+    conf = create_test_config()
+    conf.base_env = [('default_sosa_ref', 'Hidden.0 Person')]
+
+    base = MockBase()
+    person = create_test_person(first_name='Hidden', surname='', occ=0)
+    base.persons[1] = person
+
+    original_person_ht_find_all = gutil.person_ht_find_all
+    original_pget_opt = util.pget_opt
+
+    def mock_person_ht_find_all(base, key):
+        if key == 'Hidden.0 Person':
+            return [1]
+        return []
+
+    def mock_pget_opt(conf, base, ip):
+        return base.persons.get(ip)
+
+    try:
+        gutil.person_ht_find_all = mock_person_ht_find_all
+        util.pget_opt = mock_pget_opt
+        result = util.default_sosa_ref(conf, base)
+        assert result is None
+    finally:
+        gutil.person_ht_find_all = original_person_ht_find_all
+        util.pget_opt = original_pget_opt
+
+
+def test_default_sosa_ref_multiple_persons():
+    from lib import gutil
+    conf = create_test_config()
+    conf.base_env = [('default_sosa_ref', 'John.0 Doe')]
+
+    base = MockBase()
+    original_person_ht_find_all = gutil.person_ht_find_all
+
+    def mock_person_ht_find_all(base, key):
+        if key == 'John.0 Doe':
+            return [1, 2]
+        return []
+
+    try:
+        gutil.person_ht_find_all = mock_person_ht_find_all
+        result = util.default_sosa_ref(conf, base)
+        assert result is None
+    finally:
+        gutil.person_ht_find_all = original_person_ht_find_all
+
+
+def test_find_sosa_ref_from_env():
+    conf = create_test_config()
+    conf.env = {'iz': '1'}
+
+    base = MockBase()
+    person = create_test_person(first_name='John', surname='Doe', occ=0)
+    base.persons[1] = person
+
+    original_pget_opt = util.pget_opt
+
+    def mock_pget_opt(conf, base, ip):
+        return base.persons.get(ip)
+
+    try:
+        util.pget_opt = mock_pget_opt
+        result = util.find_sosa_ref(conf, base)
+        assert result is not None
+        assert result.first_name == 'John'
+    finally:
+        util.pget_opt = original_pget_opt
+
+
+def test_find_sosa_ref_from_default():
+    from lib import gutil
+    conf = create_test_config()
+    conf.env = {}
+    conf.base_env = [('default_sosa_ref', 'Jane.0 Smith')]
+
+    base = MockBase()
+    person = create_test_person(first_name='Jane', surname='Smith', occ=0)
+    base.persons[2] = person
+
+    original_person_ht_find_all = gutil.person_ht_find_all
+    original_pget_opt = util.pget_opt
+
+    def mock_person_ht_find_all(base, key):
+        if key == 'Jane.0 Smith':
+            return [2]
+        return []
+
+    def mock_pget_opt(conf, base, ip):
+        return base.persons.get(ip)
+
+    try:
+        gutil.person_ht_find_all = mock_person_ht_find_all
+        util.pget_opt = mock_pget_opt
+        result = util.find_sosa_ref(conf, base)
+        assert result is not None
+        assert result.first_name == 'Jane'
+    finally:
+        gutil.person_ht_find_all = original_person_ht_find_all
+        util.pget_opt = original_pget_opt
+
+
+def test_find_sosa_ref_none_found():
+    conf = create_test_config()
+    conf.env = {}
+    conf.base_env = []
+    base = MockBase()
+
+    result = util.find_sosa_ref(conf, base)
+    assert result is None
+
+
+def test_search_in_assets_file_found():
+    import tempfile
+    import os
+    from lib import secure
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        test_file = os.path.join(tmpdir, 'test.txt')
+        with open(test_file, 'w') as f:
+            f.write('test content')
+
+        original_assets = secure.assets
+
+        def mock_assets():
+            return [tmpdir]
+
+        try:
+            secure.assets = mock_assets
+            result = util.search_in_assets('test.txt')
+            assert result == test_file
+            assert os.path.exists(result)
+        finally:
+            secure.assets = original_assets
+
+
+def test_search_in_assets_file_not_found():
+    import tempfile
+    from lib import secure
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        original_assets = secure.assets
+
+        def mock_assets():
+            return [tmpdir]
+
+        try:
+            secure.assets = mock_assets
+            result = util.search_in_assets('nonexistent.txt')
+            assert result == 'nonexistent.txt'
+        finally:
+            secure.assets = original_assets
+
+
+def test_search_in_assets_multiple_dirs():
+    import tempfile
+    import os
+    from lib import secure
+
+    with tempfile.TemporaryDirectory() as tmpdir1:
+        with tempfile.TemporaryDirectory() as tmpdir2:
+            test_file = os.path.join(tmpdir2, 'test.txt')
+            with open(test_file, 'w') as f:
+                f.write('test content')
+
+            original_assets = secure.assets
+
+            def mock_assets():
+                return [tmpdir1, tmpdir2]
+
+            try:
+                secure.assets = mock_assets
+                result = util.search_in_assets('test.txt')
+                assert result == test_file
+            finally:
+                secure.assets = original_assets
+
+
+def test_search_in_assets_first_match():
+    import tempfile
+    import os
+    from lib import secure
+
+    with tempfile.TemporaryDirectory() as tmpdir1:
+        with tempfile.TemporaryDirectory() as tmpdir2:
+            test_file1 = os.path.join(tmpdir1, 'test.txt')
+            test_file2 = os.path.join(tmpdir2, 'test.txt')
+
+            with open(test_file1, 'w') as f:
+                f.write('first')
+            with open(test_file2, 'w') as f:
+                f.write('second')
+
+            original_assets = secure.assets
+
+            def mock_assets():
+                return [tmpdir1, tmpdir2]
+
+            try:
+                secure.assets = mock_assets
+                result = util.search_in_assets('test.txt')
+                assert result == test_file1
+            finally:
+                secure.assets = original_assets

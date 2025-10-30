@@ -4,8 +4,8 @@ import os
 import tempfile
 from io import StringIO
 from datetime import datetime
-from modernProject.lib import logs
-from modernProject.lib.logs import (
+from lib import logs
+from lib.logs import (
     LogLevel, Output, Stdout, Stderr, Channel,
     to_out_channel, close_output, set_output_channel,
     pp_tm, syslog, report, info, debug, warn, err

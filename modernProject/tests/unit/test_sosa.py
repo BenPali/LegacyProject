@@ -1,5 +1,5 @@
 import pytest
-from modernProject.lib.sosa import Sosa, of_int, to_int
+from lib.sosa import Sosa, of_int, to_int
 
 
 def test_sosa_creation():

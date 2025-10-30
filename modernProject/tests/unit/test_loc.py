@@ -1,5 +1,5 @@
 import pytest
-from modernProject.lib.loc import (
+from lib.loc import (
     SourceFile, SourceRaw, Source, Loc, DUMMY, of_positions
 )
 

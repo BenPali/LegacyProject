@@ -1,6 +1,6 @@
 import pytest
-from modernProject.lib import templ
-from modernProject.lib.templ import parse, eval_template, render
+from lib import templ
+from lib.templ import parse, eval_template, render
 
 
 def test_parse_returns_ast_node():

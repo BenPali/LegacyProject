@@ -1,6 +1,6 @@
 import pytest
 import json
-from modernProject.lib import json_converter
+from lib import json_converter
 
 
 def test_to_json_simple_dict():

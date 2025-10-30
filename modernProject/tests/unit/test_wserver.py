@@ -1,5 +1,5 @@
 import pytest
-from modernProject.lib.wserver import Request, Response, Server
+from lib.wserver import Request, Response, Server
 
 
 def test_request_creation():

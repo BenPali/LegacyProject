@@ -1,5 +1,5 @@
 import pytest
-from modernProject.lib.config import OutputConf, Config
+from lib.config import OutputConf, Config
 
 
 def test_output_conf_creation():
