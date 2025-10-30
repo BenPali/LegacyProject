@@ -17,8 +17,7 @@ RUN pip install --no-cache-dir pytest pytest-cov
 RUN useradd -m -u 1000 geneweb && \
     chown -R geneweb:geneweb /app && \
     mkdir -p /data && \
-    chown -R geneweb:geneweb /data \ 
-    echo "done"
+    chown -R geneweb:geneweb /data
 
 USER geneweb
 
