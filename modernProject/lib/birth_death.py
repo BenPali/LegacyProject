@@ -1,7 +1,7 @@
 from typing import Optional, Tuple, List, Callable
 from types import SimpleNamespace
-from modernProject.lib import gwdef, date as date_mod, pqueue, driver
-from modernProject.lib.adef import Precision
+from lib import gwdef, date as date_mod, pqueue, driver
+from lib.adef import Precision
 
 
 def get_k(conf) -> int:
