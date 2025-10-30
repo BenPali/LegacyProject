@@ -1,4 +1,4 @@
-.PHONY: all test test-modern unit-test coverage clean fclean re help start-daemon stop-daemon restart-daemon status-daemon docker-build docker-run docker-stop docker-logs
+.PHONY: all test test-modern unit-test integration-test coverage clean fclean re help start-daemon stop-daemon restart-daemon status-daemon docker-build docker-run docker-stop docker-logs
 
 help:
 	@echo "Available targets:"
@@ -6,6 +6,7 @@ help:
 	@echo "  test             - Run all modernProject tests"
 	@echo "  test-modern      - Run all modernProject tests"
 	@echo "  unit-test        - Run only unit tests"
+	@echo "  integration-test - Run only integration tests"
 	@echo "  coverage         - Run tests with coverage report"
 	@echo "  clean            - Remove test artifacts"
 	@echo "  fclean           - Remove all generated files"
@@ -34,6 +35,10 @@ test-modern:
 unit-test:
 	@echo "Running unit tests..."
 	@PYTHONPATH=modernProject python -m pytest modernProject/tests/unit/ -v
+
+integration-test:
+	@echo "Running integration tests..."
+	@PYTHONPATH=modernProject python -m pytest modernProject/tests/integration/ -v
 
 coverage:
 	@if ! python3 -c "import pytest_cov" 2>/dev/null; then \
