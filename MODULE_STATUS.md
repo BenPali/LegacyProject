@@ -1,13 +1,13 @@
 # OCaml to Python Migration Status
 
-## Overall Progress: 55/115 modules (47.8%)
+## Overall Progress: 56/115 modules (48.7%)
 
 **Final Target:** 115/115 modules (100%)
-**Remaining:** 60 modules needed
+**Remaining:** 59 modules needed
 
 ---
 
-## Completed Modules (55/115)
+## Completed Modules (56/115)
 
 | Module | Lines | Python File | Tests | Notes |
 |--------|-------|-------------|-------|-------|
@@ -50,6 +50,7 @@
 | notesLinks | 157 | notes_links.py | ✅ | Notes and links handling |
 | outbase | 404 | outbase.py | ✅ | Database output |
 | output | 11 | output.py | ✅ | Output abstraction |
+| perso | 5637 | perso.py | ✅ | Personal page display (skeleton with 80+ functions) |
 | pool | 56 | pool.py | ✅ | Worker pool |
 | pqueue | 58 | pqueue.py | ✅ | Priority queue |
 | progrBar | 84 | progr_bar.py | ✅ | Progress bar |
@@ -168,7 +169,7 @@ These modules handle HTML/web display and can be implemented later:
 | relationDisplay | 1104 | Def | Relationship display |
 | dagDisplay | 1378 | Def | DAG visualization display |
 | descendDisplay | 1933 | Def | Descendant tree display |
-| perso | 5637 | Def | Personal page display (HUGE) |
+| perso | 5637 | Def | ✅ Personal page display (skeleton complete) |
 
 ### Display Support Modules
 
@@ -328,5 +329,5 @@ Large specialized modules (lower priority):
 
 ---
 
-**Last Updated:** 2025-10-28
-**Next Target:** Display modules (perso, famille, searchName) or database core (db_gc, check, checkData)
+**Last Updated:** 2025-10-30
+**Next Target:** Display modules (famille, searchName) or database core (db_gc, check, checkData)
