@@ -5,7 +5,7 @@ from typing import Optional, List, Callable, TypeVar, Any
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from lib import config, database, driver, util, name, logs, sosa, srcfile_display, secure
+from lib import config, database, driver, util, name, logs, sosa, srcfile_display, secure, perso
 
 
 T = TypeVar('T')
@@ -344,11 +344,9 @@ def handle_person_page(conf: config.Config):
     def none_callback(c: config.Config, b: Any):
         incorrect_request(c, "Person not found")
 
-    def person_callback(c: config.Config, b: Any, p: driver.GenPerson):
-        c.output_conf.body(f"<html><head><title>{p.first_name} {p.surname}</title></head>")
-        c.output_conf.body(f"<body><h1>{p.first_name} {p.surname}</h1>")
-        c.output_conf.body(f"<p><em>[Full person page coming when perso.py is ready]</em></p>")
-        c.output_conf.body("</body></html>")
+    def person_callback(c: config.Config, b: Any, gen_p):
+        person_obj = driver.poi(b, gen_p.key_index)
+        perso.print_person(c, b, person_obj)
 
     def base_callback(c: config.Config, b: Any):
         return w_person(none_callback, person_callback, c, b)

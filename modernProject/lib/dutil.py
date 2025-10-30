@@ -120,10 +120,23 @@ def ascend_to_gen_ascend(dsk_ascend):
     if isinstance(dsk_ascend, GenAscend):
         return dsk_ascend
     if isinstance(dsk_ascend, dict):
-        return GenAscend(**dsk_ascend)
+        parents = dsk_ascend.get('parents')
+        if isinstance(parents, dict) and 'tag' in parents:
+            if parents['tag'] == 0:
+                parents = None
+            elif parents['tag'] == 1 and 'fields' in parents:
+                parents = parents['fields'][0] if parents['fields'] else None
+        consang = dsk_ascend.get('consang', {'tag': 'Fix', 'value': -1})
+        return GenAscend(parents=parents, consang=consang)
     if isinstance(dsk_ascend, (list, tuple)) and len(dsk_ascend) >= 2:
+        parents = dsk_ascend[0]
+        if isinstance(parents, dict) and 'tag' in parents:
+            if parents['tag'] == 0:
+                parents = None
+            elif parents['tag'] == 1 and 'fields' in parents:
+                parents = parents['fields'][0] if parents['fields'] else None
         return GenAscend(
-            parents=dsk_ascend[0],
+            parents=parents,
             consang=dsk_ascend[1]
         )
     return dsk_ascend
@@ -134,9 +147,29 @@ def union_to_gen_union(dsk_union):
     if isinstance(dsk_union, GenUnion):
         return dsk_union
     if isinstance(dsk_union, dict):
-        return GenUnion(**dsk_union)
+        family = dsk_union.get('family', [])
+        if isinstance(family, list):
+            decoded_family = []
+            for fam_item in family:
+                if isinstance(fam_item, dict) and 'tag' in fam_item:
+                    if fam_item['tag'] == 1 and 'fields' in fam_item:
+                        decoded_family.append(fam_item['fields'][0] if fam_item['fields'] else None)
+                else:
+                    decoded_family.append(fam_item)
+            family = decoded_family
+        return GenUnion(family=family)
     if isinstance(dsk_union, (list, tuple)) and len(dsk_union) >= 1:
-        return GenUnion(family=dsk_union[0])
+        family = dsk_union[0]
+        if isinstance(family, list):
+            decoded_family = []
+            for fam_item in family:
+                if isinstance(fam_item, dict) and 'tag' in fam_item:
+                    if fam_item['tag'] == 1 and 'fields' in fam_item:
+                        decoded_family.append(fam_item['fields'][0] if fam_item['fields'] else None)
+                else:
+                    decoded_family.append(fam_item)
+            family = decoded_family
+        return GenUnion(family=family)
     return dsk_union
 
 
@@ -169,7 +202,20 @@ def couple_to_gen_couple(dsk_couple):
     if isinstance(dsk_couple, Couple):
         return dsk_couple
     if isinstance(dsk_couple, dict):
-        return Couple(**dsk_couple)
+        father = dsk_couple.get('father')
+        mother = dsk_couple.get('mother')
+        if isinstance(father, dict) and 'tag' in father:
+            if father['tag'] == 0:
+                father = None
+            elif father['tag'] == 1 and 'fields' in father:
+                father = father['fields'][0] if father['fields'] else None
+        if isinstance(mother, dict) and 'tag' in mother:
+            if mother['tag'] == 0:
+                mother = None
+            elif mother['tag'] == 1 and 'fields' in mother:
+                mother = mother['fields'][0] if mother['fields'] else None
+
+        return Couple(father=father, mother=mother)
     if isinstance(dsk_couple, (list, tuple)) and len(dsk_couple) >= 2:
         return Couple(father=dsk_couple[0], mother=dsk_couple[1])
     return dsk_couple
@@ -180,7 +226,18 @@ def descend_to_gen_descend(dsk_descend):
     if isinstance(dsk_descend, GenDescend):
         return dsk_descend
     if isinstance(dsk_descend, dict):
-        return GenDescend(**dsk_descend)
+        children = dsk_descend.get('children', [])
+        if isinstance(children, list):
+            decoded_children = []
+            for child in children:
+                if isinstance(child, dict) and 'tag' in child:
+                    if child['tag'] == 1 and 'fields' in child:
+                        decoded_children.append(child['fields'][0] if child['fields'] else None)
+                else:
+                    decoded_children.append(child)
+            children = decoded_children
+
+        return GenDescend(children=children)
     if isinstance(dsk_descend, (list, tuple)) and len(dsk_descend) >= 1:
         return GenDescend(children=dsk_descend[0])
     return dsk_descend

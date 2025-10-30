@@ -166,14 +166,16 @@ def authorized_age(conf: config_module.Config, base: Any, p: driver.GenPerson) -
 def is_restricted(conf: config_module.Config, base: Any, ip: int) -> bool:
     if not conf.use_restrict:
         return False
-    p = driver.poi(base, ip)
-    return not authorized_age(conf, base, p)
+    person = driver.poi(base, ip)
+    gen_p = driver.gen_person_of_person(person)
+    return not authorized_age(conf, base, gen_p)
 
 
 def pget_opt(conf: config_module.Config, base: Any, ip: int) -> Optional[driver.GenPerson]:
-    p = driver.poi(base, ip)
-    if authorized_age(conf, base, p):
-        return p
+    person = driver.poi(base, ip)
+    gen_p = driver.gen_person_of_person(person)
+    if authorized_age(conf, base, gen_p):
+        return gen_p
     return None
 
 
@@ -876,9 +878,9 @@ def find_person_in_env(conf: config_module.Config, base: Any, suff: str) -> Opti
             except ValueError:
                 occ = 0
 
-            person = driver.person_of_key(base, p_str, n_str, occ)
-            if person:
-                return pget_opt(conf, base, driver.get_iper(person))
+            ip = driver.person_of_key(base, n_str, p_str, occ)
+            if ip is not None:
+                return pget_opt(conf, base, ip)
 
     return None
 
