@@ -28,27 +28,34 @@ make start-daemon
 In order to view all available make commands, refer to `make help` for details:
 
 ```bash
-Available targets:
-  all              - Default target, runs tests
-  test             - Run all modernProject tests
-  test-modern      - Run all modernProject tests
-  coverage         - Run tests with coverage report
-  clean            - Remove test artifacts
-  fclean           - Remove all generated files
-  re               - Clean and run all tests
+Quick Testing:
+  make quick-test       - Run unit tests only
+  make test             - Run all non-e2e tests (unit+integration+functional)
+  make coverage         - Run tests with coverage report
 
-Daemon management:
-  start-daemon     - Start GeneWeb daemon on port 2317
-  stop-daemon      - Stop GeneWeb daemon
-  restart-daemon   - Restart GeneWeb daemon
-  status-daemon    - Show daemon status
+Test Categories:
+  make unit-test        - Unit tests only
+  make integration-test - Integration tests only
+  make functional-test  - Functional tests only
+  make e2e-test         - E2E browser tests
 
-Docker deployment:
-  docker-build     - Build Docker image
-  docker-run       - Run GeneWeb in Docker
-  docker-stop      - Stop Docker container
-  docker-logs      - Show Docker logs
-  ```
+Maintenance:
+  make clean            - Remove test artifacts
+  make fclean           - Deep clean
+  make re               - Clean and run all tests
+
+Daemon Management:
+  make start-daemon     - Start GeneWeb daemon on port 2317
+  make stop-daemon      - Stop GeneWeb daemon
+  make restart-daemon   - Restart GeneWeb daemon
+  make status-daemon    - Show daemon status
+
+Docker Deployment:
+  make docker-build     - Build Docker image
+  make docker-run       - Run GeneWeb in Docker
+  make docker-stop      - Stop Docker container
+  make docker-logs      - Show Docker logs
+```
 
 ## Documentation
 
@@ -57,5 +64,6 @@ You can find more detailed documentation in the `docs` folder:
 *   [`WORKFLOW.md`](./docs/WORKFLOW.md)
 *   [`DEPLOYMENT.md`](./docs/DEPLOYMENT.md)
 *   [`MODULES.md`](./docs/MODULES.md)
+*   [`TESTING_GUIDE.md`](./docs/TESTING_GUIDE.md)
 
 This README is purposefully concise to improve clarity
