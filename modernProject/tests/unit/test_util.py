@@ -637,13 +637,27 @@ def test_string_of_witness_kind_raw():
     assert util.string_of_witness_kind_raw('Witness_Informant') == 'info'
 
 
-def test_find_person_in_env_by_id():
-    conf = create_test_config()
-    conf.env = {'i': '999999'}
-    base = None
+def test_find_person_in_env_by_id(temp_dir):
+    from tests.gwb_generator import create_minimal_gwb
+    from lib import database, secure, driver
 
-    result = util.find_person_in_env(conf, base, '')
-    assert result is not None
+    secure.add_assets(temp_dir)
+    gwb_path = create_minimal_gwb(temp_dir, "test_base")
+
+    conf = create_test_config()
+    conf.env = {'i': '0'}
+
+    def check_find_person(base):
+        result = util.find_person_in_env(conf, base, '')
+        assert result is not None
+        first_name = driver.sou(base, result.first_name).decode()
+        surname = driver.sou(base, result.surname).decode()
+        assert first_name == "John"
+        assert surname == "Doe"
+        return True
+
+    result = database.with_database(gwb_path, check_find_person)
+    assert result is True
 
 
 def test_p_getenv():
@@ -1551,11 +1565,27 @@ def test_string_of_decimal_num_formatting():
     result = util.string_of_decimal_num(conf, 3.14159)
     assert isinstance(result, str)
 
-def test_find_person_in_env_by_params():
+def test_find_person_in_env_by_params(temp_dir):
+    from tests.gwb_generator import create_minimal_gwb
+    from lib import database, secure, driver
+
+    secure.add_assets(temp_dir)
+    gwb_path = create_minimal_gwb(temp_dir, "test_base")
+
     conf = create_test_config()
-    conf.env = {'i': '0', 'p': 'Smith', 'n': 'John'}
-    result = util.find_person_in_env(conf, None, '')
-    assert result is not None or result is None
+    conf.env = {'p': 'Doe', 'n': 'John', 'oc': '0'}
+
+    def check_find_person(base):
+        result = util.find_person_in_env(conf, base, '')
+        assert result is not None
+        first_name = driver.sou(base, result.first_name).decode()
+        surname = driver.sou(base, result.surname).decode()
+        assert first_name == "John"
+        assert surname == "Doe"
+        return True
+
+    result = database.with_database(gwb_path, check_find_person)
+    assert result is True
 
 def test_p_getenv_and_p_getint_helpers():
     assert util.p_getenv({'key': 'value'}, 'key') == 'value'
